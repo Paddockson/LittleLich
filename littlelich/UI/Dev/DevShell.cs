@@ -243,6 +243,11 @@ public partial class DevShell : Control
         crypt.StorageRatesUpdated += RefreshResources;
         crypt.StockChanged += (_, _) => { if (!TickManager.Instance.Scheduler.IsRunning) RefreshResources(); };
         crypt.StorageCapsChanged += RefreshResources;
+        crypt.ResearchNodeStarted += (id, bench) => DevLog.Add(LogCategory.Research, $"Started {crypt.Research?.Node(id)?.Name ?? id} on bench {bench + 1}.");
+        crypt.ResearchNodeCompleted += id => DevLog.Add(LogCategory.Research,
+            $"Completed {crypt.Research?.Node(id)?.Name ?? id}: {string.Join("; ", crypt.Research?.Node(id)?.Effects ?? new())}.");
+        crypt.ResearchNodeAvailable += id => DevLog.Add(LogCategory.Research, $"Now available: {crypt.Research?.Node(id)?.Name ?? id}.");
+        crypt.ResearchNodeCancelled += (id, bench) => DevLog.Add(LogCategory.Research, $"Cancelled {crypt.Research?.Node(id)?.Name ?? id} on bench {bench + 1} (refunded).");
         lm.EquipmentChanged += slot =>
         {
             if (slot.Length == 0) return; // reloaded from a save

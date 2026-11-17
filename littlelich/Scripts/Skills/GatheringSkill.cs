@@ -47,7 +47,10 @@ public abstract class GatheringSkill : SkillBase
         Activities.FirstOrDefault(a => a.Id == activityId)
         ?? throw new ArgumentException($"{Name} has no activity '{activityId}'.", nameof(activityId));
 
-    public bool IsUnlocked(GatheringActivityDefinition activity) => Level >= activity.RequiredLevel;
+    /// <summary>Level reached and not locked behind research.</summary>
+    public bool IsUnlocked(GatheringActivityDefinition activity) => Level >= activity.RequiredLevel && !IsResearchLocked(activity);
+
+    public bool IsResearchLocked(GatheringActivityDefinition activity) => Context.Unlocks.IsLocked(Unlocks.Activity, activity.Id);
     public IEnumerable<GatheringActivityDefinition> UnlockedActivities => Activities.Where(IsUnlocked);
 
     public long GetAssigned(string activityId) => Context.Lich.Pool.GetAssigned(Id, activityId);

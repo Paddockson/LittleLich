@@ -122,6 +122,8 @@ public sealed class Transmuter : ConvertingBuilding
     public Transmuter(CryptContext c) : base(BuildingIds.Transmuter, c) { }
 
     public IReadOnlyList<TransmutationDefinition> Recipes => Context.Content.All<TransmutationDefinition>().ToList();
+
+    public bool IsLocked(string recipeId) => Context.Unlocks.IsLocked(Unlocks.Transmutation, recipeId);
     public string? SelectedRecipe { get; private set; }
     public TransmutationDefinition? Recipe => SelectedRecipe is { } id ? Recipes.FirstOrDefault(r => r.Id == id) : null;
     public double Progress => Recipe is { } r ? ProgressOf(r.Work) : 0;
@@ -131,6 +133,8 @@ public sealed class Transmuter : ConvertingBuilding
     {
         if (recipeId is not null && Recipes.All(r => r.Id != recipeId))
             throw new ArgumentException($"No transmutation '{recipeId}'.", nameof(recipeId));
+        if (recipeId is not null && IsLocked(recipeId))
+            throw new ArgumentException($"'{recipeId}' is locked behind research.", nameof(recipeId));
         if (recipeId == SelectedRecipe) return;
         SelectedRecipe = recipeId;
         ResetProgress();
@@ -167,7 +171,8 @@ public sealed class SummoningCircle : BuildingBase
 
     public SummoningCircle(CryptContext c) : base(BuildingIds.SummoningCircle, c) { }
 
-    public SummonDefinition? Recipe => Context.Content.All<SummonDefinition>().FirstOrDefault();
+    /// <summary>The first summon recipe not locked behind research (necromancer in v0.1).</summary>
+    public SummonDefinition? Recipe => Context.Content.All<SummonDefinition>().FirstOrDefault(r => !Context.Unlocks.IsLocked(Unlocks.Summon, r.Id));
 
     /// <summary>Stop when the pool's total reaches this (0 = keep going to the max).</summary>
     public long Target

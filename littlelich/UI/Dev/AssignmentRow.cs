@@ -31,7 +31,8 @@ public partial class AssignmentRow : HBoxContainer
                rate)
     { }
 
-    public AssignmentRow(string label, Func<long> current, Func<long, long> add, Func<long, long> remove, Func<string>? rate = null)
+    /// <param name="compact">Only -All, -, + and +Max, with a narrow label (for tight columns such as research benches).</param>
+    public AssignmentRow(string label, Func<long> current, Func<long, long> add, Func<long, long> remove, Func<string>? rate = null, bool compact = false)
     {
         _current = current;
         _add = add;
@@ -45,7 +46,7 @@ public partial class AssignmentRow : HBoxContainer
             ClipText = true,
             TooltipText = label,
             MouseFilter = MouseFilterEnum.Pass,
-            CustomMinimumSize = new Vector2(140, 0),
+            CustomMinimumSize = new Vector2(compact ? 50 : 140, 0),
         });
         _count = DevFormat.CountLabel(0);
         _count.HorizontalAlignment = HorizontalAlignment.Right;
@@ -61,14 +62,16 @@ public partial class AssignmentRow : HBoxContainer
             Btn("-All", () => _remove(long.MaxValue)),
             Btn("-", () => _remove(1)),
         };
-        _plus = new[]
-        {
-            Btn("+", () => _add(1)),
-            Btn("+10", () => _add(10)),
-            Btn("+100", () => _add(100)),
-            Btn("+1K", () => _add(1_000)),
-            Btn("+Max", () => _add(long.MaxValue)),
-        };
+        _plus = compact
+            ? new[] { Btn("+", () => _add(1)), Btn("+Max", () => _add(long.MaxValue)) }
+            : new[]
+            {
+                Btn("+", () => _add(1)),
+                Btn("+10", () => _add(10)),
+                Btn("+100", () => _add(100)),
+                Btn("+1K", () => _add(1_000)),
+                Btn("+Max", () => _add(long.MaxValue)),
+            };
         Refresh();
     }
 

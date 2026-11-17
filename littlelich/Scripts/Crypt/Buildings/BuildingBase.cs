@@ -10,6 +10,9 @@ namespace LittleLich.Crypt.Buildings;
 /// <summary>What a building needs from the rest of the game (plain objects, testable without Godot).</summary>
 public sealed record CryptContext(LichState Lich, Stockpile Stock, ContentDatabase Content, Func<AwayRecap?> Recap)
 {
+    /// <summary>Research unlocks (phase 7): locked transmutations/summons and extra building levels.</summary>
+    public Unlocks Unlocks { get; init; } = Unlocks.None;
+
     public Storage Storage => Stock.Storage;
 }
 
@@ -102,7 +105,10 @@ public abstract class BuildingBase : ITickable, ISaveable
 
     // ---- Upgrades ----
 
-    public bool IsMaxLevel => Level >= Definition.MaxLevel;
+    /// <summary>Definition max level plus any extra levels research has unlocked.</summary>
+    public int MaxLevel => Definition.MaxLevel + Context.Unlocks.BuildingLevelBonus(Id);
+
+    public bool IsMaxLevel => Level >= MaxLevel;
 
     /// <summary>Coins for the next level.</summary>
     public long UpgradeCost
@@ -126,7 +132,7 @@ public abstract class BuildingBase : ITickable, ISaveable
     public const string ResourceIdsCoins = "coins";
 
     /// <summary>Debug: set the level directly (no cost).</summary>
-    public void DebugSetLevel(int level) => SetLevel(Math.Clamp(level, 1, Definition.MaxLevel));
+    public void DebugSetLevel(int level) => SetLevel(Math.Clamp(level, 1, MaxLevel));
 
     private void SetLevel(int level)
     {
@@ -163,7 +169,7 @@ public abstract class BuildingBase : ITickable, ISaveable
 
     public void Load(SaveData data)
     {
-        Level = Math.Clamp(data.Get("level", 1), 1, Definition.MaxLevel);
+        Level = Math.Clamp(data.Get("level", 1), 1, MaxLevel);   // research loads first, so its extra levels count
         SetStatus(Ticks ? BuildingStatus.Idle : BuildingStatus.Passive);
         LoadExtra(data);
         OnLevelChanged();

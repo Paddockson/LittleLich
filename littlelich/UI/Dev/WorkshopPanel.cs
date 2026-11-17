@@ -201,7 +201,11 @@ public partial class WorkshopPanel : HSplitContainer, IDevPanel
     {
         var pick = new OptionButton();
         pick.AddItem("(none)");
-        foreach (var r in t.Recipes) pick.AddItem($"{r.Name}: {Amounts(r.Inputs)} -> {Amount(r.Output)}, {Num(r.Work)} work");
+        foreach (var r in t.Recipes)
+        {
+            pick.AddItem($"{r.Name}: {Amounts(r.Inputs)} -> {Amount(r.Output)}, {Num(r.Work)} work{(t.IsLocked(r.Id) ? "  (locked: research)" : "")}");
+            pick.SetItemDisabled(pick.ItemCount - 1, t.IsLocked(r.Id));
+        }
         pick.Selected = t.SelectedRecipe is { } id ? t.Recipes.ToList().FindIndex(r => r.Id == id) + 1 : 0;
         pick.ItemSelected += i =>
         {

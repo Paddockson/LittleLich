@@ -263,7 +263,31 @@ public static class DevCommands
         }, (i, _) => i == 0 ? CryptManager.Instance.Inventory.Stacks.Select(s => s.Id)
                                 .Where(id => GameManager.Instance.Content.Contains<PotionDefinition>(id)) : Empty));
 
-        Later("unlock", "unlock <id>", "Unlock research, a unit or a recipe.", "research (phase 7)", (i, _) => i == 0 ? ContentIds() : Empty);
+        // ---- Research (phase 7) ----
+        Add(new("research", "research <node> [bench]", "Start researching a node (pays its cost; first free bench if none given).", a =>
+        {
+            Need(a, 1);
+            var r = CryptManager.Instance.Research ?? throw new DevCommandException("No research (boot failed?).");
+            int? bench = a.Length > 1 ? (int)Count(a, 1) - 1 : null;
+            var res = r.Start(a[0], bench);
+            if (res != Crypt.Research.StartResult.Ok)
+                throw new DevCommandException($"Cannot start {a[0]}: {res}{(res == Crypt.Research.StartResult.NotAvailable ? " (" + r.WhyLocked(a[0]) + ")" : "")}.");
+            return $"Researching {r.Node(a[0])!.Name}.";
+        }, (i, _) => i == 0 ? ResearchNodes(Crypt.Research.NodeState.Available) : Empty));
+        Add(new("cancel", "cancel <bench>", "Stop a bench's research and refund its cost.", a =>
+        {
+            var r = CryptManager.Instance.Research ?? throw new DevCommandException("No research (boot failed?).");
+            var bench = (int)Count(a, 0) - 1;
+            if (!r.Cancel(bench)) throw new DevCommandException($"Bench {bench + 1} is idle or does not exist.");
+            return $"Bench {bench + 1} cancelled; cost refunded.";
+        }));
+        Add(new("unlock", "unlock <node>", "Debug: complete a research node now (no cost, no requirements) and apply its effects.", a =>
+        {
+            Need(a, 1);
+            var r = CryptManager.Instance.Research ?? throw new DevCommandException("No research (boot failed?).");
+            if (!r.DebugComplete(a[0])) throw new DevCommandException($"'{a[0]}' is unknown or already done.");
+            return $"Completed {r.Node(a[0])!.Name}.";
+        }, (i, _) => i == 0 ? ResearchNodes(null) : Empty));
         Later("battle", "battle <area>", "Start a test battle.", "the world map (phase 8)");
     }
 
@@ -369,6 +393,12 @@ public static class DevCommands
         return Lich.Skill(a[0].ToLowerInvariant())
             ?? throw new DevCommandException($"No skill '{a[0]}' ({string.Join(", ", SkillIds.All)}).");
     }
+
+    /// <summary>Research node ids, optionally only those in one state (not done, for unlock).</summary>
+    private static IEnumerable<string> ResearchNodes(Crypt.Research.NodeState? only) =>
+        CryptManager.Instance.Research is { } r
+            ? r.Tomes.SelectMany(t => t.Nodes).Select(n => n.Id).Where(id => only is { } s ? r.State(id) == s : r.State(id) != Crypt.Research.NodeState.Done)
+            : Empty;
 
     private static IEnumerable<string> StockIdsAll() =>
         GameManager.Instance.Content.All<ResourceDefinitionBase>().Select(d => d.Id)

@@ -83,7 +83,11 @@ public partial class GameManager : Node
         // Load order matters: the lich (pool, modifiers) before skills, so skills read restored assignments.
         Session.Register(LichManager.Instance.State);
         foreach (var s in CryptManager.Instance.Initialize(content, LichManager.Instance.State)) Session.Register(s);
-        foreach (var s in LichManager.Instance.InitializeSkills(content, CryptManager.Instance.Stockpile)) Session.Register(s);
+        foreach (var s in LichManager.Instance.InitializeSkills(content, CryptManager.Instance.Stockpile, CryptManager.Instance.Unlocks)) Session.Register(s);
+        // Research reads skill levels (deeper nodes) and pays skill XP on completion.
+        var research = CryptManager.Instance.Research!;
+        research.SkillLevel = id => LichManager.Instance.Skill(id)?.Level ?? 1;
+        research.SkillXpEarned += (id, xp) => LichManager.Instance.Skill(id)?.GrantXp(xp);
         Session.Register(LichManager.Instance.InitializeGear(content, CryptManager.Instance.Inventory));
 
         try

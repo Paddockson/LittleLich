@@ -6,5 +6,7 @@
   { "type": "transmutation", "id": "bones_to_coal", "name": "Bones to Coal",
     "inputs": [ { "id": "bones", "count": 3 } ], "output": { "id": "coal", "count": 1 }, "work": 2, "placeholder": true },
   { "type": "transmutation", "id": "copper_to_iron", "name": "Copper to Iron",
-    "inputs": [ { "id": "copper_ore", "count": 4 } ], "output": { "id": "iron_ore", "count": 1 }, "work": 3, "placeholder": true }
+    "inputs": [ { "id": "copper_ore", "count": 4 } ], "output": { "id": "iron_ore", "count": 1 }, "work": 3, "placeholder": true },
+  { "type": "transmutation", "id": "hide_to_bones", "name": "Hide to Bones",
+    "inputs": [ { "id": "wolf_hide", "count": 1 } ], "output": { "id": "bones", "count": 2 }, "work": 2, "placeholder": true }
 ]

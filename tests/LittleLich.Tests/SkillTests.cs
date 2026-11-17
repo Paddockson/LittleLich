@@ -28,6 +28,8 @@ internal sealed class World
     public IReadOnlyList<SkillBase> Skills { get; }
     public IReadOnlyList<LittleLich.Crypt.Buildings.BuildingBase> Buildings { get; }
     public LittleLich.Gear.Equipment Equipment { get; }
+    public Unlocks Unlocks { get; } = new();
+    public LittleLich.Crypt.Research.ResearchManager Research { get; }
     public LittleLich.Gear.ItemUser Items { get; }
 
     public World(ContentDatabase? content = null)
@@ -36,9 +38,12 @@ internal sealed class World
         Storage = new Storage(content);
         Inventory = new Inventory(content);
         Stock = new Stockpile(Storage, Inventory);
+        Research = new LittleLich.Crypt.Research.ResearchManager(Lich, Stock, content, Unlocks, () => Ticks.ActiveRecap);
         Buildings = LittleLich.Crypt.Buildings.BuildingFactory.CreateAll(
-            new LittleLich.Crypt.Buildings.CryptContext(Lich, Stock, content, () => Ticks.ActiveRecap));
-        Skills = SkillFactory.CreateAll(new SkillContext(Lich, Stock, content, () => Ticks.ActiveRecap));
+            new LittleLich.Crypt.Buildings.CryptContext(Lich, Stock, content, () => Ticks.ActiveRecap) { Unlocks = Unlocks });
+        Skills = SkillFactory.CreateAll(new SkillContext(Lich, Stock, content, () => Ticks.ActiveRecap) { Unlocks = Unlocks });
+        Research.SkillLevel = id => Skills.First(s => s.Id == id).Level;     // as GameManager wires it
+        Research.SkillXpEarned += (id, xp) => Skills.First(s => s.Id == id).GrantXp(xp);
         Equipment = new LittleLich.Gear.Equipment(Lich, Inventory, content);
         Items = new LittleLich.Gear.ItemUser(Lich, Inventory, content);
         Ticks.TickStarted += (_, _) => Storage.BeginBatch();   // as CryptManager does
@@ -48,9 +53,10 @@ internal sealed class World
         foreach (var b in Buildings) { order += 100; if (b.Ticks) Ticks.Register(b, TickGroup.Buildings, order); }   // as CryptManager does
         foreach (var g in Skills.OfType<GatheringSkill>()) Ticks.Register(g, TickGroup.Skills, TickOrder.Gathering);
         foreach (var c in Skills.OfType<CraftingSkill>()) Ticks.Register(c, TickGroup.Skills, TickOrder.Crafting);
+        Ticks.Register(Research, TickGroup.Research);
     }
 
-    public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory }.Concat(Buildings).Concat(Skills).Append(Equipment);
+    public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory, Research }.Concat(Buildings).Concat(Skills).Append(Equipment);
 
     public T Skill<T>() where T : SkillBase => Skills.OfType<T>().Single();
     public MiningManager Mining => Skill<MiningManager>();

@@ -33,7 +33,7 @@ public static class DevPanelRegistry
         () => new SavePanel(),   // phase 1
         () => new WorkshopPanel(),  // phase 5
         () => new GearPanel(),      // phase 6 (replaced the phase 4 minimal inventory tab)
-        // Phase 7: () => new ResearchPanel(),
+        () => new ResearchPanel(),  // phase 7
         // Phase 8: () => new WorldMapPanel(), () => new BattlePanel(),
         // Phase 9: () => new UnitsPanel(),
         // Phase 10-11: () => new ContentBrowserPanel(),

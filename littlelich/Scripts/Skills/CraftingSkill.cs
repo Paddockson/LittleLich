@@ -58,7 +58,10 @@ public abstract class CraftingSkill : SkillBase
         Recipes.FirstOrDefault(r => r.Id == recipeId)
         ?? throw new ArgumentException($"{Name} has no recipe '{recipeId}'.", nameof(recipeId));
 
-    public bool IsUnlocked(RecipeDefinition recipe) => Level >= recipe.RequiredLevel;
+    /// <summary>Level reached and not locked behind research.</summary>
+    public bool IsUnlocked(RecipeDefinition recipe) => Level >= recipe.RequiredLevel && !IsResearchLocked(recipe);
+
+    public bool IsResearchLocked(RecipeDefinition recipe) => Context.Unlocks.IsLocked(Unlocks.Recipe, recipe.Id);
     public IEnumerable<RecipeDefinition> UnlockedRecipes => Recipes.Where(IsUnlocked);
 
     public long GetAssigned(string recipeId) => Context.Lich.Pool.GetAssigned(Id, recipeId);

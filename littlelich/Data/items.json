@@ -4,6 +4,7 @@
 [
   { "type": "weapon",    "id": "copper_sword",      "name": "Copper Sword",      "damage": 4,  "stack_size": 50, "sell_price": 40,  "placeholder": true },
   { "type": "armour",    "id": "iron_armour",       "name": "Iron Armour",       "defence": 6, "stack_size": 20, "sell_price": 150, "placeholder": true },
+  { "type": "weapon",    "id": "bone_spear",        "name": "Bone Spear",        "damage": 5,  "stack_size": 50, "sell_price": 45,  "placeholder": true },
 
   { "type": "weapon",    "id": "bone_staff",        "name": "Bone Staff",        "slots": [ "staff" ], "damage": 3, "stack_size": 10, "sell_price": 80,
     "modifiers": [ { "stat": "max_insight", "op": "add", "value": 2 } ], "placeholder": true },

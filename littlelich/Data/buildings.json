@@ -2,7 +2,7 @@
 // work per tick = (base_work + staffed x work_per_necromancer) x (1 + level_bonus x (level - 1))
 // slots = base_slots + slots_per_level x (level - 1); upgrade cost (coins) = upgrade_cost x upgrade_growth^(level - 1)
 [
-  { "type": "mana_well", "id": "mana_well", "name": "Mana Well", "output": "mana",
+  { "type": "mana_well", "id": "mana_well", "name": "Mana Well", "output": "mana", "max_level": 10,
     "base_work": 1, "work_per_necromancer": 0.5, "level_bonus": 0.1, "base_slots": 5, "slots_per_level": 2,
     "upgrade_cost": 50, "upgrade_growth": 1.5, "placeholder": true },
 
@@ -20,7 +20,7 @@
     "base_work": 0, "work_per_necromancer": 0.5, "level_bonus": 0.1, "base_slots": 3, "slots_per_level": 1,
     "upgrade_cost": 75, "upgrade_growth": 1.5, "placeholder": true },
 
-  { "type": "summoning_circle", "id": "summoning_circle", "name": "Summoning Circle", "max_necromancers_per_level": 10,
+  { "type": "summoning_circle", "id": "summoning_circle", "name": "Summoning Circle", "max_necromancers_per_level": 10, "max_level": 10,
     "base_work": 0.2, "work_per_necromancer": 0.2, "level_bonus": 0.1, "base_slots": 3, "slots_per_level": 2,
     "upgrade_cost": 100, "upgrade_growth": 1.6, "placeholder": true },
 

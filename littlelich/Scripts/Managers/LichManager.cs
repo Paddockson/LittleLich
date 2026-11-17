@@ -69,11 +69,11 @@ public partial class LichManager : Node
     /// classes, registers the automatable ones with the TickManager (gathering before crafting) and returns all of
     /// them for save registration.
     /// </summary>
-    public IReadOnlyList<SkillBase> InitializeSkills(ContentDatabase content, Stockpile stock)
+    public IReadOnlyList<SkillBase> InitializeSkills(ContentDatabase content, Stockpile stock, Unlocks unlocks)
     {
         if (_skills.Count > 0) throw new InvalidOperationException("Skills are already initialised.");
         var tm = TickManager.Instance;
-        var ctx = new SkillContext(State, stock, content, () => tm.Scheduler.ActiveRecap);
+        var ctx = new SkillContext(State, stock, content, () => tm.Scheduler.ActiveRecap) { Unlocks = unlocks };
         foreach (var s in SkillFactory.CreateAll(ctx))
         {
             _skills.Add(s);

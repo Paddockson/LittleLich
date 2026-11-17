@@ -138,7 +138,7 @@ public partial class SkillPage : ScrollContainer
                     var locked = !g.IsUnlocked(a);
                     row.Info.Text = $"{a.Name}  (level {a.RequiredLevel})   -> {StockIds.NameOf(content, a.Output)} " +
                                     $"{StockText(stock, a.Output)}   {DevFormat.Exact((LittleLich.Core.Num)a.Rate)}/tick per necromancer, {DevFormat.Exact((LittleLich.Core.Num)a.Xp)} XP each";
-                    row.Status.Text = locked ? $"Locked: needs {g.Name} level {a.RequiredLevel}"
+                    row.Status.Text = locked ? (g.IsResearchLocked(a) ? "Locked: needs research (see the Research tab)" : $"Locked: needs {g.Name} level {a.RequiredLevel}")
                         : g.IsCapped(a.Id) ? $"CAPPED: {StockIds.NameOf(content, a.Output)} is full (production stopped)"
                         : g.GetAssigned(a.Id) > 0 ? $"Gathering +{RateText(g.RatePerTick(a.Id))}/tick"
                         : "Idle";
@@ -156,7 +156,7 @@ public partial class SkillPage : ScrollContainer
                                     $"{StockIds.NameOf(content, r.Output.Id)} {StockText(stock, r.Output.Id)}   " +
                                     $"{DevFormat.Exact(r.Ticks)} ticks per craft per necromancer, {DevFormat.Exact((LittleLich.Core.Num)r.Xp)} XP each";
                     var st = c.Status(r.Id);
-                    row.Status.Text = locked ? $"Locked: needs {c.Name} level {r.RequiredLevel}" : st switch
+                    row.Status.Text = locked ? (c.IsResearchLocked(r) ? "Locked: needs research (see the Research tab)" : $"Locked: needs {c.Name} level {r.RequiredLevel}") : st switch
                     {
                         RecipeStatus.Running => $"Running, up to {RateText(c.CraftsPerTick(r.Id))} crafts/tick",
                         RecipeStatus.MissingInput => $"PAUSED: missing {StockIds.NameOf(content, c.MissingInput(r.Id) ?? "?")}",

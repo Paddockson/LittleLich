@@ -10,6 +10,9 @@ namespace LittleLich.Skills;
 /// <summary>What a skill needs from the rest of the game. Plain objects, so skills are testable without Godot.</summary>
 public sealed record SkillContext(LichState Lich, Stockpile Stock, ContentDatabase Content, Func<AwayRecap?> Recap)
 {
+    /// <summary>Research unlocks (phase 7). Research-locked activities and recipes cannot take necromancers.</summary>
+    public Unlocks Unlocks { get; init; } = Unlocks.None;
+
     /// <summary>Fixed-point scale for production maths (see <see cref="FixedPoint"/>).</summary>
     public const long Micro = FixedPoint.Micro;
 
