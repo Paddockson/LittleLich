@@ -61,6 +61,9 @@ public sealed class ContentDatabase
 
     internal IEnumerable<Definition> Everything() => _ordered.Values.SelectMany(l => l);
 
+    /// <summary>Every definition of every family, in load order per family (dev tools, content browser).</summary>
+    public IEnumerable<Definition> AllDefinitions() => Everything();
+
     internal Definition? Find(Type family, string id) =>
         _byFamily.TryGetValue(family, out var map) && map.TryGetValue(id, out var d) ? d : null;
 

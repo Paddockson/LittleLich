@@ -8,8 +8,8 @@ using LittleLich.Managers;
 namespace LittleLich.UI;
 
 /// <summary>
-/// Phase 1 placeholder shell. Reads GameManager state and sends commands; never changes state itself.
-/// Replaced by the real top bar and screens in later phases.
+/// Phase 1 placeholder shell (release builds). Reads GameManager state and sends commands; never changes state itself.
+/// In debug builds it hands over to the dev UI (UI/Dev/DevShell.tscn). Replaced by the real UI later.
 /// </summary>
 public partial class MainShell : Control
 {
@@ -18,6 +18,12 @@ public partial class MainShell : Control
 
     public override void _Ready()
     {
+        if (OS.IsDebugBuild())
+        {
+            GetTree().CallDeferred(SceneTree.MethodName.ChangeSceneToFile, Dev.DevShell.ScenePath);
+            return;
+        }
+
         var margin = new MarginContainer();
         margin.SetAnchorsPreset(LayoutPreset.FullRect);
         foreach (var side in new[] { "left", "top", "right", "bottom" })
@@ -54,6 +60,7 @@ public partial class MainShell : Control
         gm.GameSaved += _ => Refresh();
         Refresh();
     }
+
 
     private void Refresh()
     {

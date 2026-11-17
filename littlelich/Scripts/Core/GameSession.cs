@@ -129,6 +129,14 @@ public sealed class GameSession
         return s;
     }
 
+    /// <summary>Deletes another slot. The slot being played cannot be deleted (start a new game over it instead).</summary>
+    public bool DeleteSlot(int slot)
+    {
+        if (slot == CurrentSlot)
+            throw new InvalidOperationException($"Slot {slot} is the current game and cannot be deleted.");
+        return Saves.Delete(slot);
+    }
+
     /// <summary>Gathers every saveable's section and writes the current slot.</summary>
     public void Save()
     {

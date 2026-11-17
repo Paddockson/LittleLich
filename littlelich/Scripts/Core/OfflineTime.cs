@@ -8,6 +8,12 @@ public static class OfflineTime
     /// <summary>Base tick length at startup (seconds). Speed-up must not change offline conversion.</summary>
     public const double BaseTickSeconds = 2.0;
 
+    /// <summary>Offline progress cap: 24 hours of time away. Anything beyond is not processed (reported in the recap).</summary>
+    public const double MaxOfflineSeconds = 24 * 60 * 60;
+
+    /// <summary><see cref="MaxOfflineSeconds"/> in base ticks (43,200).</summary>
+    public const long MaxOfflineTicks = (long)(MaxOfflineSeconds / BaseTickSeconds);
+
     /// <summary>Seconds between the save time and now. Never negative (clock moved backwards = 0).</summary>
     public static double ElapsedSeconds(DateTime savedAtUtc, DateTime nowUtc)
     {

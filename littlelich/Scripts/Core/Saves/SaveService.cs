@@ -73,6 +73,19 @@ public sealed class SaveService
         return new SaveSlotInfo(slot, null, null, false, mainCorrupt, hasBackup);
     }
 
+    /// <summary>Deletes a slot's save, backup and any leftover temp file. Returns true if anything was deleted.</summary>
+    public bool Delete(int slot)
+    {
+        var any = false;
+        foreach (var path in new[] { SlotPath(slot), BackupPath(slot), TempPath(slot) })
+        {
+            if (!File.Exists(path)) continue;
+            File.Delete(path);
+            any = true;
+        }
+        return any;
+    }
+
     /// <summary>The lowest slot number with nothing in it.</summary>
     public int NextFreeSlot()
     {

@@ -27,3 +27,5 @@ project/assembly_name="LittleLich"
 [autoload]
 
 GameManager="*res://Scripts/Managers/GameManager.cs"
+LichManager="*res://Scripts/Managers/LichManager.cs"
+TickManager="*res://Scripts/Managers/TickManager.cs"
