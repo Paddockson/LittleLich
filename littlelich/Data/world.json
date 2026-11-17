@@ -1,0 +1,24 @@
+// World map (phase 8): paths between nodes, two areas. Areas are attacked along paths from the crypt.
+// Rewards are granted once, when an area is cleared. All numbers are placeholders.
+[
+  { "type": "map_node", "id": "crypt",      "name": "The Crypt",  "position": [0, 2], "home": true, "links": [ "crossroads" ] },
+  { "type": "map_node", "id": "crossroads", "name": "Crossroads", "position": [2, 2], "links": [ "graveyard_gates", "woods_edge" ] },
+  { "type": "map_node", "id": "graveyard_gates", "name": "Graveyard Gates", "position": [4, 1], "area": "graveyard" },
+  { "type": "map_node", "id": "woods_edge", "name": "Edge of the Woods", "position": [4, 3], "area": "woods" },
+
+  { "type": "area", "id": "graveyard", "name": "The Graveyard",
+    "description": "Another lich's small undead army. The graveyard gates are the walls: break them before the guards can fight.",
+    "defenders": {
+      "front":  [ { "unit": "graveyard_gate", "count": 1 } ],
+      "middle": [ { "unit": "rival_skeleton", "count": 12 } ],
+      "back":   [ { "unit": "grave_archer",   "count": 6 } ] },
+    "rewards": { "bones": 60, "souls": 10, "coins": 300 }, "placeholder": true },
+
+  { "type": "area", "id": "woods", "name": "The Woods",
+    "description": "Where the wild people live. Brutes hold the line, hunters pick off the weak, shamans mend them.",
+    "defenders": {
+      "front":  [ { "unit": "wild_brute",  "count": 8 } ],
+      "middle": [ { "unit": "wild_hunter", "count": 10 } ],
+      "back":   [ { "unit": "wild_shaman", "count": 2 } ] },
+    "rewards": { "wolf_hide": 40, "nightshade": 40, "coins": 200 }, "placeholder": true }
+]

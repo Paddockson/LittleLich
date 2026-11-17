@@ -20,7 +20,8 @@ namespace LittleLich.UI.Dev;
 ///
 /// Reads state, calls manager methods, refreshes on manager signals. Never mutates state itself.
 /// Command-line (after "--"): --dev-cmd="cmd1;cmd2" runs console commands after boot,
-/// --dev-tab=Saves selects a tab, --dev-screenshot=path.png saves a screenshot and quits.
+/// --dev-tab=Saves selects a tab, --dev-screenshot=path.png saves a screenshot and quits
+/// (after --dev-frames=N frames, default 10).
 /// </summary>
 public partial class DevShell : Control
 {
@@ -243,6 +244,9 @@ public partial class DevShell : Control
         crypt.StorageRatesUpdated += RefreshResources;
         crypt.StockChanged += (_, _) => { if (!TickManager.Instance.Scheduler.IsRunning) RefreshResources(); };
         crypt.StorageCapsChanged += RefreshResources;
+        var wm = WorldManager.Instance;
+        wm.BattleStarted += area => DevLog.Add(LogCategory.Battle, $"Battle started at {area}.");
+        wm.Resolved += r => DevLog.Add(LogCategory.Battle, MapPanel.ResultText(r));
         crypt.ResearchNodeStarted += (id, bench) => DevLog.Add(LogCategory.Research, $"Started {crypt.Research?.Node(id)?.Name ?? id} on bench {bench + 1}.");
         crypt.ResearchNodeCompleted += id => DevLog.Add(LogCategory.Research,
             $"Completed {crypt.Research?.Node(id)?.Name ?? id}: {string.Join("; ", crypt.Research?.Node(id)?.Effects ?? new())}.");
@@ -440,13 +444,16 @@ public partial class DevShell : Control
                 }
             }
             else if (arg.StartsWith("--dev-screenshot=")) shot = arg["--dev-screenshot=".Length..];
+            else if (arg.StartsWith("--dev-frames=") && int.TryParse(arg["--dev-frames=".Length..], out var f)) _shotFrames = System.Math.Max(1, f);
         }
         if (shot is not null) _ = Screenshot(shot);
     }
 
+    private int _shotFrames = 10;
+
     private async System.Threading.Tasks.Task Screenshot(string path)
     {
-        for (var i = 0; i < 10; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        for (var i = 0; i < _shotFrames; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         var img = GetViewport().GetTexture().GetImage();
         var err = img.SavePng(path);

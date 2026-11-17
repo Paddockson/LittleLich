@@ -39,6 +39,12 @@ public partial class TickManager : Node
     /// <summary>C# event with the full recap (signals cannot carry it).</summary>
     public event Action<AwayRecap>? OfflineRecap;
 
+    /// <summary>
+    /// Every frame while a game runs and ticking is not paused: elapsed game seconds (real seconds x speed).
+    /// The battle clock (phase 8) runs on this; it is the one thing faster than the tick. Not raised offline.
+    /// </summary>
+    public event Action<double>? GameSecondsElapsed;
+
     public long TickCount => Scheduler.TickCount;
     public bool Paused => Clock.Paused;
     public double Speed => Clock.Speed;
@@ -81,6 +87,7 @@ public partial class TickManager : Node
         if (!HasGame) return;
         var due = Clock.Advance(delta);
         if (due > 0) RunTicks(due);
+        if (!Clock.Paused) GameSecondsElapsed?.Invoke(delta * Clock.Speed);
         EmitSignal(SignalName.TickProgress, Clock.Elapsed, Clock.TickSeconds);
     }
 

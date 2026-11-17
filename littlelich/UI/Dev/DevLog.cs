@@ -15,6 +15,7 @@ public enum LogCategory
     Skill,
     Workshop,
     Research,
+    Battle,
     Command,
     Error,
 }

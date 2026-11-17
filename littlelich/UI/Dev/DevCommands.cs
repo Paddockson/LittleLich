@@ -288,7 +288,42 @@ public static class DevCommands
             if (!r.DebugComplete(a[0])) throw new DevCommandException($"'{a[0]}' is unknown or already done.");
             return $"Completed {r.Node(a[0])!.Name}.";
         }, (i, _) => i == 0 ? ResearchNodes(null) : Empty));
-        Later("battle", "battle <area>", "Start a test battle.", "the world map (phase 8)");
+        // ---- World and battles (phase 8) ----
+        Add(new("addunits", "addunits <unit> <n>", "Debug: add player units to the garrison (stub until phase 9).", a =>
+        {
+            Need(a, 2);
+            try { WorldManager.Instance.DebugAddUnits(a[0], Count(a, 1)); }
+            catch (ArgumentException e) { throw new DevCommandException(e.Message); }
+            return $"Garrison: {DevFormat.Exact(WorldManager.Instance.State!.InGarrison(a[0]))} {a[0]}.";
+        }, (i, _) => i == 0 ? GameManager.Instance.Content.All<UnitDefinitionBase>().Where(u => u.Side == "player").Select(u => u.Id) : Empty));
+        Add(new("battle", "battle <area>", "Send the whole garrison (all in the front section) to fight an area.", a =>
+        {
+            Need(a, 1);
+            var plan = WorldManager.Instance.WholeGarrison();
+            var r = WorldManager.Instance.Send(a[0], plan);
+            if (r != World.SendResult.Ok) throw new DevCommandException($"Cannot send to {a[0]}: {r}.");
+            return $"Sent {string.Join(", ", plan.Totals().Select(t => $"{t.Value} {t.Key}"))} to {a[0]}.";
+        }, (i, _) => i == 0 ? WorldManager.Instance.State?.Areas.Select(x => x.Id) ?? Empty : Empty));
+        Add(new("send", "send <area> <unit:count@section> ...", "Send a chosen army, e.g. send graveyard skeleton:20@front zombie:5@middle.", a =>
+        {
+            Need(a, 2);
+            var plan = new World.ArmyPlan();
+            foreach (var part in a.Skip(1))
+            {
+                var at = part.Split('@');
+                var uc = at[0].Split(':');
+                if (uc.Length != 2 || !DevFormat.TryParseCount(uc[1], out var n)) throw new DevCommandException($"'{part}' is not unit:count[@section].");
+                plan.Set(at.Length > 1 ? at[1] : Sections.Front, uc[0], n);
+            }
+            var r = WorldManager.Instance.Send(a[0], plan);
+            if (r != World.SendResult.Ok) throw new DevCommandException($"Cannot send to {a[0]}: {r}.");
+            return $"Sent to {a[0]}.";
+        }, (i, _) => i == 0 ? WorldManager.Instance.State?.Areas.Select(x => x.Id) ?? Empty : Empty));
+        Add(new("retreat", "retreat", "Pull the army out of the current battle (survivors come home).", _ =>
+        {
+            if (!WorldManager.Instance.Retreat()) throw new DevCommandException("No battle is running.");
+            return "Retreated.";
+        }));
     }
 
     public static void Add(DevCommand c) => _commands[c.Name] = c;

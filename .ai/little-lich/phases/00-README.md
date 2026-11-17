@@ -40,9 +40,9 @@ Godot + C#. Each phase is one markdown file. Build in order; each phase ends wit
 
 - Formation size, 8 or 9 slots (phase 9).
 - Focus/Insight: budget or simple cap. Name decided in phase 2: **Insight** (`max_insight`). Deferred in phase 6 to the SpellBook phase after v0.1 (no spells are equipped in v0.1).
-- Several Hosts fighting at once (phase 8).
+- ~~Several Hosts fighting at once (phase 8).~~ Decided: one battle at a time in v0.1.
 - Summons also cost mana? (phase 9)
-- Summon slots growing beyond 3 (phase 8).
-- Restocking inside a dungeon (phase 8).
+- ~~Summon slots growing beyond 3 (phase 8).~~ Decided: fixed at 3 in v0.1 (encounters themselves come after phase 9).
+- ~~Restocking inside a dungeon (phase 8).~~ Decided: no restocking; what the army brings is all it has.
 - ~~Health gives regeneration? (phase 2).~~ Decided: no regeneration in v0.1.
 - ~~Big-number type (phase 1).~~ Decided: `Num` struct backed by `double`; counts and stock stay `long`.

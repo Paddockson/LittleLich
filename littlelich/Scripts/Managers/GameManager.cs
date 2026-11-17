@@ -13,7 +13,7 @@ namespace LittleLich.Managers;
 ///   1. Load content JSON from res://Data into the ContentDatabase.
 ///   2. Find saves in user://saves; load the latest, or create a new game.
 ///   3. Create Storage/Inventory/buildings (CryptManager) and the ten skills (LichManager) for the loaded content and register
-///      every saveable (lich, storage, inventory, buildings, skills, equipment) before the save is read.
+///      every saveable (lich, storage, inventory, research, buildings, skills, equipment, world) before the save is read.
 ///   4. Compute time away and hold it for the TickManager, which processes it as offline ticks.
 ///   5. The main scene (UI/Main.tscn) shows the shell.
 ///
@@ -89,6 +89,12 @@ public partial class GameManager : Node
         research.SkillLevel = id => LichManager.Instance.Skill(id)?.Level ?? 1;
         research.SkillXpEarned += (id, xp) => LichManager.Instance.Skill(id)?.GrantXp(xp);
         Session.Register(LichManager.Instance.InitializeGear(content, CryptManager.Instance.Inventory));
+        if (WorldManager.Instance is null)
+        {
+            Fail("WorldManager autoload is missing (check project.godot [autoload]).");
+            return;
+        }
+        Session.Register(WorldManager.Instance.Initialize(content, CryptManager.Instance.Stockpile));
 
         try
         {

@@ -13,6 +13,7 @@
     <Compile Include="../../littlelich/Scripts/Skills/**/*.cs" Link="Game/Skills/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../littlelich/Scripts/Crypt/**/*.cs" Link="Game/Crypt/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../littlelich/Scripts/Gear/**/*.cs" Link="Game/Gear/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../littlelich/Scripts/World/**/*.cs" Link="Game/World/%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="../../littlelich/Data/**/*.json" Link="Data/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,38 @@
+// Units (placeholder schema pulled forward for phase 8 battles; phase 10 owns unit JSON).
+// hp is per unit. Up to 3 actions, each on its own cooldown (seconds on the battle clock).
+// effect attack|brace|heal, target front|back|lowest|self|ally_lowest, range melee|ranged. All numbers are placeholders.
+[
+  { "type": "unit", "id": "skeleton", "name": "Skeleton", "side": "player", "hp": 20, "placeholder": true,
+    "actions": [
+      { "id": "slash", "name": "Slash", "cooldown": 2,  "effect": "attack", "value": 3,   "target": "front", "range": "melee" },
+      { "id": "brace", "name": "Brace", "cooldown": 10, "effect": "brace",  "value": 0.1, "target": "self",  "range": "melee" } ] },
+
+  { "type": "unit", "id": "zombie", "name": "Zombie", "side": "player", "hp": 45, "placeholder": true,
+    "actions": [
+      { "id": "bite",  "name": "Bite",  "cooldown": 3,  "effect": "attack", "value": 5,   "target": "front", "range": "melee" } ] },
+
+  { "type": "unit", "id": "graveyard_gate", "name": "Graveyard Gate", "side": "enemy", "hp": 600, "actions": [], "placeholder": true },
+
+  { "type": "unit", "id": "rival_skeleton", "name": "Rival Skeleton", "side": "enemy", "hp": 18, "placeholder": true,
+    "actions": [
+      { "id": "slash", "name": "Slash", "cooldown": 2,  "effect": "attack", "value": 3,   "target": "front", "range": "melee" },
+      { "id": "brace", "name": "Brace", "cooldown": 10, "effect": "brace",  "value": 0.1, "target": "self",  "range": "melee" } ] },
+
+  { "type": "unit", "id": "grave_archer", "name": "Grave Archer", "side": "enemy", "hp": 12, "placeholder": true,
+    "actions": [
+      { "id": "shoot", "name": "Shoot", "cooldown": 2.5, "effect": "attack", "value": 2, "target": "front", "range": "ranged" } ] },
+
+  { "type": "unit", "id": "wild_brute", "name": "Wild Brute", "side": "enemy", "hp": 30, "placeholder": true,
+    "actions": [
+      { "id": "smash", "name": "Smash", "cooldown": 3, "effect": "attack", "value": 6,   "target": "front", "range": "melee" },
+      { "id": "hide",  "name": "Thick Hide", "cooldown": 8, "effect": "brace", "value": 0.1, "target": "self", "range": "melee" } ] },
+
+  { "type": "unit", "id": "wild_hunter", "name": "Wild Hunter", "side": "enemy", "hp": 14, "placeholder": true,
+    "actions": [
+      { "id": "spear", "name": "Thrown Spear", "cooldown": 2.5, "effect": "attack", "value": 3, "target": "lowest", "range": "ranged" } ] },
+
+  { "type": "unit", "id": "wild_shaman", "name": "Wild Shaman", "side": "enemy", "hp": 16, "placeholder": true,
+    "actions": [
+      { "id": "mend", "name": "Mend", "cooldown": 4, "effect": "heal", "value": 4, "target": "ally_lowest", "range": "ranged" },
+      { "id": "hex",  "name": "Hex",  "cooldown": 6, "effect": "attack", "value": 2, "target": "back", "range": "ranged" } ] }
+]
