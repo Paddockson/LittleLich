@@ -194,6 +194,46 @@ public static class DevCommands
             s.DebugSetLevel(n);
             return $"{s.Name}: level {s.Level}.";
         }, (i, _) => i == 0 ? SkillIds.All : i == 1 ? new[] { "5", "10", "15", "99" } : Empty));
+        // ---- Workshop (phase 5) ----
+        Add(new("upgrade", "upgrade <building>", "Buy the next level of a building with coins.", a =>
+        {
+            var b = BuildingArg(a, 1);
+            var cost = b.UpgradeCost;
+            if (!CryptManager.Instance.TryUpgrade(b.Id))
+                throw new DevCommandException(b.IsMaxLevel ? $"{b.Name} is at max level." : $"{b.Name} needs {DevFormat.Exact(cost)} coins.");
+            return $"{b.Name} is level {b.Level} (spent {DevFormat.Exact(cost)} coins).";
+        }, (i, _) => i == 0 ? BuildingIds.All : Empty));
+        Add(new("blevel", "blevel <building> <n>", "Debug: set a building's level (no cost).", a =>
+        {
+            var b = BuildingArg(a, 2);
+            b.DebugSetLevel((int)Math.Clamp(Count(a, 1), 1, b.Definition.MaxLevel));
+            return $"{b.Name} is level {b.Level}.";
+        }, (i, _) => i == 0 ? BuildingIds.All : Empty));
+        Add(new("sell", "sell <id> <on|off> [reserve]", "Undead Market: add or change a sell list line.", a =>
+        {
+            Need(a, 2);
+            var m = CryptManager.Instance.Building<Crypt.Buildings.UndeadMarket>() ?? throw new DevCommandException("No market.");
+            var on = a[1].ToLowerInvariant() switch { "on" => true, "off" => false, _ => throw new DevCommandException("Use on or off.") };
+            var reserve = a.Length > 2 ? Count(a, 2) : m.Entry(a[0])?.Reserve ?? 0;
+            try { m.SetSell(a[0], on, reserve); }
+            catch (ArgumentException e) { throw new DevCommandException(e.Message); }
+            return $"Market: {(on ? "selling" : "keeping")} {a[0]} at {m.PriceOf(a[0])} coins, reserve {DevFormat.Exact(reserve)}.";
+        }, (i, _) => i == 0 ? CryptManager.Instance.Building<Crypt.Buildings.UndeadMarket>()?.Sellable ?? Empty : i == 1 ? new[] { "on", "off" } : Empty));
+        Add(new("transmute", "transmute <recipe|none>", "Transmuter: choose the conversion to run.", a =>
+        {
+            Need(a, 1);
+            var t = CryptManager.Instance.Building<Crypt.Buildings.Transmuter>() ?? throw new DevCommandException("No transmuter.");
+            try { t.Select(a[0] == "none" ? null : a[0]); }
+            catch (ArgumentException e) { throw new DevCommandException(e.Message); }
+            return $"Transmuter: {t.Recipe?.Name ?? "none"}.";
+        }, (i, _) => i == 0 ? (CryptManager.Instance.Building<Crypt.Buildings.Transmuter>()?.Recipes.Select(r => r.Id) ?? Empty).Append("none") : Empty));
+        Add(new("target", "target <n>", "Summoning Circle: stop when the pool total reaches n (0 = up to max).", a =>
+        {
+            var c = CryptManager.Instance.Building<Crypt.Buildings.SummoningCircle>() ?? throw new DevCommandException("No circle.");
+            c.Target = Count(a, 0);
+            return c.Target == 0 ? "Summoning up to the max." : $"Summoning until the pool has {DevFormat.Exact(c.Target)}.";
+        }));
+
         Later("unlock", "unlock <id>", "Unlock research, a unit or a recipe.", "research (phase 7)", (i, _) => i == 0 ? ContentIds() : Empty);
         Later("battle", "battle <area>", "Start a test battle.", "the world map (phase 8)");
     }
@@ -283,8 +323,15 @@ public static class DevCommands
 
     private static long Assign(string owner, string activity, long n, bool add)
     {
-        try { return add ? Lich.AssignVia(owner, activity, n) : Lich.UnassignVia(owner, activity, n); }
+        try { return add ? DevAssign.Add(owner, activity, n) : DevAssign.Remove(owner, activity, n); }
         catch (ArgumentException e) { throw new DevCommandException(e.Message); }
+    }
+
+    private static Crypt.Buildings.BuildingBase BuildingArg(string[] a, int need)
+    {
+        Need(a, need);
+        return CryptManager.Instance.Building(a[0].ToLowerInvariant())
+            ?? throw new DevCommandException($"No building '{a[0]}' ({string.Join(", ", BuildingIds.All)}).");
     }
 
     private static SkillBase SkillArg(string[] a)
@@ -303,12 +350,12 @@ public static class DevCommands
         var assignments = Lich.AllAssignments();
         return i switch
         {
-            0 => assignments.Select(a => a.OwnerId).Concat(SkillIds.Gathering).Concat(SkillIds.Crafting),
+            0 => assignments.Select(a => a.OwnerId).Concat(SkillIds.Gathering).Concat(SkillIds.Crafting).Concat(BuildingIds.All),
             1 => Lich.Skill(typed[0]) switch
             {
                 GatheringSkill g => g.Activities.Select(x => x.Id),
                 CraftingSkill c => c.Recipes.Select(x => x.Id),
-                _ => assignments.Where(a => a.OwnerId == typed[0]).Select(a => a.ActivityId),
+                _ => CryptManager.Instance.Building(typed[0]) is not null ? new[] { "main" } : assignments.Where(a => a.OwnerId == typed[0]).Select(a => a.ActivityId),
             },
             2 => new[] { "1", "10", "100", "1K", "max", "all" },
             _ => Empty,

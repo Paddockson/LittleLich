@@ -242,6 +242,26 @@ public partial class DevShell : Control
         var crypt = CryptManager.Instance;
         crypt.StorageRatesUpdated += RefreshResources;
         crypt.StockChanged += (_, _) => { if (!TickManager.Instance.Scheduler.IsRunning) RefreshResources(); };
+        crypt.StorageCapsChanged += RefreshResources;
+        crypt.BuildingLevelChanged += (id, level) =>
+        {
+            if (level > 1) DevLog.Add(LogCategory.Level, $"{crypt.Building(id)?.Name ?? id} is level {level}.");
+        };
+        crypt.BuildingStatusChanged += (id, status, detail) =>
+        {
+            var b = crypt.Building(id);
+            if (b is null || (Crypt.Buildings.BuildingStatus)status is Crypt.Buildings.BuildingStatus.Passive) return;
+            var what = (Crypt.Buildings.BuildingStatus)status switch
+            {
+                Crypt.Buildings.BuildingStatus.MissingInput => $"paused, missing {StockIds.NameOf(content, detail)}",
+                Crypt.Buildings.BuildingStatus.OutputFull => $"paused, {StockIds.NameOf(content, detail)} full",
+                Crypt.Buildings.BuildingStatus.PoolFull => detail == "target" ? "paused, target reached" : "paused, pool at max",
+                Crypt.Buildings.BuildingStatus.NothingToDo => "nothing to do",
+                Crypt.Buildings.BuildingStatus.Running => "running",
+                _ => "idle",
+            };
+            DevLog.Add(LogCategory.Workshop, $"{b.Name}: {what}.");
+        };
     }
 
     private Control BuildResourceBar()
@@ -400,6 +420,11 @@ public partial class DevShell : Control
                 var i = _panels.FindIndex(p => p.Title.Equals(name, StringComparison.OrdinalIgnoreCase));
                 if (i >= 0) _tabs.CurrentTab = i;
                 else if (LichManager.Instance.Skill(name.ToLowerInvariant()) is { } skill) ShowSkill(skill);
+                else if (_panels.OfType<WorkshopPanel>().FirstOrDefault() is { } ws && CryptManager.Instance.Building(name) is not null)
+                {
+                    _tabs.CurrentTab = _panels.IndexOf(ws);
+                    ws.SelectId(name);
+                }
             }
             else if (arg.StartsWith("--dev-screenshot=")) shot = arg["--dev-screenshot=".Length..];
         }

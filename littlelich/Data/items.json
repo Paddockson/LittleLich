@@ -2,11 +2,11 @@
 {
   "type": "item",
   "entries": [
-    { "id": "copper_sword",      "name": "Copper Sword",      "kind": "weapon", "placeholder": true },
-    { "id": "iron_armour",       "name": "Iron Armour",       "kind": "armour", "placeholder": true },
-    { "id": "mend_flesh_potion", "name": "Mend Flesh Potion", "kind": "potion", "placeholder": true },
-    { "id": "rot_bomb",          "name": "Rot Bomb",          "kind": "bomb",   "placeholder": true },
-    { "id": "rune_of_rot",       "name": "Rune of Rot",       "kind": "rune",   "placeholder": true },
-    { "id": "rune_of_warding",   "name": "Rune of Warding",   "kind": "rune",   "placeholder": true }
+    { "id": "copper_sword",      "name": "Copper Sword",      "kind": "weapon", "sell_price": 40, "placeholder": true },
+    { "id": "iron_armour",       "name": "Iron Armour",       "kind": "armour", "sell_price": 150, "placeholder": true },
+    { "id": "mend_flesh_potion", "name": "Mend Flesh Potion", "kind": "potion", "sell_price": 20, "placeholder": true },
+    { "id": "rot_bomb",          "name": "Rot Bomb",          "kind": "bomb", "sell_price": 25,   "placeholder": true },
+    { "id": "rune_of_rot",       "name": "Rune of Rot",       "kind": "rune", "sell_price": 30,   "placeholder": true },
+    { "id": "rune_of_warding",   "name": "Rune of Warding",   "kind": "rune", "sell_price": 60,   "placeholder": true }
   ]
 }

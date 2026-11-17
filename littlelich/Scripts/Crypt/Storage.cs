@@ -9,8 +9,8 @@ namespace LittleLich.Crypt;
 
 /// <summary>
 /// Resource stock with caps (save section "storage"). Minimal version pulled forward from phase 5 so skills
-/// have somewhere to put what they gather: stock, cap (the resource's base cap; Magical Storage upgrades come
-/// in phase 5) and the net rate per tick of the last tick batch (for the resource bar).
+/// have somewhere to put what they gather. Stock, cap (base_cap x <see cref="CapMultiplier"/>, which Magical Storage
+/// raises) and the net rate per tick of the last tick batch (for the resource bar).
 /// Only ids defined as resources are accepted.
 /// </summary>
 public sealed class Storage : ISaveable
@@ -34,7 +34,29 @@ public sealed class Storage : ISaveable
 
     public long Get(string id) => _stock.GetValueOrDefault(id);
 
-    public long Cap(string id) => Def(id).BaseCap;
+    private double _capMultiplier = 1;
+
+    /// <summary>Raised when caps change (Magical Storage level).</summary>
+    public event Action? CapsChanged;
+
+    /// <summary>Every cap is base_cap x this (set by Magical Storage; 1 at level 1).</summary>
+    public double CapMultiplier
+    {
+        get => _capMultiplier;
+        set
+        {
+            var v = double.IsFinite(value) && value > 0 ? value : 1;
+            if (v == _capMultiplier) return;
+            _capMultiplier = v;
+            CapsChanged?.Invoke();
+        }
+    }
+
+    public long Cap(string id)
+    {
+        var c = Def(id).BaseCap * _capMultiplier;
+        return c >= long.MaxValue ? long.MaxValue : (long)Math.Floor(c);
+    }
 
     /// <summary>Space left before the cap (0 when at or over it).</summary>
     public long Room(string id) => Math.Max(0, Cap(id) - Get(id));
@@ -56,6 +78,9 @@ public sealed class Storage : ISaveable
     }
 
     public bool Has(string id, long amount) => Get(id) >= amount;
+
+    /// <summary>Spends exactly <paramref name="amount"/> (e.g. coins for an upgrade), or nothing. Same as TryRemove.</summary>
+    public bool TrySpend(string id, long amount) => TryRemove(id, amount);
 
     /// <summary>Removes exactly <paramref name="amount"/>, or nothing if there is not enough.</summary>
     public bool TryRemove(string id, long amount)

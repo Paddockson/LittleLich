@@ -26,6 +26,7 @@ internal sealed class World
     public Stockpile Stock { get; }
     public TickScheduler Ticks { get; } = new();
     public IReadOnlyList<SkillBase> Skills { get; }
+    public IReadOnlyList<LittleLich.Crypt.Buildings.BuildingBase> Buildings { get; }
 
     public World(ContentDatabase? content = null)
     {
@@ -33,15 +34,19 @@ internal sealed class World
         Storage = new Storage(content);
         Inventory = new Inventory(content);
         Stock = new Stockpile(Storage, Inventory);
+        Buildings = LittleLich.Crypt.Buildings.BuildingFactory.CreateAll(
+            new LittleLich.Crypt.Buildings.CryptContext(Lich, Stock, content, () => Ticks.ActiveRecap));
         Skills = SkillFactory.CreateAll(new SkillContext(Lich, Stock, content, () => Ticks.ActiveRecap));
         Ticks.TickStarted += (_, _) => Storage.BeginBatch();   // as CryptManager does
         Ticks.TickEnded += (_, n) => Storage.EndBatch(n);
         Ticks.Register(Lich, TickGroup.Lich);
+        var order = 0;
+        foreach (var b in Buildings) { order += 100; if (b.Ticks) Ticks.Register(b, TickGroup.Buildings, order); }   // as CryptManager does
         foreach (var g in Skills.OfType<GatheringSkill>()) Ticks.Register(g, TickGroup.Skills, TickOrder.Gathering);
         foreach (var c in Skills.OfType<CraftingSkill>()) Ticks.Register(c, TickGroup.Skills, TickOrder.Crafting);
     }
 
-    public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory }.Concat(Skills);
+    public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory }.Concat(Buildings).Concat(Skills);
 
     public T Skill<T>() where T : SkillBase => Skills.OfType<T>().Single();
     public MiningManager Mining => Skill<MiningManager>();

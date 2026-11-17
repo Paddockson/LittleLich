@@ -1,0 +1,33 @@
+// Workshop buildings (phase 5). All numbers are placeholders.
+// work per tick = (base_work + staffed x work_per_necromancer) x (1 + level_bonus x (level - 1))
+// slots = base_slots + slots_per_level x (level - 1); upgrade cost (coins) = upgrade_cost x upgrade_growth^(level - 1)
+[
+  { "type": "mana_well", "id": "mana_well", "name": "Mana Well", "output": "mana",
+    "base_work": 1, "work_per_necromancer": 0.5, "level_bonus": 0.1, "base_slots": 5, "slots_per_level": 2,
+    "upgrade_cost": 50, "upgrade_growth": 1.5, "placeholder": true },
+
+  { "type": "converter", "id": "infuser", "name": "Infuser",
+    "inputs": [ { "id": "mana", "count": 2 } ], "output": { "id": "infused_mana", "count": 1 }, "work_per_op": 1,
+    "base_work": 0, "work_per_necromancer": 0.5, "level_bonus": 0.1, "base_slots": 3, "slots_per_level": 1,
+    "upgrade_cost": 75, "upgrade_growth": 1.5, "placeholder": true },
+
+  { "type": "converter", "id": "soul_well", "name": "Soul Well",
+    "inputs": [ { "id": "infused_mana", "count": 5 } ], "output": { "id": "souls", "count": 1 }, "work_per_op": 2,
+    "base_work": 0, "work_per_necromancer": 0.25, "level_bonus": 0.1, "base_slots": 3, "slots_per_level": 1,
+    "upgrade_cost": 100, "upgrade_growth": 1.5, "placeholder": true },
+
+  { "type": "transmuter", "id": "transmuter", "name": "Transmuter",
+    "base_work": 0, "work_per_necromancer": 0.5, "level_bonus": 0.1, "base_slots": 3, "slots_per_level": 1,
+    "upgrade_cost": 75, "upgrade_growth": 1.5, "placeholder": true },
+
+  { "type": "summoning_circle", "id": "summoning_circle", "name": "Summoning Circle", "max_necromancers_per_level": 10,
+    "base_work": 0.2, "work_per_necromancer": 0.2, "level_bonus": 0.1, "base_slots": 3, "slots_per_level": 2,
+    "upgrade_cost": 100, "upgrade_growth": 1.6, "placeholder": true },
+
+  { "type": "undead_market", "id": "undead_market", "name": "Undead Market",
+    "base_work": 1, "work_per_necromancer": 1, "level_bonus": 0.1, "base_slots": 3, "slots_per_level": 2,
+    "upgrade_cost": 60, "upgrade_growth": 1.5, "placeholder": true },
+
+  { "type": "magical_storage", "id": "magical_storage", "name": "Magical Storage", "cap_bonus_per_level": 0.5,
+    "upgrade_cost": 200, "upgrade_growth": 2, "placeholder": true }
+]

@@ -10,13 +10,12 @@ namespace LittleLich.Skills;
 /// <summary>What a skill needs from the rest of the game. Plain objects, so skills are testable without Godot.</summary>
 public sealed record SkillContext(LichState Lich, Stockpile Stock, ContentDatabase Content, Func<AwayRecap?> Recap)
 {
-    /// <summary>Fixed-point scale for production maths (1 unit = 1,000,000 micro-units).</summary>
-    public const long Micro = 1_000_000;
+    /// <summary>Fixed-point scale for production maths (see <see cref="FixedPoint"/>).</summary>
+    public const long Micro = FixedPoint.Micro;
 
-    public static long ToMicro(double value) =>
-        !(value > 0) ? 0 : value >= long.MaxValue / (double)Micro ? long.MaxValue / Micro : (long)Math.Round(value * Micro);
+    public static long ToMicro(double value) => FixedPoint.ToMicro(value);
 
-    public static long Clamp(Int128 v) => v > long.MaxValue ? long.MaxValue : v < 0 ? 0 : (long)v;
+    public static long Clamp(Int128 v) => FixedPoint.Clamp(v);
 }
 
 /// <summary>

@@ -135,4 +135,8 @@ The shell is in place with the Lich (phase 2) and Saves (phase 1) panels. Parts 
   - Console: `xp`, `level`, `give` (resources and items), and `assign`/`unassign` routed through skills so locks apply.
   - Level and Skill log categories, a minimal Inventory tab, and `--dev-tab=<skill id>`.
   - The resource bar is live.
-- Phase 5: Workshop panel. (The resource bar and `give` were done in phase 4.)
+- ~~Phase 5: Workshop panel.~~ Done in phase 5:
+  - Workshop tab with a building list and status markers (green running, yellow needs something, grey idle/passive).
+  - A page per building: level and upgrade, status, work breakdown, staff row with slot count, and building-specific controls (Transmuter recipe picker, Summoning Circle target and progress, Market sell list with reserves, Magical Storage caps).
+  - Console: `upgrade`, `blevel`, `sell`, `transmute`, `target`; `assign <building> main <n>` respects slots (`DevAssign`).
+  - Workshop log category; `--dev-tab=<building id>`.

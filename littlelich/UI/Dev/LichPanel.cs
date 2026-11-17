@@ -196,7 +196,7 @@ public partial class LichPanel : ScrollContainer, IDevPanel
         }
         try
         {
-            if (LichManager.Instance.AssignVia(owner, activity, 1) == 0)
+            if (DevAssign.Add(owner, activity, 1) == 0)
                 DevLog.Error("Assign: nothing assigned (no free necromancers, or the activity is locked).");
         }
         catch (ArgumentException e)

@@ -47,6 +47,14 @@ public sealed class ContentLoader
         loader.Register<ItemDefinition>("item");
         loader.Register<GatheringActivityDefinition>("gathering_activity");
         loader.Register<RecipeDefinition>("recipe");
+        loader.Register<ManaWellDefinition>("mana_well");
+        loader.Register<ConverterDefinition>("converter");
+        loader.Register<TransmuterDefinition>("transmuter");
+        loader.Register<SummoningCircleDefinition>("summoning_circle");
+        loader.Register<UndeadMarketDefinition>("undead_market");
+        loader.Register<MagicalStorageDefinition>("magical_storage");
+        loader.Register<TransmutationDefinition>("transmutation");
+        loader.Register<SummonDefinition>("summon");
         // Later phases register units, research nodes, upgrades ...
         return loader;
     }

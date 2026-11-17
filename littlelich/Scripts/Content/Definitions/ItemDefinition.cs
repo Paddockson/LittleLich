@@ -14,11 +14,15 @@ public abstract class ItemDefinitionBase : Definition
     /// <summary>weapon, armour, potion, bomb, rune or material.</summary>
     public string Kind { get; init; } = "";
 
+    /// <summary>Coins per item at the Undead Market. 0 = cannot be sold. Placeholder until phase 11.</summary>
+    public long SellPrice { get; init; }
+
     public override void Validate(ContentErrors errors)
     {
         base.Validate(errors);
         if (!Kinds.Contains(Kind))
             errors.Add("kind", $"'{Kind}' is not one of: {string.Join(", ", Kinds)}");
+        if (SellPrice < 0) errors.Add("sell_price", "must be 0 or more");
     }
 
     public override void ValidateReferences(ContentDatabase db, ContentErrors errors)
@@ -47,6 +51,11 @@ public static class StockIds
         db.Contains<ResourceDefinitionBase>(id) || db.Contains<ItemDefinitionBase>(id);
 
     public static bool IsResource(ContentDatabase db, string id) => db.Contains<ResourceDefinitionBase>(id);
+
+    /// <summary>Undead Market price (0 = not for sale).</summary>
+    public static long SellPriceOf(ContentDatabase db, string id) =>
+        db.TryGet<ResourceDefinitionBase>(id, out var r) ? r.SellPrice :
+        db.TryGet<ItemDefinitionBase>(id, out var i) ? i.SellPrice : 0;
 
     public static string NameOf(ContentDatabase db, string id) =>
         db.TryGet<ResourceDefinitionBase>(id, out var r) ? r.Name :

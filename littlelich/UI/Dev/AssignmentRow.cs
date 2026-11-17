@@ -9,7 +9,7 @@ namespace LittleLich.UI.Dev;
 /// and -All, -, +, +10, +100, +1K, +Max buttons. "+" buttons are disabled when no necromancer is free.
 ///
 /// It only calls the delegates it is given, so phase 4 can pass e.g. MiningManager.AddNecromancer.
-/// By default it calls LichManager.AssignVia/UnassignVia (through the skill when the owner is one, so locks apply).
+/// By default it calls DevAssign (through the building or skill that owns the row, so slot limits and locks apply).
 /// </summary>
 public partial class AssignmentRow : HBoxContainer
 {
@@ -26,8 +26,8 @@ public partial class AssignmentRow : HBoxContainer
     public AssignmentRow(string ownerId, string activityId, string? label = null, Func<string>? rate = null)
         : this(label ?? $"{ownerId} / {activityId}",
                () => LichManager.Instance.GetAssigned(ownerId, activityId),
-               n => LichManager.Instance.AssignVia(ownerId, activityId, n),
-               n => LichManager.Instance.UnassignVia(ownerId, activityId, n),
+               n => DevAssign.Add(ownerId, activityId, n),
+               n => DevAssign.Remove(ownerId, activityId, n),
                rate)
     { }
 

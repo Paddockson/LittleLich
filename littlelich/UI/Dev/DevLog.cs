@@ -13,6 +13,7 @@ public enum LogCategory
     Content,
     Level,
     Skill,
+    Workshop,
     Command,
     Error,
 }
