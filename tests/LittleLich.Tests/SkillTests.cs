@@ -27,6 +27,8 @@ internal sealed class World
     public TickScheduler Ticks { get; } = new();
     public IReadOnlyList<SkillBase> Skills { get; }
     public IReadOnlyList<LittleLich.Crypt.Buildings.BuildingBase> Buildings { get; }
+    public LittleLich.Gear.Equipment Equipment { get; }
+    public LittleLich.Gear.ItemUser Items { get; }
 
     public World(ContentDatabase? content = null)
     {
@@ -37,6 +39,8 @@ internal sealed class World
         Buildings = LittleLich.Crypt.Buildings.BuildingFactory.CreateAll(
             new LittleLich.Crypt.Buildings.CryptContext(Lich, Stock, content, () => Ticks.ActiveRecap));
         Skills = SkillFactory.CreateAll(new SkillContext(Lich, Stock, content, () => Ticks.ActiveRecap));
+        Equipment = new LittleLich.Gear.Equipment(Lich, Inventory, content);
+        Items = new LittleLich.Gear.ItemUser(Lich, Inventory, content);
         Ticks.TickStarted += (_, _) => Storage.BeginBatch();   // as CryptManager does
         Ticks.TickEnded += (_, n) => Storage.EndBatch(n);
         Ticks.Register(Lich, TickGroup.Lich);
@@ -46,7 +50,7 @@ internal sealed class World
         foreach (var c in Skills.OfType<CraftingSkill>()) Ticks.Register(c, TickGroup.Skills, TickOrder.Crafting);
     }
 
-    public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory }.Concat(Buildings).Concat(Skills);
+    public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory }.Concat(Buildings).Concat(Skills).Append(Equipment);
 
     public T Skill<T>() where T : SkillBase => Skills.OfType<T>().Single();
     public MiningManager Mining => Skill<MiningManager>();
@@ -451,7 +455,7 @@ public class SkillContentTests
 
     [Fact]
     public void Item_ids_cannot_clash_with_resource_ids() =>
-        Assert.Contains(Fails("""[{ "type": "item", "id": "coal", "name": "Coal", "kind": "material" }]""").Errors,
+        Assert.Contains(Fails("""[{ "type": "material", "id": "coal", "name": "Coal" }]""").Errors,
             e => e.Id == "coal" && e.Field == "id");
 
     [Fact]

@@ -9,6 +9,7 @@
 
     { "id": "mend_flesh_potion", "name": "Mend Flesh Potion", "skill": "alchemy", "required_level": 1, "inputs": [ { "id": "nightshade", "count": 2 }, { "id": "raw_eel", "count": 1 } ], "output": { "id": "mend_flesh_potion", "count": 1 }, "ticks": 4, "xp": 15, "placeholder": true },
     { "id": "rot_bomb",          "name": "Rot Bomb",          "skill": "alchemy", "required_level": 5, "inputs": [ { "id": "nightshade", "count": 3 }, { "id": "coal", "count": 1 } ], "output": { "id": "rot_bomb", "count": 1 }, "ticks": 5, "xp": 20, "placeholder": true },
+    { "id": "clarity_draught",   "name": "Clarity Draught",   "skill": "alchemy", "required_level": 10, "inputs": [ { "id": "nightshade", "count": 3 }, { "id": "raw_eel", "count": 2 } ], "output": { "id": "clarity_draught", "count": 1 }, "ticks": 6, "xp": 30, "placeholder": true },
 
     { "id": "rune_of_rot",     "name": "Rune of Rot",     "skill": "enchanting", "required_level": 1,  "inputs": [ { "id": "copper_bar", "count": 1 }, { "id": "nightshade", "count": 2 } ], "output": { "id": "rune_of_rot", "count": 1 }, "ticks": 6, "xp": 20, "placeholder": true },
     { "id": "rune_of_warding", "name": "Rune of Warding", "skill": "enchanting", "required_level": 10, "inputs": [ { "id": "wolf_hide", "count": 2 }, { "id": "iron_bar", "count": 1 } ], "output": { "id": "rune_of_warding", "count": 1 }, "ticks": 8, "xp": 40, "placeholder": true }

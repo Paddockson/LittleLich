@@ -44,7 +44,13 @@ public sealed class ContentLoader
     {
         var loader = new ContentLoader();
         loader.Register<ResourceDefinition>("resource");
-        loader.Register<ItemDefinition>("item");
+        loader.Register<WeaponDefinition>("weapon");
+        loader.Register<ArmourDefinition>("armour");
+        loader.Register<AccessoryDefinition>("accessory");
+        loader.Register<RuneDefinition>("rune");
+        loader.Register<PotionDefinition>("potion");
+        loader.Register<BombDefinition>("bomb");
+        loader.Register<MaterialDefinition>("material");
         loader.Register<GatheringActivityDefinition>("gathering_activity");
         loader.Register<RecipeDefinition>("recipe");
         loader.Register<ManaWellDefinition>("mana_well");

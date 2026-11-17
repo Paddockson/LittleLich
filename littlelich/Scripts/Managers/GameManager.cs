@@ -13,7 +13,7 @@ namespace LittleLich.Managers;
 ///   1. Load content JSON from res://Data into the ContentDatabase.
 ///   2. Find saves in user://saves; load the latest, or create a new game.
 ///   3. Create Storage/Inventory/buildings (CryptManager) and the ten skills (LichManager) for the loaded content and register
-///      every saveable (lich, storage, inventory, buildings, skills) before the save is read.
+///      every saveable (lich, storage, inventory, buildings, skills, equipment) before the save is read.
 ///   4. Compute time away and hold it for the TickManager, which processes it as offline ticks.
 ///   5. The main scene (UI/Main.tscn) shows the shell.
 ///
@@ -84,6 +84,7 @@ public partial class GameManager : Node
         Session.Register(LichManager.Instance.State);
         foreach (var s in CryptManager.Instance.Initialize(content, LichManager.Instance.State)) Session.Register(s);
         foreach (var s in LichManager.Instance.InitializeSkills(content, CryptManager.Instance.Stockpile)) Session.Register(s);
+        Session.Register(LichManager.Instance.InitializeGear(content, CryptManager.Instance.Inventory));
 
         try
         {

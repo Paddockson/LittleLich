@@ -29,5 +29,6 @@
     "upgrade_cost": 60, "upgrade_growth": 1.5, "placeholder": true },
 
   { "type": "magical_storage", "id": "magical_storage", "name": "Magical Storage", "cap_bonus_per_level": 0.5,
+    "base_inventory_slots": 40, "inventory_slots_per_level": 10,
     "upgrade_cost": 200, "upgrade_growth": 2, "placeholder": true }
 ]

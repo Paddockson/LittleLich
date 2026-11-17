@@ -92,10 +92,19 @@ public sealed class SummoningCircleDefinition : BuildingDefinitionBase
 /// <summary>JSON type "undead_market": one unit of work sells one unit of stock at its sell_price.</summary>
 public sealed class UndeadMarketDefinition : BuildingDefinitionBase { }
 
-/// <summary>JSON type "magical_storage": no work; each level adds <see cref="CapBonusPerLevel"/> x base cap to every resource.</summary>
+/// <summary>
+/// JSON type "magical_storage": no work. Each level adds <see cref="CapBonusPerLevel"/> x base cap to every resource
+/// and <see cref="InventorySlotsPerLevel"/> inventory slots.
+/// </summary>
 public sealed class MagicalStorageDefinition : BuildingDefinitionBase
 {
     public double CapBonusPerLevel { get; init; }
+
+    /// <summary>Inventory slots at level 1 (phase 6).</summary>
+    public long BaseInventorySlots { get; init; } = 40;
+
+    /// <summary>Extra inventory slots per level above 1.</summary>
+    public long InventorySlotsPerLevel { get; init; }
 }
 
 /// <summary>Family base for Transmuter recipes (resource conversion only in v0.1).</summary>

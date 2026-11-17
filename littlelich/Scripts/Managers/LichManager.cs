@@ -124,6 +124,28 @@ public partial class LichManager : Node
         foreach (var s in _skills) tm.Unregister(s);
     }
 
+    // ---- Equipment and item use (phase 6) ----
+
+    /// <summary>A slot changed; an empty slot id means every slot was reloaded from a save.</summary>
+    [Signal] public delegate void EquipmentChangedEventHandler(string slot);
+    [Signal] public delegate void ItemUsedEventHandler(string itemId);
+
+    /// <summary>The lich's seven equipment slots (null until boot).</summary>
+    public Gear.Equipment? Equipment { get; private set; }
+    public Gear.ItemUser? Items { get; private set; }
+
+    /// <summary>Boot step 3 (after Crypt and skills): creates equipment and item use. Returns the equipment saveable.</summary>
+    public ISaveable InitializeGear(ContentDatabase content, Crypt.Inventory inventory)
+    {
+        if (Equipment is not null) throw new InvalidOperationException("Gear is already initialised.");
+        Equipment = new Gear.Equipment(State, inventory, content);
+        Items = new Gear.ItemUser(State, inventory, content);
+        Equipment.Changed += slot => EmitSignal(SignalName.EquipmentChanged, slot);
+        Equipment.Reloaded += () => EmitSignal(SignalName.EquipmentChanged, "");   // "" = all slots (load)
+        Items.Used += id => EmitSignal(SignalName.ItemUsed, id);
+        return Equipment;
+    }
+
     // ---- Commands ----
 
     public long AddToPool(long count) => State.AddToPool(count);

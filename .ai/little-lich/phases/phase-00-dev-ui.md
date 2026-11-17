@@ -140,3 +140,4 @@ The shell is in place with the Lich (phase 2) and Saves (phase 1) panels. Parts 
   - A page per building: level and upgrade, status, work breakdown, staff row with slot count, and building-specific controls (Transmuter recipe picker, Summoning Circle target and progress, Market sell list with reserves, Magical Storage caps).
   - Console: `upgrade`, `blevel`, `sell`, `transmute`, `target`; `assign <building> main <n>` respects slots (`DevAssign`).
   - Workshop log category; `--dev-tab=<building id>`.
+- Phase 6 (done): the minimal Inventory tab became **Inventory & gear**: the seven lich slots with Unequip, inventory stacks (type, count, slots it fits, effect, with tooltips) with Equip and Use, slots used / capacity, and a list of gear bonuses per stat. Console: `equip <item> [slot]`, `unequip <slot>`, `use <item>`. Equip changes and item use go to the Lich log. The tick counter now refreshes when a game starts.

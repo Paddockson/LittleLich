@@ -328,7 +328,7 @@ public sealed class UndeadMarket : BuildingBase
     }
 }
 
-/// <summary>Magical Storage: no work and no staff; each level raises every resource cap.</summary>
+/// <summary>Magical Storage: no work and no staff; each level raises every resource cap and the inventory space.</summary>
 public sealed class MagicalStorage : BuildingBase
 {
     public MagicalStorage(CryptContext c) : base(BuildingIds.MagicalStorage, c) => SetStatus(BuildingStatus.Passive);
@@ -339,7 +339,20 @@ public sealed class MagicalStorage : BuildingBase
 
     public override void Tick(long ticks) { }
 
-    protected override void OnLevelChanged() => Context.Storage.CapMultiplier = CapMultiplier;
+    public long InventorySlots
+    {
+        get
+        {
+            var d = (MagicalStorageDefinition)Definition;
+            return d.BaseInventorySlots + d.InventorySlotsPerLevel * (Level - 1);
+        }
+    }
+
+    protected override void OnLevelChanged()
+    {
+        Context.Storage.CapMultiplier = CapMultiplier;
+        Context.Stock.Inventory.SlotCapacity = InventorySlots;
+    }
 }
 
 public static class BuildingFactory

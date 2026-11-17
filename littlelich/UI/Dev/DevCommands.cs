@@ -234,6 +234,35 @@ public static class DevCommands
             return c.Target == 0 ? "Summoning up to the max." : $"Summoning until the pool has {DevFormat.Exact(c.Target)}.";
         }));
 
+        // ---- Gear and items (phase 6) ----
+        Add(new("equip", "equip <item> [slot]", "Wear an item from the inventory (first free slot it fits if no slot given).", a =>
+        {
+            Need(a, 1);
+            var eq = Lich.Equipment ?? throw new DevCommandException("No equipment (boot failed?).");
+            var r = a.Length > 1 ? eq.Equip(a[1], a[0]) : eq.EquipAuto(a[0]);
+            if (r != Gear.EquipResult.Ok) throw new DevCommandException($"Cannot equip {a[0]}: {r}.");
+            return $"Equipped {a[0]}.";
+        }, (i, _) => i == 0 ? CryptManager.Instance.Inventory.Stacks.Select(s => s.Id)
+                                .Where(id => GameManager.Instance.Content.TryGet<EquippableDefinitionBase>(id, out var d) && d.FitsLich)
+                     : i == 1 ? LichSlots.All : Empty));
+        Add(new("unequip", "unequip <slot>", "Take off what is worn in a slot (back to the inventory).", a =>
+        {
+            Need(a, 1);
+            var eq = Lich.Equipment ?? throw new DevCommandException("No equipment (boot failed?).");
+            var id = eq.Worn(a[0]) ?? throw new DevCommandException($"Nothing worn in '{a[0]}'.");
+            if (!eq.Unequip(a[0])) throw new DevCommandException("The inventory is full.");
+            return $"Unequipped {id}.";
+        }, (i, _) => i == 0 ? LichSlots.All : Empty));
+        Add(new("use", "use <item>", "Use an item from the inventory (potions).", a =>
+        {
+            Need(a, 1);
+            var items = Lich.Items ?? throw new DevCommandException("No items (boot failed?).");
+            var r = items.Use(a[0]);
+            if (r != Gear.UseResult.Ok) throw new DevCommandException($"Cannot use {a[0]}: {r}.");
+            return $"Used {a[0]}. Health {DevFormat.Exact(Lich.State.Health)} / {DevFormat.Exact(Lich.State.MaxHealth)}.";
+        }, (i, _) => i == 0 ? CryptManager.Instance.Inventory.Stacks.Select(s => s.Id)
+                                .Where(id => GameManager.Instance.Content.Contains<PotionDefinition>(id)) : Empty));
+
         Later("unlock", "unlock <id>", "Unlock research, a unit or a recipe.", "research (phase 7)", (i, _) => i == 0 ? ContentIds() : Empty);
         Later("battle", "battle <area>", "Start a test battle.", "the world map (phase 8)");
     }

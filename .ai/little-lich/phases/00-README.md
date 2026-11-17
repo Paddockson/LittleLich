@@ -39,7 +39,7 @@ Godot + C#. Each phase is one markdown file. Build in order; each phase ends wit
 ## Still open (decide before the phase that needs it)
 
 - Formation size, 8 or 9 slots (phase 9).
-- Focus/Insight: budget or simple cap (phase 6). Name decided in phase 2: **Insight** (`max_insight`).
+- Focus/Insight: budget or simple cap. Name decided in phase 2: **Insight** (`max_insight`). Deferred in phase 6 to the SpellBook phase after v0.1 (no spells are equipped in v0.1).
 - Several Hosts fighting at once (phase 8).
 - Summons also cost mana? (phase 9)
 - Summon slots growing beyond 3 (phase 8).

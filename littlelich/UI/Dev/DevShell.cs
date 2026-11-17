@@ -243,6 +243,13 @@ public partial class DevShell : Control
         crypt.StorageRatesUpdated += RefreshResources;
         crypt.StockChanged += (_, _) => { if (!TickManager.Instance.Scheduler.IsRunning) RefreshResources(); };
         crypt.StorageCapsChanged += RefreshResources;
+        lm.EquipmentChanged += slot =>
+        {
+            if (slot.Length == 0) return; // reloaded from a save
+            var worn = lm.Equipment?.WornDefinition(slot);
+            DevLog.Add(LogCategory.Lich, worn is null ? $"{slot}: nothing worn." : $"{slot}: wearing {worn.Name} ({string.Join(", ", worn.Modifiers)}).");
+        };
+        lm.ItemUsed += id => DevLog.Add(LogCategory.Lich, $"Used {StockIds.NameOf(content, id)}.");
         crypt.BuildingLevelChanged += (id, level) =>
         {
             if (level > 1) DevLog.Add(LogCategory.Level, $"{crypt.Building(id)?.Name ?? id} is level {level}.");
@@ -333,6 +340,7 @@ public partial class DevShell : Control
         {
             DevLog.Add(LogCategory.Save, $"{(SessionStart)kind} in slot {slot}.");
             RefreshAll();
+            _tickCount.Text = $"Tick {DevFormat.Exact(TickManager.Instance.TickCount)}";   // TickManager synced it from the save first
         };
         lm.AssignmentChanged += (owner, activity, delta) =>
             DevLog.Add(LogCategory.Pool, $"{(delta > 0 ? "Assigned" : "Unassigned")} {DevFormat.Exact(Math.Abs(delta))} " +
