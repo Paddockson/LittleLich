@@ -6,13 +6,14 @@
     "base_work": 1, "work_per_necromancer": 0.5, "level_bonus": 0.1, "base_slots": 5, "slots_per_level": 2,
     "upgrade_cost": 50, "upgrade_growth": 1.5, "placeholder": true },
 
-  { "type": "converter", "id": "infuser", "name": "Infuser",
-    "inputs": [ { "id": "mana", "count": 2 } ], "output": { "id": "infused_mana", "count": 1 }, "work_per_op": 1,
+  { "type": "infuser", "id": "infuser", "name": "Infuser",
+    "input": { "id": "mana", "count": 2 }, "elements": [ "fire", "water", "air", "earth" ], "work_per_op": 1,
     "base_work": 0, "work_per_necromancer": 0.5, "level_bonus": 0.1, "base_slots": 3, "slots_per_level": 1,
     "upgrade_cost": 75, "upgrade_growth": 1.5, "placeholder": true },
 
   { "type": "converter", "id": "soul_well", "name": "Soul Well",
-    "inputs": [ { "id": "infused_mana", "count": 5 } ], "output": { "id": "souls", "count": 1 }, "work_per_op": 2,
+    "inputs": [ { "id": "fire", "count": 1 }, { "id": "water", "count": 1 }, { "id": "air", "count": 1 }, { "id": "earth", "count": 1 } ],
+    "output": { "id": "souls", "count": 1 }, "work_per_op": 2,
     "base_work": 0, "work_per_necromancer": 0.25, "level_bonus": 0.1, "base_slots": 3, "slots_per_level": 1,
     "upgrade_cost": 100, "upgrade_growth": 1.5, "placeholder": true },
 

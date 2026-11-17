@@ -87,10 +87,10 @@ public partial class SkillPage : ScrollContainer
                 break;
             case HealthSkill:
                 _note.Text = $"Level only. +{HealthSkill.MaxHealthPerLevel:0} max health per level above 1 " +
-                             $"(now +{(skill.Level - 1) * HealthSkill.MaxHealthPerLevel:N0}). Gain XP with the console: xp health 100";
+                             $"(now +{(skill.Level - 1) * HealthSkill.MaxHealthPerLevel:N0}).";
                 break;
             default:
-                _note.Text = $"Level only in v0.1. Gain XP with the console: xp {skill.Id} 100";
+                _note.Text = skill.Id == LittleLich.Core.SkillIds.Necromancy ? "Level only in v0.1. Necromancy XP comes from completing research." : "Level only in v0.1.";
                 break;
         }
         RefreshHeader();

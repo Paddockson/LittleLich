@@ -22,7 +22,7 @@ public static class BuildingIds
 /// Family base for Workshop buildings. Shared tuning (placeholder numbers in JSON):
 ///   work per tick = (base_work + staffed necromancers x work_per_necromancer) x (1 + level_bonus x (level - 1))
 ///   necromancer slots = base_slots + slots_per_level x (level - 1)
-///   upgrade cost (coins) = upgrade_cost x upgrade_growth^(level - 1)
+///   upgrade cost (gold) = upgrade_cost x upgrade_growth^(level - 1)
 /// What one unit of "work" does is up to the building type.
 /// </summary>
 public abstract class BuildingDefinitionBase : Definition
@@ -80,6 +80,31 @@ public sealed class ConverterDefinition : BuildingDefinitionBase
     }
 }
 
+/// <summary>
+/// JSON type "infuser": <see cref="WorkPerOp"/> work turns <see cref="Input"/> (mana) into one unit of the element the
+/// player picks (<see cref="Elements"/>: fire, water, air, earth).
+/// </summary>
+public sealed class InfuserDefinition : BuildingDefinitionBase
+{
+    public ItemAmount Input { get; init; } = new();
+    public List<string> Elements { get; init; } = new();
+    public double WorkPerOp { get; init; } = 1;
+
+    public override void Validate(ContentErrors errors)
+    {
+        base.Validate(errors);
+        if (Elements.Count == 0) errors.Add("elements", "needs at least one element");
+        if (!(WorkPerOp > 0)) errors.Add("work_per_op", "must be above 0");
+        if (Input.Count < 1) errors.Add("input.count", "must be 1 or more");
+    }
+
+    public override void ValidateReferences(ContentDatabase db, ContentErrors errors)
+    {
+        foreach (var id in Elements.Append(Input.Id))
+            if (!db.Contains<ResourceDefinitionBase>(id)) errors.Add("elements", $"no resource '{id}'");
+    }
+}
+
 /// <summary>JSON type "transmuter": runs one chosen <see cref="TransmutationDefinition"/> at a time.</summary>
 public sealed class TransmuterDefinition : BuildingDefinitionBase { }
 
@@ -107,7 +132,7 @@ public sealed class MagicalStorageDefinition : BuildingDefinitionBase
     public long InventorySlotsPerLevel { get; init; }
 }
 
-/// <summary>Family base for Transmuter recipes (resource conversion only in v0.1).</summary>
+/// <summary>Family base for Transmuter recipes (resources and materials only in v0.1).</summary>
 public abstract class TransmutationDefinitionBase : Definition
 {
     public List<ItemAmount> Inputs { get; init; } = new();
@@ -125,9 +150,11 @@ public abstract class TransmutationDefinitionBase : Definition
 
     public override void ValidateReferences(ContentDatabase db, ContentErrors errors)
     {
-        // v0.1 decision: the Transmuter converts resources only (gear comes from Smithing/Enchanting).
+        // v0.1 decision: the Transmuter converts resources and materials only (gear, potions, bombs and runes come
+        // from Smithing, Alchemy and Enchanting).
         foreach (var i in Inputs.Append(Output))
-            if (!db.Contains<ResourceDefinitionBase>(i.Id)) errors.Add("inputs", $"'{i.Id}' is not a resource (the Transmuter converts resources only in v0.1)");
+            if (!db.Contains<ResourceDefinitionBase>(i.Id) && !db.Contains<MaterialDefinition>(i.Id))
+                errors.Add("inputs", $"'{i.Id}' is not a resource or material (the Transmuter converts resources and materials only in v0.1)");
     }
 }
 

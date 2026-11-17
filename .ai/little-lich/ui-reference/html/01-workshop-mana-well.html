@@ -1,0 +1,331 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+button{font-family:Inter,system-ui,sans-serif}
+</style>
+</head><body style="margin:0">
+
+<div style="position:relative;width:1280px;height:760px;background:#0D110F;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:#E8E4D6">
+
+<!-- top bar -->
+<div style="position:absolute;left:0;top:0;width:1280px;height:48px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;justify-content:space-between;background:#101512;border-bottom:1px solid #26302B">
+<div style="width:300px;display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;letter-spacing:0.1em;color:#9FB0A6"><span>TICK</span><span style="color:#E8E4D6">0.7s / 2.0s</span></div><div style="height:7px;border-radius:4px;background:#252E29"><div style="width:36%;height:7px;border-radius:4px;background:linear-gradient(90deg,#2FA866,#7FE0A8)"></div></div></div>
+<div style="display:flex;align-items:center;gap:14px">
+<div style="box-sizing:border-box;padding:5px 12px;border-radius:10px;background:#161230;border:1px solid #4A3F7A;display:flex;flex-direction:column;gap:4px;width:254px">
+<div style="display:flex;justify-content:space-between;font-size:11.5px"><span style="color:#7FE0A8;font-weight:700">Free 2.4B</span><span style="font-weight:700">Assigned 97.6B</span><span style="color:#9FB0A6">Max 100B</span></div>
+<div style="height:4px;border-radius:2px;background:#252E29"><div style="width:97.6%;height:4px;border-radius:2px;background:#7B6BC9"></div></div>
+</div>
+<div style="padding:6px 12px;border-radius:10px;background:#1A2B22;border:1px solid #2F6B4D;display:flex;align-items:center;gap:14px">
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.1em;color:#7FE0A8">SIEGE · GREYWATCH HOLD</div>
+<div style="font-size:12px">Walls 62%</div>
+<div style="font-size:12px;color:#F0A07C">Relief 02:14:00</div>
+<div style="width:64px;height:6px;border-radius:3px;background:#252E29"><div style="width:64%;height:6px;border-radius:3px;background:linear-gradient(90deg,#A58BFF,#E0745F)"></div></div>
+</div>
+<div style="padding:6px 10px;border-radius:8px;background:#161D19;border:1px solid #26302B;font-size:12px;font-weight:600;color:#C9D2CB">Map</div>
+<div style="padding:6px 10px;border-radius:8px;background:#161D19;border:1px solid #26302B;font-size:12px;font-weight:600;color:#C9D2CB">Settings</div>
+</div>
+</div>
+
+<!-- crypt tabs -->
+<div style="position:absolute;left:0;top:48px;width:1280px;height:46px;box-sizing:border-box;padding:0 20px;display:flex;align-items:center;gap:8px;background:#0F1411;border-bottom:1px solid #26302B">
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.14em;color:#7C8A81;width:190px">THE CRYPT</div>
+
+<div style="padding:7px 18px;border-radius:8px;font-family:Cinzel,serif;font-size:14px;font-weight:600;background:#1A2B22;border:1px solid #2F6B4D;color:#E8E4D6">Workshop</div>
+
+<div style="padding:7px 18px;border-radius:8px;font-family:Cinzel,serif;font-size:14px;font-weight:600;background:transparent;border:1px solid #26302B;color:#A8B4AB">Research</div>
+
+<div style="padding:7px 18px;border-radius:8px;font-family:Cinzel,serif;font-size:14px;font-weight:600;background:transparent;border:1px solid #26302B;color:#A8B4AB">Unit Builder</div>
+
+<div style="padding:7px 18px;border-radius:8px;font-family:Cinzel,serif;font-size:14px;font-weight:600;background:transparent;border:1px solid #26302B;color:#A8B4AB">Spell Book</div>
+
+<div style="padding:7px 18px;border-radius:8px;font-family:Cinzel,serif;font-size:14px;font-weight:600;background:transparent;border:1px solid #26302B;color:#A8B4AB">Lich</div>
+
+</div>
+
+<!-- skills sidebar -->
+<div style="position:absolute;left:0;top:94px;width:210px;height:606px;box-sizing:border-box;padding:10px;background:#0F1411;border-right:1px solid #26302B;overflow:hidden">
+
+<div style="margin-bottom:8px">
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;color:#7C8A81;padding:3px 8px">LICH</div>
+
+<div style="box-sizing:border-box;padding:6px 9px;border-radius:9px;margin-bottom:3px;background:#121815;border:1px solid #222C27">
+<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#C9D2CB"><span style="width:9px;height:9px;border-radius:5px;background:#3A4740"></span><span>Health</span><span style="color:#7FE0A8;font-size:13px"></span><span style="margin-left:auto;color:#9FB0A6;font-weight:500;font-size:12px">14/999</span></div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:5px"><div style="width:40%;height:3px;border-radius:2px;background:#7FE0A8"></div></div>
+</div>
+
+<div style="box-sizing:border-box;padding:6px 9px;border-radius:9px;margin-bottom:3px;background:#121815;border:1px solid #222C27">
+<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#C9D2CB"><span style="width:9px;height:9px;border-radius:5px;background:#3A4740"></span><span>Necromancy</span><span style="color:#7FE0A8;font-size:13px"></span><span style="margin-left:auto;color:#9FB0A6;font-weight:500;font-size:12px">22/999</span></div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:5px"><div style="width:65%;height:3px;border-radius:2px;background:#7FE0A8"></div></div>
+</div>
+
+<div style="box-sizing:border-box;padding:6px 9px;border-radius:9px;margin-bottom:3px;background:#121815;border:1px solid #222C27">
+<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#C9D2CB"><span style="width:9px;height:9px;border-radius:5px;background:#3A4740"></span><span>Magic</span><span style="color:#7FE0A8;font-size:13px"></span><span style="margin-left:auto;color:#9FB0A6;font-weight:500;font-size:12px">19/999</span></div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:5px"><div style="width:30%;height:3px;border-radius:2px;background:#7FE0A8"></div></div>
+</div>
+
+</div>
+
+<div style="margin-bottom:8px">
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;color:#7C8A81;padding:3px 8px">GATHERING</div>
+
+<div style="box-sizing:border-box;padding:6px 9px;border-radius:9px;margin-bottom:3px;background:#121815;border:1px solid #222C27">
+<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#C9D2CB"><span style="width:9px;height:9px;border-radius:5px;background:#3A4740"></span><span>Mining</span><span style="color:#7FE0A8;font-size:13px">›</span><span style="margin-left:auto;color:#9FB0A6;font-weight:500;font-size:12px">31/999</span></div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:5px"><div style="width:55%;height:3px;border-radius:2px;background:#7FE0A8"></div></div>
+</div>
+
+<div style="box-sizing:border-box;padding:6px 9px;border-radius:9px;margin-bottom:3px;background:#121815;border:1px solid #222C27">
+<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#C9D2CB"><span style="width:9px;height:9px;border-radius:5px;background:#3A4740"></span><span>Fishing</span><span style="color:#7FE0A8;font-size:13px">›</span><span style="margin-left:auto;color:#9FB0A6;font-weight:500;font-size:12px">12/999</span></div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:5px"><div style="width:20%;height:3px;border-radius:2px;background:#7FE0A8"></div></div>
+</div>
+
+<div style="box-sizing:border-box;padding:6px 9px;border-radius:9px;margin-bottom:3px;background:#121815;border:1px solid #222C27">
+<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#C9D2CB"><span style="width:9px;height:9px;border-radius:5px;background:#3A4740"></span><span>Hunting</span><span style="color:#7FE0A8;font-size:13px">›</span><span style="margin-left:auto;color:#9FB0A6;font-weight:500;font-size:12px">17/999</span></div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:5px"><div style="width:72%;height:3px;border-radius:2px;background:#7FE0A8"></div></div>
+</div>
+
+<div style="box-sizing:border-box;padding:6px 9px;border-radius:9px;margin-bottom:3px;background:#121815;border:1px solid #222C27">
+<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#C9D2CB"><span style="width:9px;height:9px;border-radius:5px;background:#3A4740"></span><span>Herbalism</span><span style="color:#7FE0A8;font-size:13px">›</span><span style="margin-left:auto;color:#9FB0A6;font-weight:500;font-size:12px">9/999</span></div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:5px"><div style="width:10%;height:3px;border-radius:2px;background:#7FE0A8"></div></div>
+</div>
+
+</div>
+
+<div style="margin-bottom:8px">
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;color:#7C8A81;padding:3px 8px">CRAFTING</div>
+
+<div style="box-sizing:border-box;padding:6px 9px;border-radius:9px;margin-bottom:3px;background:#121815;border:1px solid #222C27">
+<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#C9D2CB"><span style="width:9px;height:9px;border-radius:5px;background:#3A4740"></span><span>Smithing</span><span style="color:#7FE0A8;font-size:13px">›</span><span style="margin-left:auto;color:#9FB0A6;font-weight:500;font-size:12px">26/999</span></div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:5px"><div style="width:80%;height:3px;border-radius:2px;background:#7FE0A8"></div></div>
+</div>
+
+<div style="box-sizing:border-box;padding:6px 9px;border-radius:9px;margin-bottom:3px;background:#121815;border:1px solid #222C27">
+<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#C9D2CB"><span style="width:9px;height:9px;border-radius:5px;background:#3A4740"></span><span>Alchemy</span><span style="color:#7FE0A8;font-size:13px">›</span><span style="margin-left:auto;color:#9FB0A6;font-weight:500;font-size:12px">15/999</span></div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:5px"><div style="width:45%;height:3px;border-radius:2px;background:#7FE0A8"></div></div>
+</div>
+
+<div style="box-sizing:border-box;padding:6px 9px;border-radius:9px;margin-bottom:3px;background:#121815;border:1px solid #222C27">
+<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#C9D2CB"><span style="width:9px;height:9px;border-radius:5px;background:#3A4740"></span><span>Enchanting</span><span style="color:#7FE0A8;font-size:13px">›</span><span style="margin-left:auto;color:#9FB0A6;font-weight:500;font-size:12px">8/999</span></div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:5px"><div style="width:60%;height:3px;border-radius:2px;background:#7FE0A8"></div></div>
+</div>
+
+</div>
+
+</div>
+
+<!-- content -->
+<div style="position:absolute;left:210px;top:94px;width:1070px;height:606px;box-sizing:border-box;padding:16px 20px;display:flex;gap:14px;overflow:hidden">
+<!-- building list -->
+<div style="width:172px;display:flex;flex-direction:column;gap:6px">
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;color:#7C8A81;padding:0 4px 2px">BUILDINGS</div>
+
+<div style="padding:9px 12px;border-radius:10px;background:#1A2B22;border:1px solid #2F6B4D;display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:13px;font-weight:600;color:#E8E4D6">Mana Well</span>
+<span style="width:8px;height:8px;border-radius:4px;background:#7FE0A8"></span>
+</div>
+
+<div style="padding:9px 12px;border-radius:10px;background:#121815;border:1px solid #2A352F;display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:13px;font-weight:600;color:#C9D2CB">Summoning Circle</span>
+<span style="width:8px;height:8px;border-radius:4px;background:#7FE0A8"></span>
+</div>
+
+<div style="padding:9px 12px;border-radius:10px;background:#121815;border:1px solid #2A352F;display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:13px;font-weight:600;color:#C9D2CB">Infuser</span>
+<span style="width:8px;height:8px;border-radius:4px;background:#7FE0A8"></span>
+</div>
+
+<div style="padding:9px 12px;border-radius:10px;background:#121815;border:1px solid #2A352F;display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:13px;font-weight:600;color:#C9D2CB">Soul Well</span>
+<span style="width:8px;height:8px;border-radius:4px;background:#E3C26B"></span>
+</div>
+
+<div style="padding:9px 12px;border-radius:10px;background:#121815;border:1px solid #2A352F;display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:13px;font-weight:600;color:#C9D2CB">Transmuter</span>
+<span style="width:8px;height:8px;border-radius:4px;background:#7FE0A8"></span>
+</div>
+
+<div style="padding:9px 12px;border-radius:10px;background:#121815;border:1px solid #2A352F;display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:13px;font-weight:600;color:#C9D2CB">Undead Market</span>
+<span style="width:8px;height:8px;border-radius:4px;background:#7FE0A8"></span>
+</div>
+
+<div style="padding:9px 12px;border-radius:10px;background:#121815;border:1px solid #2A352F;display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:13px;font-weight:600;color:#C9D2CB">Storage</span>
+<span style="width:8px;height:8px;border-radius:4px;background:#7FE0A8"></span>
+</div>
+
+<div style="margin-top:6px;font-size:11px;color:#7C8A81;line-height:1.4;padding:0 4px">Green dot: running. Yellow: needs input.</div>
+</div>
+
+<!-- panel A -->
+<div style="width:420px;box-sizing:border-box;border-radius:12px;background:#121815;border:1px solid #2A352F;padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-family:Cinzel,serif;font-size:19px;font-weight:600">Mana Well</div><div style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#12201A;color:#7FE0A8">RUNNING</div></div>
+<div style="font-size:12px;color:#9FB0A6;line-height:1.4">Necromancers stand at the well and channel mana. Each slot adds its own output. Raise the well's level to open more slots.</div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;background:#0F1411;border:1px solid #26302B">
+<div style="font-size:15px;font-weight:700">Lvl. 11</div><div style="font-size:13px"><b>3</b><span style="color:#9FB0A6"> / 11 necromancers</span></div><div style="font-size:14px;font-weight:700;color:#7B9CFF">+7,244 /tick</div>
+<div style="padding:6px 10px;border-radius:8px;background:#1A2B22;border:1px solid #2F6B4D;color:#7FE0A8;font-size:12px;font-weight:700">Level up · 4.2k coin</div>
+</div>
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;color:#7C8A81">CHANNELING SLOTS</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #4A3F7A;background:#161230;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:1">
+<div style="width:26px;height:26px;border-radius:13px;background:#7B6BC9"></div>
+<div style="font-size:11px;font-weight:600;color:#C7B8FF">Necro 1 · +2.4k</div>
+</div>
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #4A3F7A;background:#161230;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:1">
+<div style="width:26px;height:26px;border-radius:13px;background:#7B6BC9"></div>
+<div style="font-size:11px;font-weight:600;color:#C7B8FF">Necro 2 · +2.4k</div>
+</div>
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #4A3F7A;background:#161230;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:1">
+<div style="width:26px;height:26px;border-radius:13px;background:#7B6BC9"></div>
+<div style="font-size:11px;font-weight:600;color:#C7B8FF">Necro 3 · +2.4k</div>
+</div>
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #3A4740;background:#0F1411;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:1">
+<div style="width:26px;height:26px;border-radius:13px;background:#252E29"></div>
+<div style="font-size:11px;font-weight:600;color:#9FB0A6">Empty</div>
+</div>
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #3A4740;background:#0F1411;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:1">
+<div style="width:26px;height:26px;border-radius:13px;background:#252E29"></div>
+<div style="font-size:11px;font-weight:600;color:#9FB0A6">Empty</div>
+</div>
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #3A4740;background:#0F1411;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:1">
+<div style="width:26px;height:26px;border-radius:13px;background:#252E29"></div>
+<div style="font-size:11px;font-weight:600;color:#9FB0A6">Empty</div>
+</div>
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #3A4740;background:#0F1411;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:1">
+<div style="width:26px;height:26px;border-radius:13px;background:#252E29"></div>
+<div style="font-size:11px;font-weight:600;color:#9FB0A6">Empty</div>
+</div>
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #3A4740;background:#0F1411;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:1">
+<div style="width:26px;height:26px;border-radius:13px;background:#252E29"></div>
+<div style="font-size:11px;font-weight:600;color:#9FB0A6">Empty</div>
+</div>
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #1F2824;background:#0F1311;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:0.55">
+<div style="width:26px;height:26px;border-radius:13px;background:#1B1F1D"></div>
+<div style="font-size:11px;font-weight:600;color:#7C8A81">Lvl 10</div>
+</div>
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #1F2824;background:#0F1311;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:0.55">
+<div style="width:26px;height:26px;border-radius:13px;background:#1B1F1D"></div>
+<div style="font-size:11px;font-weight:600;color:#7C8A81">Lvl 11</div>
+</div>
+
+<div style="height:76px;box-sizing:border-box;border-radius:10px;border:1px dashed #1F2824;background:#0F1311;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:0.55">
+<div style="width:26px;height:26px;border-radius:13px;background:#1B1F1D"></div>
+<div style="font-size:11px;font-weight:600;color:#7C8A81">Lvl 12</div>
+</div>
+
+</div>
+<div style="margin-top:auto;font-size:11.5px;color:#9FB0A6">Unlocks next at level 12: slot 12 and a 5% output bonus.</div>
+</div>
+<!-- panel B -->
+<div style="flex:1;box-sizing:border-box;border-radius:12px;background:#121815;border:1px solid #2A352F;padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="font-family:Cinzel,serif;font-size:17px;font-weight:600">Stock and overflow</div>
+<div>
+<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span style="color:#9FB0A6">Mana stored</span><span style="font-weight:700">142k / 144k</span></div>
+<div style="height:10px;border-radius:5px;background:#252E29"><div style="width:98%;height:10px;border-radius:5px;background:#7B9CFF"></div></div>
+</div>
+<div style="font-size:12px;color:#9FB0A6;line-height:1.4">When the stock is full, extra mana is lost. Send the overflow somewhere useful instead.</div>
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;color:#7C8A81">OVERFLOW GOES TO</div>
+
+<div style="padding:9px 12px;border-radius:10px;background:#1A2B22;border:1px solid #2F6B4D;display:flex;justify-content:space-between;font-size:12.5px"><span style="font-weight:600">Infuser</span><span style="color:#9FB0A6">Active</span></div>
+
+<div style="padding:9px 12px;border-radius:10px;background:#0F1411;border:1px solid #26302B;display:flex;justify-content:space-between;font-size:12.5px"><span style="font-weight:600">Summoning Circle</span><span style="color:#9FB0A6"></span></div>
+
+<div style="padding:9px 12px;border-radius:10px;background:#0F1411;border:1px solid #26302B;display:flex;justify-content:space-between;font-size:12.5px"><span style="font-weight:600">Discard</span><span style="color:#9FB0A6"></span></div>
+
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;color:#7C8A81;margin-top:4px">WELL MILESTONES</div>
+
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#7FE0A8"><span>Lvl 10</span><span>+25% output</span></div>
+
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#9FB0A6"><span>Lvl 15</span><span>Unlocks Wellspring spell</span></div>
+
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#9FB0A6"><span>Lvl 20</span><span>+50% output</span></div>
+
+</div>
+</div>
+
+<!-- resource bar -->
+<div style="position:absolute;left:0;top:700px;width:1280px;height:60px;box-sizing:border-box;padding:0 16px;display:flex;align-items:center;justify-content:space-between;background:#101512;border-top:1px solid #26302B">
+
+<div style="width:164px;box-sizing:border-box;padding:7px 10px 6px;border-radius:8px;background:#141A17;border:1px solid #2A352F">
+<div style="display:flex;align-items:center;gap:8px">
+<div style="width:22px;height:22px;border-radius:11px;background:#E3C26B"></div>
+<div style="font-size:15px;font-weight:700">756</div>
+<div style="font-size:10.5px;color:#7C8A81">/ 42.5k</div>
+<div style="margin-left:auto;font-size:10.5px;font-weight:700;color:#7FE0A8">+0.1/tick</div>
+</div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:6px"><div style="width:2%;height:3px;border-radius:2px;background:#A58BFF"></div></div>
+</div>
+
+<div style="width:164px;box-sizing:border-box;padding:7px 10px 6px;border-radius:8px;background:#141A17;border:1px solid #2A352F">
+<div style="display:flex;align-items:center;gap:8px">
+<div style="width:22px;height:22px;border-radius:11px;background:#7B9CFF"></div>
+<div style="font-size:15px;font-weight:700">142k</div>
+<div style="font-size:10.5px;color:#7C8A81">/ 144k</div>
+<div style="margin-left:auto;font-size:10.5px;font-weight:700;color:#7FE0A8">+3,096/tick</div>
+</div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:6px"><div style="width:98%;height:3px;border-radius:2px;background:#A58BFF"></div></div>
+</div>
+
+<div style="width:164px;box-sizing:border-box;padding:7px 10px 6px;border-radius:8px;background:#141A17;border:1px solid #2A352F">
+<div style="display:flex;align-items:center;gap:8px">
+<div style="width:22px;height:22px;border-radius:11px;background:#4FD1C5"></div>
+<div style="font-size:15px;font-weight:700">105k</div>
+<div style="font-size:10.5px;color:#7C8A81">/ 106k</div>
+<div style="margin-left:auto;font-size:10.5px;font-weight:700;color:#7FE0A8">+3,266/tick</div>
+</div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:6px"><div style="width:99%;height:3px;border-radius:2px;background:#A58BFF"></div></div>
+</div>
+
+<div style="width:164px;box-sizing:border-box;padding:7px 10px 6px;border-radius:8px;background:#141A17;border:1px solid #2A352F">
+<div style="display:flex;align-items:center;gap:8px">
+<div style="width:22px;height:22px;border-radius:11px;background:#A58BFF"></div>
+<div style="font-size:15px;font-weight:700">65.8k</div>
+<div style="font-size:10.5px;color:#7C8A81">/ 77.3k</div>
+<div style="margin-left:auto;font-size:10.5px;font-weight:700;color:#7FE0A8">+125/tick</div>
+</div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:6px"><div style="width:85%;height:3px;border-radius:2px;background:#A58BFF"></div></div>
+</div>
+
+<div style="width:164px;box-sizing:border-box;padding:7px 10px 6px;border-radius:8px;background:#141A17;border:1px solid #2A352F">
+<div style="display:flex;align-items:center;gap:8px">
+<div style="width:22px;height:22px;border-radius:11px;background:#D9D2B8"></div>
+<div style="font-size:15px;font-weight:700">8,410</div>
+<div style="font-size:10.5px;color:#7C8A81">/ 12k</div>
+<div style="margin-left:auto;font-size:10.5px;font-weight:700;color:#7FE0A8">+62/tick</div>
+</div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:6px"><div style="width:70%;height:3px;border-radius:2px;background:#A58BFF"></div></div>
+</div>
+
+<div style="width:164px;box-sizing:border-box;padding:7px 10px 6px;border-radius:8px;background:#141A17;border:1px solid #2A352F">
+<div style="display:flex;align-items:center;gap:8px">
+<div style="width:22px;height:22px;border-radius:11px;background:#9AA6AE"></div>
+<div style="font-size:15px;font-weight:700">5,220</div>
+<div style="font-size:10.5px;color:#7C8A81">/ 12k</div>
+<div style="margin-left:auto;font-size:10.5px;font-weight:700;color:#7FE0A8">+36/tick</div>
+</div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:6px"><div style="width:44%;height:3px;border-radius:2px;background:#A58BFF"></div></div>
+</div>
+
+<div style="width:164px;box-sizing:border-box;padding:7px 10px 6px;border-radius:8px;background:#141A17;border:1px solid #2A352F">
+<div style="display:flex;align-items:center;gap:8px">
+<div style="width:22px;height:22px;border-radius:11px;background:#7FB069"></div>
+<div style="font-size:15px;font-weight:700">1,980</div>
+<div style="font-size:10.5px;color:#7C8A81">/ 12k</div>
+<div style="margin-left:auto;font-size:10.5px;font-weight:700;color:#7FE0A8">+18/tick</div>
+</div>
+<div style="height:3px;border-radius:2px;background:#252E29;margin-top:6px"><div style="width:16%;height:3px;border-radius:2px;background:#A58BFF"></div></div>
+</div>
+
+</div>
+</div>
+</body></html>

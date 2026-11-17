@@ -4,7 +4,8 @@ Godot + C#. Each phase is one markdown file. Build in order; each phase ends wit
 
 | Phase | File | Delivers |
 |---|---|---|
-| 0 | phase-00-dev-ui.md | Dev/test UI shell; each phase adds its panel |
+| 0 | phase-00-dev-ui.md | Plain development UI used to test every phase |
+| 0 | phase-00-ui-spec.md | Exact blocky build of the mockup UI (what to build for the dev UI) |
 | 1 | phase-01-game-manager.md | Startup, content loading, save/load, project skeleton |
 | 2 | phase-02-lich-manager.md | Lich state, necromancer pool and assignments, buffs |
 | 3 | phase-03-tick-manager.md | Tick loop, fixed processing order, tick bar, offline ticks |
@@ -16,6 +17,7 @@ Godot + C#. Each phase is one markdown file. Build in order; each phase ends wit
 | 9 | phase-09-unit-army-builder.md | Unit Builder and army (formation) builder |
 | 10 | phase-10-unit-json.md | Unit definitions in JSON |
 | 11 | phase-11-item-json.md | Item, resource and recipe definitions in JSON |
+| 12 | phase-12-ui-overhaul.md | Full UI rebuild from the reference images (can start after phase 3) |
 
 ## Rules that apply to every phase
 
@@ -38,11 +40,11 @@ Godot + C#. Each phase is one markdown file. Build in order; each phase ends wit
 
 ## Still open (decide before the phase that needs it)
 
-- ~~Formation size, 8 or 9 slots (phase 9).~~ Decided: 8 slots (2 front, 3 middle, 3 back).
-- Focus/Insight: budget or simple cap. Name decided in phase 2: **Insight** (`max_insight`). Deferred in phase 6 to the SpellBook phase after v0.1 (no spells are equipped in v0.1).
-- ~~Several Hosts fighting at once (phase 8).~~ Decided: one battle at a time in v0.1.
-- ~~Summons also cost mana? (phase 9)~~ Decided: yes, a per-unit mana cost on each base (plus the gear and items).
-- ~~Summon slots growing beyond 3 (phase 8).~~ Decided: fixed at 3 in v0.1 (encounters themselves come after phase 9).
-- ~~Restocking inside a dungeon (phase 8).~~ Decided: no restocking; what the army brings is all it has.
-- ~~Health gives regeneration? (phase 2).~~ Decided: no regeneration in v0.1.
-- ~~Big-number type (phase 1).~~ Decided: `Num` struct backed by `double`; counts and stock stay `long`.
+- Formation size, 8 or 9 slots (phase 9).
+- Focus/Insight: budget or simple cap (phase 6).
+- Several Hosts fighting at once (phase 8).
+- Summons also cost mana? (phase 9)
+- Summon slots growing beyond 3 (phase 8).
+- Restocking inside a dungeon (phase 8).
+- Health gives regeneration? (phase 2)
+- Big-number type (phase 1).

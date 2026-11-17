@@ -1,7 +1,18 @@
-// Items (phase 6 schema; phase 11 fills in real content). The "type" picks the item class.
+// Items live in the inventory (stacks, limited by inventory slots). Materials: everything gathered or crafted that is not
+// gear, a potion, bomb or rune. The "type" picks the item class (phase 6 schema; phase 11 fills in real content).
 // Lich gear lists the lich "slots" it fits and the "modifiers" it gives while worn.
 // Unit gear (copper_sword, iron_armour) has no lich slots; summons use it in phase 9. All numbers are placeholders.
 [
+  { "type": "material",  "id": "copper_ore",  "name": "Copper Ore",  "stack_size": 1000, "sell_price": 1,  "placeholder": true },
+  { "type": "material",  "id": "coal",        "name": "Coal",        "stack_size": 1000, "sell_price": 2,  "placeholder": true },
+  { "type": "material",  "id": "iron_ore",    "name": "Iron Ore",    "stack_size": 1000, "sell_price": 3,  "placeholder": true },
+  { "type": "material",  "id": "raw_eel",     "name": "Raw Eel",     "stack_size": 1000, "sell_price": 2,  "placeholder": true },
+  { "type": "material",  "id": "wolf_hide",   "name": "Wolf Hide",   "stack_size": 1000, "sell_price": 4,  "placeholder": true },
+  { "type": "material",  "id": "nightshade",  "name": "Nightshade",  "stack_size": 1000, "sell_price": 2,  "placeholder": true },
+  { "type": "material",  "id": "bones",       "name": "Bones",       "stack_size": 1000, "sell_price": 1,  "placeholder": true },
+  { "type": "material",  "id": "copper_bar",  "name": "Copper Bar",  "stack_size": 1000, "sell_price": 5,  "placeholder": true },
+  { "type": "material",  "id": "iron_bar",    "name": "Iron Bar",    "stack_size": 1000, "sell_price": 12, "placeholder": true },
+
   { "type": "weapon",    "id": "copper_sword",      "name": "Copper Sword",      "damage": 4,  "stack_size": 50, "sell_price": 40,  "placeholder": true },
   { "type": "armour",    "id": "iron_armour",       "name": "Iron Armour",       "defence": 6, "stack_size": 20, "sell_price": 150, "placeholder": true },
   { "type": "weapon",    "id": "bone_spear",        "name": "Bone Spear",        "damage": 5,  "stack_size": 50, "sell_price": 45,  "placeholder": true },

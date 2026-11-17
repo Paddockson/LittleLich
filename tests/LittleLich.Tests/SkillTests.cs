@@ -132,10 +132,9 @@ public class SkillTests
         for (var i = 0; i < 5; i++)
         {
             w.Ticks.RunTicks(1);
-            seen.Add(w.Storage.Get("iron_ore"));
+            seen.Add(w.Stock.Get("iron_ore"));
         }
         Assert.Equal(new long[] { 3, 6, 9, 12, 15 }, seen);   // 10 x 0.3 per tick
-        Assert.Equal(3.0, w.Storage.RatePerTick("iron_ore"));
         Assert.Equal(3.0, w.Mining.RatePerTick("iron_ore"), 9);
 
         Assert.Equal(4, w.Mining.RemoveNecromancer("iron_ore", 4));
@@ -172,16 +171,23 @@ public class SkillTests
         w.Mining.AddNecromancer("coal", 13);
         w.Mining.AddNecromancer("iron_ore", 11);
         // Crafting from pre-stocked inputs (gathering feeding crafting in the same batch is order-dependent; see phase 3).
-        w.Storage.Add("copper_bar", 100);
+        w.Stock.Add("copper_bar", 100);
         w.Smithing.AddNecromancer("copper_sword", 4);
-        w.Storage.Add("iron_bar", 37);
+        w.Stock.Add("iron_bar", 37);
         w.Smithing.AddNecromancer("iron_armour", 9);
         return w;
     }
 
     private static string Snapshot(World w) =>
         string.Join("|", w.Storage.Save().Node.ToJsonString(), w.Inventory.Save().Node.ToJsonString(),
-            string.Join(";", w.Skills.Select(s => s.Save().Node.ToJsonString())),
+            // XP is a double (Num): one big addition and many small ones can differ in the last bits, so compare it to
+            // 6 decimals; levels, stock and progress must match exactly.
+            string.Join(";", w.Skills.Select(s =>
+            {
+                var node = s.Save().Node;
+                node["xp"] = Math.Round(s.Xp.ToDouble(), 6);
+                return node.ToJsonString();
+            })),
             string.Join(";", w.Smithing.Recipes.Select(r => $"{r.Id}:{w.Smithing.Status(r.Id)}:{w.Smithing.MissingInput(r.Id)}")),
             string.Join(";", w.Mining.Activities.Select(a => $"{a.Id}:{w.Mining.IsCapped(a.Id)}")));
 
@@ -204,25 +210,26 @@ public class SkillTests
     public void A_full_storage_stops_production_but_keeps_necromancers()
     {
         var w = new World();
+        w.Inventory.SlotCapacity = 1;                // copper ore stacks to 1,000: one slot holds 1,000
         w.Lich.DebugAddNecromancers(10);
         w.Mining.AddNecromancer("copper_ore", 10); // 5 per tick
         var capped = new List<bool>();
         w.Mining.CappedChanged += (_, c) => capped.Add(c);
 
-        w.Storage.Add("copper_ore", 997);
+        w.Stock.Add("copper_ore", 997);
         w.Ticks.RunTicks(1);
-        Assert.Equal(1_000, w.Storage.Get("copper_ore"));
+        Assert.Equal(1_000, w.Stock.Get("copper_ore"));
         Assert.True(w.Mining.IsCapped("copper_ore"));
         Assert.Equal(0, w.Mining.RatePerTick("copper_ore"));
         var xp = w.Mining.Xp;
         w.Ticks.RunTicks(10);
-        Assert.Equal(1_000, w.Storage.Get("copper_ore"));
+        Assert.Equal(1_000, w.Stock.Get("copper_ore"));
         Assert.Equal(xp, w.Mining.Xp);
         Assert.Equal(10, w.Mining.GetAssigned("copper_ore"));
 
-        w.Storage.TryRemove("copper_ore", 100);
+        w.Stock.TryRemove("copper_ore", 100);
         w.Ticks.RunTicks(1);
-        Assert.Equal(905, w.Storage.Get("copper_ore"));
+        Assert.Equal(905, w.Stock.Get("copper_ore"));
         Assert.False(w.Mining.IsCapped("copper_ore"));
         Assert.Equal(new[] { true, false }, capped);
     }
@@ -234,7 +241,7 @@ public class SkillTests
         w.Lich.DebugAddNecromancers(1);
         w.Mining.AddNecromancer("copper_ore", 1); // 0.5 per tick
         var seen = new List<long>();
-        for (var i = 0; i < 4; i++) { w.Ticks.RunTicks(1); seen.Add(w.Storage.Get("copper_ore")); }
+        for (var i = 0; i < 4; i++) { w.Ticks.RunTicks(1); seen.Add(w.Stock.Get("copper_ore")); }
         Assert.Equal(new long[] { 0, 1, 1, 2 }, seen);
         Assert.Equal(new Num(10), w.Mining.Xp); // XP only for units actually stored
     }
@@ -247,7 +254,7 @@ public class SkillTests
         w.Mining.AddNecromancer("copper_ore", 2);
         w.Lich.AddModifier(new Modifier(SkillIds.SpeedStat(SkillIds.Mining), ModifierOp.Mul, 3, "potion"));
         w.Ticks.RunTicks(10);
-        Assert.Equal(30, w.Storage.Get("copper_ore"));
+        Assert.Equal(30, w.Stock.Get("copper_ore"));
     }
 
     [Fact]
@@ -257,18 +264,18 @@ public class SkillTests
         w.Lich.DebugAddNecromancers(10);
         var statuses = new List<RecipeStatus>();
         w.Smithing.StatusChanged += (_, s) => statuses.Add(s);
-        w.Storage.Add("copper_ore", 9);
+        w.Stock.Add("copper_ore", 9);
         Assert.Equal(2, w.Smithing.AddNecromancer("copper_bar", 2)); // 1 bar per tick (2 necros / 2 ticks)
 
         w.Ticks.RunTicks(1);
-        Assert.Equal(1, w.Storage.Get("copper_bar"));
-        Assert.Equal(7, w.Storage.Get("copper_ore"));
+        Assert.Equal(1, w.Stock.Get("copper_bar"));
+        Assert.Equal(7, w.Stock.Get("copper_ore"));
         Assert.Equal(RecipeStatus.Running, w.Smithing.Status("copper_bar"));
         Assert.Equal(new Num(6), w.Smithing.Xp);
 
         w.Ticks.RunTicks(10);
-        Assert.Equal(4, w.Storage.Get("copper_bar"));
-        Assert.Equal(1, w.Storage.Get("copper_ore"));
+        Assert.Equal(4, w.Stock.Get("copper_bar"));
+        Assert.Equal(1, w.Stock.Get("copper_ore"));
         Assert.Equal(RecipeStatus.MissingInput, w.Smithing.Status("copper_bar"));
         Assert.Equal("copper_ore", w.Smithing.MissingInput("copper_bar"));
         Assert.Equal(2, w.Smithing.GetAssigned("copper_bar"));
@@ -283,12 +290,13 @@ public class SkillTests
     {
         var w = new World();
         w.Lich.DebugAddNecromancers(2);
-        w.Storage.Add("copper_ore", 100);
-        w.Storage.Add("copper_bar", 500); // at cap
+        w.Inventory.SlotCapacity = 2;                // one slot of ore, one full slot of bars
+        w.Stock.Add("copper_ore", 100);
+        w.Stock.Add("copper_bar", 1_000); // full
         w.Smithing.AddNecromancer("copper_bar", 2);
         w.Ticks.RunTicks(5);
         Assert.Equal(RecipeStatus.OutputFull, w.Smithing.Status("copper_bar"));
-        Assert.Equal(100, w.Storage.Get("copper_ore"));
+        Assert.Equal(100, w.Stock.Get("copper_ore"));
     }
 
     [Fact]
@@ -297,11 +305,11 @@ public class SkillTests
         var w = new World();
         w.Lich.DebugAddNecromancers(5);
         w.Smithing.DebugSetLevel(5);
-        w.Storage.Add("copper_bar", 9);
+        w.Stock.Add("copper_bar", 9);
         w.Smithing.AddNecromancer("copper_sword", 5); // 1 sword per tick
         w.Ticks.RunTicks(10);
         Assert.Equal(3, w.Inventory.Get("copper_sword"));
-        Assert.Equal(0, w.Storage.Get("copper_bar"));
+        Assert.Equal(0, w.Stock.Get("copper_bar"));
     }
 
     [Fact]
@@ -318,10 +326,11 @@ public class SkillTests
     public void Offline_runs_fill_the_recap()
     {
         var w = new World();
+        w.Inventory.SlotCapacity = 1;
         w.Lich.DebugAddNecromancers(10);
         w.Mining.AddNecromancer("copper_ore", 10);
         var recap = w.Ticks.RunOffline(3_600); // 1,800 ticks x 5 = 9,000, capped at 1,000
-        Assert.Equal(new Num(1_000), recap.Gained[("resource", "copper_ore")]);
+        Assert.Equal(new Num(1_000), recap.Gained[("item", "copper_ore")]);
         Assert.Equal(new Num(5_000), recap.Gained[("xp", "mining")]);
         Assert.Contains("copper_ore", recap.Capped);
     }
@@ -366,7 +375,7 @@ public class SkillSaveTests : IDisposable
         a.Mining.GrantXp(3.5);
         a.Mining.AddNecromancer("iron_ore", 7);   // 2.1 per tick: leaves a carry
         a.Smithing.DebugSetLevel(5);
-        a.Storage.Add("copper_bar", 50);
+        a.Stock.Add("copper_bar", 50);
         a.Smithing.AddNecromancer("copper_sword", 3);
         a.Health.DebugSetLevel(4);
         a.Lich.Heal(1_000);
@@ -384,7 +393,7 @@ public class SkillSaveTests : IDisposable
         }
         Assert.Equal(7, b.Mining.GetAssigned("iron_ore"));
         Assert.Equal(3, b.Smithing.GetAssigned("copper_sword"));
-        Assert.Equal(a.Storage.Get("iron_ore"), b.Storage.Get("iron_ore"));
+        Assert.Equal(a.Stock.Get("iron_ore"), b.Stock.Get("iron_ore"));
         Assert.Equal(a.Inventory.Get("copper_sword"), b.Inventory.Get("copper_sword"));
         Assert.Equal(new Num(130), b.Lich.MaxHealth);
         Assert.Equal(new Num(130), b.Lich.Health); // not clamped to the base 100 during load
@@ -392,7 +401,7 @@ public class SkillSaveTests : IDisposable
         // Same future: both continue identically.
         a.Ticks.RunTicks(17);
         b.Ticks.RunTicks(17);
-        Assert.Equal(a.Storage.Get("iron_ore"), b.Storage.Get("iron_ore"));
+        Assert.Equal(a.Stock.Get("iron_ore"), b.Stock.Get("iron_ore"));
         Assert.Equal(a.Mining.Xp, b.Mining.Xp);
     }
 
@@ -402,12 +411,12 @@ public class SkillSaveTests : IDisposable
         var (s, w) = Session();
         s.NewGame(1);
         w.Mining.DebugSetLevel(20);
-        w.Storage.Add("coal", 10);
+        w.Stock.Add("coal", 10);
         w.Inventory.Add("rot_bomb", 2);
         w.Health.DebugSetLevel(3);
         s.NewGame(2);
         Assert.Equal(1, w.Mining.Level);
-        Assert.Equal(0, w.Storage.Get("coal"));
+        Assert.Equal(0, w.Stock.Get("coal"));
         Assert.Equal(0, w.Inventory.Get("rot_bomb"));
         Assert.Equal(new Num(100), w.Lich.MaxHealth);
     }
@@ -419,11 +428,12 @@ public class StockTests
     public void Storage_caps_and_removes_all_or_nothing()
     {
         var st = new Storage(World.SampleContent);
-        Assert.Equal(1_000, st.Add("coal", 5_000));
-        Assert.Equal(0, st.Add("coal", 1));
-        Assert.False(st.TryRemove("coal", 1_001));
-        Assert.True(st.TryRemove("coal", 1_000));
+        Assert.Equal(500, st.Add("fire", 5_000));
+        Assert.Equal(0, st.Add("fire", 1));
+        Assert.False(st.TryRemove("fire", 501));
+        Assert.True(st.TryRemove("fire", 500));
         Assert.Throws<ArgumentException>(() => st.Add("copper_sword", 1)); // an item, not a resource
+        Assert.Throws<ArgumentException>(() => st.Add("coal", 1));         // a material: items live in the inventory
     }
 
     [Fact]
@@ -431,26 +441,27 @@ public class StockTests
     {
         var st = new Storage(World.SampleContent);
         st.BeginBatch();
-        st.Add("coal", 30);
-        st.TryRemove("coal", 10);
+        st.Add("water", 30);
+        st.TryRemove("water", 10);
         st.EndBatch(10);
-        Assert.Equal(2.0, st.RatePerTick("coal"));
+        Assert.Equal(2.0, st.RatePerTick("water"));
         st.BeginBatch();
         st.EndBatch(1);
-        Assert.Equal(0.0, st.RatePerTick("coal"));
+        Assert.Equal(0.0, st.RatePerTick("water"));
     }
 
     [Fact]
     public void Load_drops_unknown_ids()
     {
         var st = new Storage(World.SampleContent);
-        st.Load(new SaveData(System.Text.Json.Nodes.JsonNode.Parse("""{ "stock": { "coal": 5, "unobtainium": 9, "souls": -3 } }""")!.AsObject()));
-        Assert.Equal(5, st.Get("coal"));
+        st.Load(new SaveData(System.Text.Json.Nodes.JsonNode.Parse("""{ "stock": { "earth": 5, "unobtainium": 9, "souls": -3, "coal": 4 } }""")!.AsObject()));
+        Assert.Equal(5, st.Get("earth"));
+        Assert.Equal(0, st.Get("coal"));
         Assert.Equal(0, st.Get("souls"));
         var inv = new Inventory(World.SampleContent);
-        inv.Load(new SaveData(System.Text.Json.Nodes.JsonNode.Parse("""{ "stacks": { "rot_bomb": 2, "coal": 9 } }""")!.AsObject()));
+        inv.Load(new SaveData(System.Text.Json.Nodes.JsonNode.Parse("""{ "stacks": { "rot_bomb": 2, "mana": 9 } }""")!.AsObject()));
         Assert.Equal(2, inv.Get("rot_bomb"));
-        Assert.Empty(inv.Stacks.Where(x => x.Id == "coal"));
+        Assert.Empty(inv.Stacks.Where(x => x.Id == "mana"));      // a resource, not an item
     }
 }
 
@@ -465,8 +476,8 @@ public class SkillContentTests
 
     [Fact]
     public void Item_ids_cannot_clash_with_resource_ids() =>
-        Assert.Contains(Fails("""[{ "type": "material", "id": "coal", "name": "Coal" }]""").Errors,
-            e => e.Id == "coal" && e.Field == "id");
+        Assert.Contains(Fails("""[{ "type": "material", "id": "mana", "name": "Mana" }]""").Errors,
+            e => e.Id == "mana" && e.Field == "id");
 
     [Fact]
     public void Recipes_must_reference_real_stock_and_a_crafting_skill()
@@ -483,7 +494,7 @@ public class SkillContentTests
         var e = Fails("""[{ "type": "gathering_activity", "id": "bad", "name": "Bad", "skill": "smithing", "rate": 0, "xp": 1, "output": "coal" }]""");
         Assert.Contains(e.Errors, x => x.Field == "skill");
         Assert.Contains(e.Errors, x => x.Field == "rate");
-        e = Fails("""[{ "type": "gathering_activity", "id": "bad", "name": "Bad", "skill": "mining", "rate": 1, "xp": 1, "output": "gold" }]""");
+        e = Fails("""[{ "type": "gathering_activity", "id": "bad", "name": "Bad", "skill": "mining", "rate": 1, "xp": 1, "output": "silver" }]""");
         Assert.Contains(e.Errors, x => x.Field == "output");
     }
 }

@@ -55,6 +55,7 @@ public sealed class ContentLoader
         loader.Register<RecipeDefinition>("recipe");
         loader.Register<ManaWellDefinition>("mana_well");
         loader.Register<ConverterDefinition>("converter");
+        loader.Register<InfuserDefinition>("infuser");
         loader.Register<TransmuterDefinition>("transmuter");
         loader.Register<SummoningCircleDefinition>("summoning_circle");
         loader.Register<UndeadMarketDefinition>("undead_market");

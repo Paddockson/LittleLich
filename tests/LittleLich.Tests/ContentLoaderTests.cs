@@ -21,12 +21,14 @@ public class ContentLoaderTests
         var dir = Path.Combine(AppContext.BaseDirectory, "Data");
         var db = ContentLoader.CreateDefault().Load(ContentSource.FromDirectory(dir));
 
-        var ore = db.Get<ResourceDefinition>("iron_ore");
-        Assert.Equal("Iron Ore", ore.Name);
-        Assert.Equal("resources.json", ore.SourceFile);
-        Assert.Equal("resource", ore.Type);
-        Assert.True(ore.Placeholder);
-        Assert.Contains(db.All<ResourceDefinitionBase>(), r => r.Id == "mana");
+        var mana = db.Get<ResourceDefinition>("mana");
+        Assert.Equal("Mana", mana.Name);
+        Assert.Equal("resources.json", mana.SourceFile);
+        Assert.Equal("resource", mana.Type);
+        Assert.True(mana.Placeholder);
+        // Only these are tracked resources; everything gathered or crafted is an inventory item.
+        Assert.Equal(new[] { "mana", "gold", "souls", "fire", "water", "air", "earth" }, db.All<ResourceDefinitionBase>().Select(r => r.Id));
+        Assert.IsType<MaterialDefinition>(db.Get<ItemDefinitionBase>("iron_ore"));
     }
 
     [Fact]

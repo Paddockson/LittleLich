@@ -82,7 +82,7 @@ public partial class LichPanel : ScrollContainer, IDevPanel
         col.AddChild(_stats);
 
         // Modifiers
-        col.AddChild(Header("Modifiers (add with console: mod <stat> <add|mul> <value> [ticks])"));
+        col.AddChild(Header("Modifiers"));
         _mods = MakeTree(new[] { "Stat", "Op", "Value", "Source", "Expires at tick" }, 160);
         col.AddChild(_mods);
         var remove = new Button { Text = "Remove all from selected source", SizeFlagsHorizontal = SizeFlags.ShrinkBegin };

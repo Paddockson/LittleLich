@@ -66,7 +66,7 @@ public class UnitBuilderTests
         Assert.Equal(BuildResult.BadWeapon, w.Units.Build("skeleton", "iron_armour").Result);   // not a weapon
         Assert.Equal(BuildResult.BadArmour, w.Units.Build("skeleton", null, "copper_sword").Result);
         Assert.Equal(BuildResult.BadItem, w.Units.Build("skeleton", null, null, new[] { "grave_hood" }).Result);
-        Assert.Equal(BuildResult.BadItem, w.Units.Build("skeleton", null, null, new[] { "coal" }).Result);   // a resource
+        Assert.Equal(BuildResult.BadItem, w.Units.Build("skeleton", null, null, new[] { "mana" }).Result);   // a resource
     }
 
     [Fact]

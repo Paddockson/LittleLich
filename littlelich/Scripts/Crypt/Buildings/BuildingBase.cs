@@ -37,7 +37,7 @@ public enum BuildingStatus
 }
 
 /// <summary>
-/// A Workshop building: a level bought with coins, and necromancer slots staffed through the LichManager pool
+/// A Workshop building: a level bought with gold, and necromancer slots staffed through the LichManager pool
 /// (owner = building id, activity = "main"; the pool is the single source of truth, as with skills).
 /// Work per tick = (base work + staffed x work per necromancer) x level multiplier; each building decides what work does.
 /// Saves its own section "building_&lt;id&gt;".
@@ -113,7 +113,7 @@ public abstract class BuildingBase : ITickable, ISaveable
 
     public bool IsMaxLevel => Level >= MaxLevel;
 
-    /// <summary>Coins for the next level.</summary>
+    /// <summary>Gold for the next level.</summary>
     public long UpgradeCost
     {
         get
@@ -123,16 +123,17 @@ public abstract class BuildingBase : ITickable, ISaveable
         }
     }
 
-    /// <summary>Spends coins and raises the level. False if at max level or short of coins.</summary>
+    /// <summary>Spends gold and raises the level. False if at max level or short of gold.</summary>
     public bool TryUpgrade()
     {
         if (IsMaxLevel) return false;
-        if (!Context.Storage.TrySpend(ResourceIdsCoins, UpgradeCost)) return false;
+        if (!Context.Storage.TrySpend(Gold, UpgradeCost)) return false;
         SetLevel(Level + 1);
         return true;
     }
 
-    public const string ResourceIdsCoins = "coins";
+    /// <summary>The currency: upgrades cost gold, the Undead Market pays gold.</summary>
+    public const string Gold = "gold";
 
     /// <summary>Debug: set the level directly (no cost).</summary>
     public void DebugSetLevel(int level) => SetLevel(Math.Clamp(level, 1, MaxLevel));

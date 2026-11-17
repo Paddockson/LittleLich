@@ -98,16 +98,44 @@ public abstract class ConvertingBuilding : BuildingBase
     protected override void LoadExtra(SaveData d) => _carry = Math.Max(0, d.Get("carry", 0L));
 }
 
-/// <summary>Infuser: mana into infused mana (fixed conversion from its definition).</summary>
+/// <summary>Infuser: mana into the element the player picks (fire, water, air or earth).</summary>
 public sealed class Infuser : ConvertingBuilding
 {
-    public Infuser(CryptContext c) : base(BuildingIds.Infuser, c) { }
-    public ConverterDefinition Conversion => (ConverterDefinition)Definition;
-    public double Progress => ProgressOf(Conversion.WorkPerOp);
-    public override void Tick(long ticks) => Convert(ticks, Conversion.Inputs, Conversion.Output, Conversion.WorkPerOp);
+    public Infuser(CryptContext c) : base(BuildingIds.Infuser, c) => Element = Infusion.Elements.FirstOrDefault() ?? "";
+
+    public InfuserDefinition Infusion => (InfuserDefinition)Definition;
+    public double Progress => ProgressOf(Infusion.WorkPerOp);
+
+    /// <summary>The element being infused (fire, water, air or earth). Saved.</summary>
+    public string Element { get; private set; }
+
+    /// <summary>Choose the element to infuse (progress resets). Throws for an element the Infuser cannot make.</summary>
+    public void Select(string element)
+    {
+        if (!Infusion.Elements.Contains(element)) throw new ArgumentException($"The Infuser cannot make '{element}'.", nameof(element));
+        if (element == Element) return;
+        Element = element;
+        ResetProgress();
+    }
+
+    public override void Tick(long ticks) =>
+        Convert(ticks, new[] { Infusion.Input }, new ItemAmount { Id = Element, Count = 1 }, Infusion.WorkPerOp);
+
+    protected override void SaveExtra(SaveData d)
+    {
+        base.SaveExtra(d);
+        d.Set("element", Element);
+    }
+
+    protected override void LoadExtra(SaveData d)
+    {
+        base.LoadExtra(d);
+        var e = d.Get<string?>("element", null);
+        Element = e is not null && Infusion.Elements.Contains(e) ? e : Infusion.Elements.FirstOrDefault() ?? "";
+    }
 }
 
-/// <summary>Soul Well: infused mana into souls (fixed conversion from its definition).</summary>
+/// <summary>Soul Well: elements into souls (fixed conversion from its definition: one of each element per soul).</summary>
 public sealed class SoulWell : ConvertingBuilding
 {
     public SoulWell(CryptContext c) : base(BuildingIds.SoulWell, c) { }
@@ -300,7 +328,7 @@ public sealed record SellEntry(string Id, bool Enabled, long Reserve);
 
 /// <summary>
 /// Undead Market: each unit of work sells one unit from the sell list (in list order), keeping the reserve,
-/// at the item's sell_price, for coins. Stops when coins are full (goods are not lost).
+/// at the item's sell_price, for gold. Stops when gold are full (goods are not lost).
 /// </summary>
 public sealed class UndeadMarket : BuildingBase
 {
@@ -342,31 +370,31 @@ public sealed class UndeadMarket : BuildingBase
         var work = WorkMicroPerTick;
         var progress = (Int128)_carry + (Int128)work * ticks;
         var budget = FixedPoint.Clamp(progress / FixedPoint.Micro);
-        var coinRoom = Context.Storage.Room(ResourceIdsCoins);
+        var goldRoom = Context.Storage.Room(Gold);
         long sold = 0;
-        long coins = 0;
+        long gold = 0;
         foreach (var e in active)
         {
             if (budget - sold <= 0) break;
             var price = PriceOf(e.Id);
             var n = Math.Min(budget - sold, Math.Max(0, Context.Stock.Get(e.Id) - e.Reserve));
-            n = Math.Min(n, (coinRoom - coins) / price);
+            n = Math.Min(n, (goldRoom - gold) / price);
             if (n <= 0) continue;
             Context.Stock.TryRemove(e.Id, n);
             sold += n;
-            coins += n * price;
+            gold += n * price;
         }
-        if (coins > 0)
+        if (gold > 0)
         {
-            Context.Storage.Add(ResourceIdsCoins, coins);
-            Context.Recap()?.AddGained("resource", ResourceIdsCoins, coins);
+            Context.Storage.Add(Gold, gold);
+            Context.Recap()?.AddGained("resource", Gold, gold);
         }
         if (sold < budget)
         {
             _carry = 0;
-            var coinsFull = Context.Storage.Room(ResourceIdsCoins) < active.Min(e => PriceOf(e.Id));
-            if (coinsFull) Context.Recap()?.MarkCapped(ResourceIdsCoins);
-            SetStatus(coinsFull ? BuildingStatus.OutputFull : BuildingStatus.NothingToDo, coinsFull ? ResourceIdsCoins : null);
+            var goldFull = Context.Storage.Room(Gold) < active.Min(e => PriceOf(e.Id));
+            if (goldFull) Context.Recap()?.MarkCapped(Gold);
+            SetStatus(goldFull ? BuildingStatus.OutputFull : BuildingStatus.NothingToDo, goldFull ? Gold : null);
         }
         else
         {

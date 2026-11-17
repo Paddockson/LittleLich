@@ -79,7 +79,7 @@ public sealed class Storage : ISaveable
 
     public bool Has(string id, long amount) => Get(id) >= amount;
 
-    /// <summary>Spends exactly <paramref name="amount"/> (e.g. coins for an upgrade), or nothing. Same as TryRemove.</summary>
+    /// <summary>Spends exactly <paramref name="amount"/> (e.g. gold for an upgrade), or nothing. Same as TryRemove.</summary>
     public bool TrySpend(string id, long amount) => TryRemove(id, amount);
 
     /// <summary>Removes exactly <paramref name="amount"/>, or nothing if there is not enough.</summary>

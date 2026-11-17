@@ -1,7 +1,8 @@
 namespace LittleLich.Content.Definitions;
 
 /// <summary>
-/// Family base for stored, capped resources (mana, souls, iron_ore, coins ...).
+/// Family base for the tracked, capped resources: mana, gold, souls and the elements fire, water, air, earth.
+/// Everything gathered or crafted is an item (ItemDefinitionBase) in the inventory instead.
 /// Phase 11 finalises the schema; phase 1 needs just enough to load sample data.
 /// </summary>
 public abstract class ResourceDefinitionBase : Definition
@@ -9,7 +10,7 @@ public abstract class ResourceDefinitionBase : Definition
     /// <summary>Storage cap before Magical Storage upgrades.</summary>
     public long BaseCap { get; init; }
 
-    /// <summary>Coins per unit at the Undead Market. 0 = cannot be sold. Placeholder until phase 11.</summary>
+    /// <summary>Gold per unit at the Undead Market. 0 = cannot be sold. Placeholder until phase 11.</summary>
     public long SellPrice { get; init; }
 
     public override void Validate(ContentErrors errors)

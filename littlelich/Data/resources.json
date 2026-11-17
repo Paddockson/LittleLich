@@ -1,20 +1,15 @@
+// Resources: the only tracked, capped stocks (shown in the left-hand Resources list).
+// Everything gathered or crafted (ore, hides, herbs, bars, bones ...) is an item in the inventory (items.json).
+// Fire, water, air and earth are made by the Infuser from mana; the Soul Well turns them into souls.
 {
   "type": "resource",
   "entries": [
-    { "id": "mana",          "name": "Mana",          "icon": "mana",          "base_cap": 1000, "placeholder": true },
-    { "id": "infused_mana",  "name": "Infused Mana",  "icon": "infused_mana",  "base_cap": 500,  "placeholder": true },
-    { "id": "souls",         "name": "Souls",         "icon": "souls",         "base_cap": 100, "sell_price": 20,  "placeholder": true },
-    { "id": "coins",         "name": "Coins",         "icon": "coins",         "base_cap": 1000000, "placeholder": true },
-    { "id": "bones",         "name": "Bones",         "icon": "bones",         "base_cap": 1000, "sell_price": 1, "placeholder": true },
-
-    { "id": "copper_ore",    "name": "Copper Ore",    "icon": "copper_ore",    "base_cap": 1000, "sell_price": 1, "placeholder": true },
-    { "id": "coal",          "name": "Coal",          "icon": "coal",          "base_cap": 1000, "sell_price": 2, "placeholder": true },
-    { "id": "iron_ore",      "name": "Iron Ore",      "icon": "iron_ore",      "base_cap": 1000, "sell_price": 3, "placeholder": true },
-    { "id": "raw_eel",       "name": "Raw Eel",       "icon": "raw_eel",       "base_cap": 500, "sell_price": 2,  "placeholder": true },
-    { "id": "wolf_hide",     "name": "Wolf Hide",     "icon": "wolf_hide",     "base_cap": 500, "sell_price": 4,  "placeholder": true },
-    { "id": "nightshade",    "name": "Nightshade",    "icon": "nightshade",    "base_cap": 500, "sell_price": 2,  "placeholder": true },
-
-    { "id": "copper_bar",    "name": "Copper Bar",    "icon": "copper_bar",    "base_cap": 500, "sell_price": 5,  "placeholder": true },
-    { "id": "iron_bar",      "name": "Iron Bar",      "icon": "iron_bar",      "base_cap": 500, "sell_price": 12,  "placeholder": true }
+    { "id": "mana",  "name": "Mana",  "icon": "mana",  "base_cap": 1000,    "placeholder": true },
+    { "id": "gold",  "name": "Gold",  "icon": "gold",  "base_cap": 1000000, "placeholder": true },
+    { "id": "souls", "name": "Souls", "icon": "souls", "base_cap": 100, "sell_price": 20, "placeholder": true },
+    { "id": "fire",  "name": "Fire",  "icon": "fire",  "base_cap": 500,     "placeholder": true },
+    { "id": "water", "name": "Water", "icon": "water", "base_cap": 500,     "placeholder": true },
+    { "id": "air",   "name": "Air",   "icon": "air",   "base_cap": 500,     "placeholder": true },
+    { "id": "earth", "name": "Earth", "icon": "earth", "base_cap": 500,     "placeholder": true }
   ]
 }

@@ -158,7 +158,7 @@ public class ResearchTests
         w.Research.DebugComplete("nec1_grave_lore");
         w.Research.DebugComplete("nec1_second_bench");
         w.Storage.Add("mana", 1_000);
-        w.Storage.Add("raw_eel", 10);
+        w.Stock.Add("raw_eel", 10);
         Assert.Equal(StartResult.Ok, w.Research.Start("nec1_raise_skeletons"));
         Assert.Equal(StartResult.Ok, w.Research.Start("nec1_raise_zombies"));
         Assert.Equal(StartResult.NoFreeBench, w.Research.Start("nec1_deep_channels"));
@@ -167,7 +167,7 @@ public class ResearchTests
         Assert.Equal(860, w.Storage.Get("mana"));
         Assert.True(w.Research.Cancel(1));
         Assert.Equal(940, w.Storage.Get("mana"));
-        Assert.Equal(10, w.Storage.Get("raw_eel"));
+        Assert.Equal(10, w.Stock.Get("raw_eel"));
         Assert.Equal(NodeState.Available, w.Research.State("nec1_raise_zombies"));
         Assert.False(w.Research.Cancel(1));
     }
@@ -187,7 +187,7 @@ public class ResearchTests
             w.Research.AddNecromancer(0, 3);
             w.Research.AddNecromancer(1, 2);
             w.Storage.Add("mana", 500);
-            w.Storage.Add("raw_eel", 10);
+            w.Stock.Add("raw_eel", 10);
             w.Research.Start("nec1_raise_skeletons");
             w.Research.Start("nec1_raise_zombies");
             return w;
@@ -245,7 +245,7 @@ public class ResearchSaveTests : IDisposable
         a.Lich.DebugAddNecromancers(4);
         a.Research.AddNecromancer(1, 4);
         a.Storage.Add("mana", 500);
-        a.Storage.Add("raw_eel", 10);
+        a.Stock.Add("raw_eel", 10);
         a.Research.Start("nec1_raise_zombies", 1);
         a.Research.Tick(3);
         s1.Save();

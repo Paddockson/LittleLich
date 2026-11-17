@@ -154,10 +154,10 @@ public class BuildingTests
         var well = B<ManaWell>(w);
         Assert.Equal(50, well.UpgradeCost);
         Assert.False(well.TryUpgrade());                // no coins
-        w.Storage.Add("coins", 1_000);
+        w.Storage.Add("gold", 1_000);
         Assert.True(well.TryUpgrade());
         Assert.Equal(2, well.Level);
-        Assert.Equal(950, w.Storage.Get("coins"));
+        Assert.Equal(950, w.Storage.Get("gold"));
         Assert.Equal(75, well.UpgradeCost);
         Assert.Equal(1.1, well.LevelMultiplier, 9);
     }
@@ -180,12 +180,33 @@ public class BuildingTests
         var w = Fresh();
         B<SummoningCircle>(w).Target = 1;
         w.Lich.DebugAddNecromancers(10);
-        B<Infuser>(w).AddNecromancer(3);               // 1.5 infusions/tick, 2 mana each
-        B<SoulWell>(w).AddNecromancer(3);              // 0.75 work/tick, 2 work per soul, 5 infused each
+        var infuser = B<Infuser>(w);
+        infuser.AddNecromancer(2);                     // 1 infusion/tick, 2 mana each
+        B<SoulWell>(w).AddNecromancer(3);              // 0.75 work/tick, 2 work per soul, 1 of each element per soul
+        Assert.Equal("fire", infuser.Element);         // the first element by default
+        infuser.Select("water");
         w.Storage.Add("mana", 1_000);
-        w.Ticks.RunTicks(40);
+        w.Storage.Add("fire", 50);
+        w.Storage.Add("air", 50);
+        w.Storage.Add("earth", 50);
+        w.Ticks.RunTicks(1);
+        Assert.Equal(1, w.Storage.Get("water"));       // the chosen element, from 2 mana
+        Assert.Equal(50, w.Storage.Get("fire"));            // not made: water was chosen
+        w.Ticks.RunTicks(39);
         Assert.True(w.Storage.Get("souls") > 0);
-        Assert.True(w.Storage.Get("mana") < 1_000);
+        Assert.Equal(w.Storage.Get("fire"), w.Storage.Get("air"));   // one of each element per soul
+        Assert.Throws<ArgumentException>(() => infuser.Select("lightning"));
+    }
+
+    [Fact]
+    public void Infuser_element_survives_reload()
+    {
+        var w = Fresh();
+        B<Infuser>(w).Select("earth");
+        var saved = B<Infuser>(w).Save();
+        var v = Fresh();
+        B<Infuser>(v).Load(saved);
+        Assert.Equal("earth", B<Infuser>(v).Element);
     }
 
     [Fact]
@@ -199,7 +220,7 @@ public class BuildingTests
         soul.AddNecromancer(3);
         w.Ticks.RunTicks(5);
         Assert.Equal(BuildingStatus.MissingInput, soul.Status);
-        Assert.Equal("infused_mana", soul.StatusDetail);
+        Assert.Equal("fire", soul.StatusDetail);
     }
 
     [Fact]
@@ -212,10 +233,10 @@ public class BuildingTests
         w.Ticks.RunTicks(3);
         Assert.Equal(BuildingStatus.NothingToDo, t.Status);
         t.Select("copper_to_iron");                    // 3 work per conversion
-        w.Storage.Add("copper_ore", 10);
+        w.Stock.Add("copper_ore", 10);
         w.Ticks.RunTicks(9);
-        Assert.Equal(2, w.Storage.Get("iron_ore"));
-        Assert.Equal(2, w.Storage.Get("copper_ore"));
+        Assert.Equal(2, w.Stock.Get("iron_ore"));
+        Assert.Equal(2, w.Stock.Get("copper_ore"));
         Assert.Equal(BuildingStatus.MissingInput, t.Status);
         Assert.Throws<ArgumentException>(() => t.Select("lead_to_gold"));
     }
@@ -225,15 +246,15 @@ public class BuildingTests
     {
         var w = Fresh();
         var m = B<UndeadMarket>(w);
-        w.Storage.Add("iron_bar", 20);
+        w.Stock.Add("iron_bar", 20);
         w.Inventory.Add("copper_sword", 2);
         m.SetSell("copper_sword", true, 0);
         m.SetSell("iron_bar", true, 15);
         Assert.Throws<ArgumentException>(() => m.SetSell("mana", true, 0)); // no price
         w.Ticks.RunTicks(10);                          // 1 sale/tick: 2 swords, then 5 bars, then nothing
         Assert.Equal(0, w.Inventory.Get("copper_sword"));
-        Assert.Equal(15, w.Storage.Get("iron_bar"));
-        Assert.Equal(2 * 40 + 5 * 12, w.Storage.Get("coins"));
+        Assert.Equal(15, w.Stock.Get("iron_bar"));
+        Assert.Equal(2 * 40 + 5 * 12, w.Storage.Get("gold"));
         Assert.Equal(BuildingStatus.NothingToDo, m.Status);
     }
 
@@ -242,12 +263,12 @@ public class BuildingTests
     {
         var w = Fresh();
         var m = B<UndeadMarket>(w);
-        w.Storage.Add("coins", 999_990);
-        w.Storage.Add("iron_bar", 10);
+        w.Storage.Add("gold", 999_990);
+        w.Stock.Add("iron_bar", 10);
         m.SetSell("iron_bar", true, 0);
         w.Ticks.RunTicks(5);
-        Assert.Equal(999_990, w.Storage.Get("coins"));
-        Assert.Equal(10, w.Storage.Get("iron_bar"));
+        Assert.Equal(999_990, w.Storage.Get("gold"));
+        Assert.Equal(10, w.Stock.Get("iron_bar"));
         Assert.Equal(BuildingStatus.OutputFull, m.Status);
     }
 
@@ -261,11 +282,11 @@ public class BuildingTests
         var t = B<Transmuter>(w);
         t.AddNecromancer(3);
         t.Select("copper_to_iron");
-        w.Storage.Add("copper_ore", 333);
+        w.Stock.Add("copper_ore", 333);
         B<SummoningCircle>(w).AddNecromancer(3);
         var m = B<UndeadMarket>(w);
         m.AddNecromancer(2);
-        w.Storage.Add("iron_bar", 77);
+        w.Stock.Add("iron_bar", 77);
         w.Inventory.Add("rot_bomb", 9);
         m.SetSell("rot_bomb", true, 2);
         m.SetSell("iron_bar", true, 10);
@@ -356,7 +377,7 @@ public class BuildingContentTests
     [Fact]
     public void Transmutations_are_resources_only() =>
         Assert.Contains(Fails("""[{ "type": "transmutation", "id": "x", "name": "X", "inputs": [ { "id": "coal", "count": 1 } ], "output": { "id": "rot_bomb", "count": 1 }, "work": 1 }]""").Errors,
-            e => e.Message.Contains("resources only"));
+            e => e.Message.Contains("resources and materials only"));
 
     [Fact]
     public void Unknown_building_ids_and_summons_are_rejected()

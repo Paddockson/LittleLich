@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
 
 namespace LittleLich.UI.Dev;
 
-/// <summary>Event log categories. Later phases add their own (Level, Research, Battle...).</summary>
+/// <summary>What a message is about (kept so callers say where a message comes from).</summary>
 public enum LogCategory
 {
     Tick,
@@ -20,36 +19,16 @@ public enum LogCategory
     Error,
 }
 
-public sealed record DevLogEntry(DateTime Time, LogCategory Category, string Text);
-
 /// <summary>
-/// The dev UI's event log. UI-only: panels and the shell push entries from manager signals;
-/// the console shows them with category filters. Nothing in the simulation reads this.
+/// Messages from panels to the shell's status line (the console and event log were removed). UI-only:
+/// panels report what an action did or why it was refused; nothing in the simulation reads this.
 /// </summary>
 public static class DevLog
 {
-    public const int MaxEntries = 2000;
+    /// <summary>(text, is error). The shell shows the latest one under the top bar.</summary>
+    public static event Action<string, bool>? Posted;
 
-    private static readonly List<DevLogEntry> _entries = new();
+    public static void Add(LogCategory category, string text) => Posted?.Invoke(text, category == LogCategory.Error);
 
-    public static IReadOnlyList<DevLogEntry> Entries => _entries;
-
-    public static event Action<DevLogEntry>? Added;
-    public static event Action? Cleared;
-
-    public static void Add(LogCategory category, string text)
-    {
-        var e = new DevLogEntry(DateTime.Now, category, text);
-        _entries.Add(e);
-        if (_entries.Count > MaxEntries) _entries.RemoveRange(0, _entries.Count - MaxEntries);
-        Added?.Invoke(e);
-    }
-
-    public static void Error(string text) => Add(LogCategory.Error, text);
-
-    public static void Clear()
-    {
-        _entries.Clear();
-        Cleared?.Invoke();
-    }
+    public static void Error(string text) => Posted?.Invoke(text, true);
 }

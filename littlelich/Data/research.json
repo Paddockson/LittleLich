@@ -42,7 +42,7 @@
     "effects": [ { "type": "unlock_recipe", "id": "bone_spear" } ], "placeholder": true },
 
   { "type": "research_node", "tome": "necromancy_1", "id": "nec1_deep_channels", "name": "Deep Channels",
-    "requires": [ "nec1_grave_lore" ], "position": [1, 2], "cost": { "mana": 150, "coins": 100 }, "research_ticks": 60, "xp": 60,
+    "requires": [ "nec1_grave_lore" ], "position": [1, 2], "cost": { "mana": 150, "gold": 100 }, "research_ticks": 60, "xp": 60,
     "effects": [ { "type": "building_level", "building": "mana_well", "levels": 10 },
                  { "type": "building_level", "building": "summoning_circle", "levels": 10 } ], "placeholder": true },
 

@@ -176,7 +176,7 @@ public class WorldTests
         Assert.Equal(r.Survivors["skeleton"], w.InRoster("skeleton"));
         Assert.Equal(30, r.Lost + r.Survivors["skeleton"]);
         Assert.Equal(60, stock.Get("bones"));
-        Assert.Equal(300, stock.Get("coins"));
+        Assert.Equal(300, stock.Get("gold"));
         Assert.Equal(SendResult.AlreadyCleared, w.Send("graveyard", Skeletons(1)));
     }
 
@@ -190,7 +190,7 @@ public class WorldTests
         Assert.Equal(BattleOutcome.Defeat, w.LastResult!.Outcome);
         Assert.Equal(AreaState.NotStarted, w.State("woods"));
         Assert.Equal(0, w.InRoster("skeleton"));
-        Assert.Equal(0, stock.Get("coins"));
+        Assert.Equal(0, stock.Get("gold"));
     }
 
     [Fact]
@@ -274,7 +274,7 @@ public class WorldSaveTests : IDisposable
         Assert.Equal(AreaState.Cleared, b.State("graveyard"));
         Assert.Equal(a.InRoster("skeleton"), b.InRoster("skeleton"));
         Assert.Equal(4, b.InRoster("zombie"));
-        Assert.Equal(300, stock.Get("coins"));
+        Assert.Equal(300, stock.Get("gold"));
     }
 
     [Fact]
@@ -323,11 +323,11 @@ public class WorldContentTests
     public void Areas_and_paths_must_reference_real_things()
     {
         var e = Fails("""
-            [ { "type": "area", "id": "x", "name": "X", "defenders": { "front": [ { "unit": "dragon", "count": 1 } ] }, "rewards": { "gold": 5 } },
+            [ { "type": "area", "id": "x", "name": "X", "defenders": { "front": [ { "unit": "dragon", "count": 1 } ] }, "rewards": { "silver": 5 } },
               { "type": "map_node", "id": "n", "name": "N", "links": [ "nowhere" ] } ]
             """);
         Assert.Contains(e.Errors, x => x.Id == "x" && x.Message.Contains("dragon"));
-        Assert.Contains(e.Errors, x => x.Field == "rewards.gold");
+        Assert.Contains(e.Errors, x => x.Field == "rewards.silver");
         Assert.Contains(e.Errors, x => x.Id == "x" && x.Message.Contains("no map node holds"));
         Assert.Contains(e.Errors, x => x.Field == "links");
     }

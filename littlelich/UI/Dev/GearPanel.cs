@@ -86,7 +86,7 @@ public partial class GearPanel : HSplitContainer, IDevPanel
         buttons.AddChild(_use);
         right.AddChild(new Label
         {
-            Text = "Add items with the console: give <item> <n>. Bombs are for battles, runes attach later.",
+            Text = "Bombs are for battles; runes attach later.",
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
             Modulate = new Color(1, 1, 1, 0.7f),
         });

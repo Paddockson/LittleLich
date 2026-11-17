@@ -12,15 +12,13 @@ namespace LittleLich.UI.Dev;
 /// <summary>
 /// Phase 0 development UI root (UI/Dev/DevShell.tscn). Loaded instead of the real shell in debug builds.
 ///
-///   top bar:  tick bar, pause/speed, necromancers Free | Assigned | Max, console toggle
-///   left:     skills list
-///   centre:   tabs from <see cref="DevPanelRegistry"/>
-///   right:    event log + console
-///   bottom:   resources (stock / cap, rate per tick)
+///   top bar:  tick bar, pause/speed, necromancers Free | Assigned | Max
+///   status:   one line with the latest message from a panel (red for errors, white otherwise), cleared after a while
+///   left:     resources (stock / cap, rate per tick) above the skills list
+///   centre:   tabs from <see cref="DevPanelRegistry"/>, or a skill page
 ///
 /// Reads state, calls manager methods, refreshes on manager signals. Never mutates state itself.
-/// Command-line (after "--"): --dev-cmd="cmd1;cmd2" runs console commands after boot,
-/// --dev-tab=Saves selects a tab, --dev-screenshot=path.png saves a screenshot and quits
+/// Command-line (after "--"): --dev-tab=Saves selects a tab, --dev-screenshot=path.png saves a screenshot and quits
 /// (after --dev-frames=N frames, default 10).
 /// </summary>
 public partial class DevShell : Control
@@ -29,13 +27,14 @@ public partial class DevShell : Control
 
     private readonly List<IDevPanel> _panels = new();
     private TabContainer _tabs = null!;
-    private DevConsole _console = null!;
     private VBoxContainer _skills = null!;
-    private HFlowContainer _resources = null!;
+    private GridContainer _resources = null!;
     private Label _resourceNote = null!;
     private Label _poolFree = null!, _poolAssigned = null!, _poolMax = null!;
     private ProgressBar _poolBar = null!;
     private Label _banner = null!;
+    private Label _status = null!;
+    private double _statusLeft;
     private ProgressBar _tickBar = null!;
     private Label _tickText = null!;
     private Label _tickCount = null!;
@@ -44,8 +43,6 @@ public partial class DevShell : Control
     private readonly Dictionary<string, Button> _skillButtons = new();
     private Button _tabsButton = null!;
     private readonly Dictionary<string, Label> _resourceLabels = new();
-
-    private long _lastTotal = -1, _lastMax = -1;
 
     public override void _Ready()
     {
@@ -63,25 +60,20 @@ public partial class DevShell : Control
 
         _banner = new Label { Visible = false, Modulate = new Color(1f, 0.45f, 0.45f), AutowrapMode = TextServer.AutowrapMode.WordSmart };
         root.AddChild(_banner);
+        _status = new Label { ClipText = true, MouseFilter = MouseFilterEnum.Pass, CustomMinimumSize = new Vector2(0, 22) };
+        root.AddChild(_status);
 
         var outer = new HSplitContainer { SizeFlagsVertical = SizeFlags.ExpandFill };
         root.AddChild(outer);
         outer.AddChild(BuildSkills());
 
-        var inner = new HSplitContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        outer.AddChild(inner);
         // Main panel: the tabs, or a skill page when a skill is selected in the sidebar.
         var center = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(420, 0) };
-        inner.AddChild(center);
+        outer.AddChild(center);
         _tabs = new TabContainer { SizeFlagsVertical = SizeFlags.ExpandFill };
         center.AddChild(_tabs);
         _skillPage = new SkillPage { SizeFlagsVertical = SizeFlags.ExpandFill, Visible = false };
         center.AddChild(_skillPage);
-        _console = new DevConsole();
-        _console.CommandRan += RefreshAll;
-        inner.AddChild(_console);
-
-        root.AddChild(BuildResourceBar());
 
         foreach (var make in DevPanelRegistry.Panels)
         {
@@ -91,13 +83,14 @@ public partial class DevShell : Control
             _panels.Add(p);
         }
 
-        BindLog();
+        BindStatus();
+        BindTicksAndPool();
         foreach (var p in _panels) p.Bind();
         _skillPage.Bind();
         BindSkillsAndStock();
         BuildSkillButtons();
         RefreshAll();
-        LogBoot();
+        ShowBootError();
         RunCommandLine();
     }
 
@@ -140,18 +133,15 @@ public partial class DevShell : Control
         bar.AddChild(_poolMax);
         _poolBar = new ProgressBar { CustomMinimumSize = new Vector2(100, 8), ShowPercentage = false, SizeFlagsVertical = SizeFlags.ShrinkCenter };
         bar.AddChild(_poolBar);
-
-        var toggle = new Button { Text = "Console", ToggleMode = true, ButtonPressed = true, TooltipText = "Show/hide the log and console." };
-        toggle.Toggled += on => _console.Visible = on;
-        bar.AddChild(toggle);
         return bar;
     }
 
     private Control BuildSkills()
     {
-        var scroll = new ScrollContainer { CustomMinimumSize = new Vector2(170, 0), HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        var scroll = new ScrollContainer { CustomMinimumSize = new Vector2(190, 0), HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
         _skills = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         scroll.AddChild(_skills);
+        BuildResourceList(_skills);
         _tabsButton = new Button { Text = "Crypt tabs", ToggleMode = true, ButtonPressed = true, Alignment = HorizontalAlignment.Left };
         _tabsButton.Pressed += ShowTabs;
         _skills.AddChild(_tabsButton);
@@ -213,84 +203,29 @@ public partial class DevShell : Control
         foreach (var p in _panels) p.Refresh();
     }
 
-    /// <summary>Skill buttons, the resource bar and the Level/Skill log.</summary>
+    /// <summary>Skill buttons and the resource list.</summary>
     private void BindSkillsAndStock()
     {
-        var lm = LichManager.Instance;
-        var content = GameManager.Instance.Content;
-        lm.SkillXpChanged += (_, _) => RefreshSkillButtons();
-        lm.SkillLeveledUp += (id, from, to) =>
-            DevLog.Add(LogCategory.Level, $"{lm.Skill(id)?.Name ?? id} level {from} -> {to}.");
-        lm.ActivityCappedChanged += (skill, activity, capped) =>
-        {
-            var name = lm.Gathering(skill)?.Activity(activity).Name ?? activity;
-            DevLog.Add(LogCategory.Skill, capped ? $"{name}: output full, production stopped." : $"{name}: producing again.");
-        };
-        lm.RecipeStatusChanged += (skill, recipe, status) =>
-        {
-            var c = lm.Crafting(skill);
-            if (c is null) return;
-            var why = (RecipeStatus)status switch
-            {
-                RecipeStatus.MissingInput => $"paused, missing {StockIds.NameOf(content, c.MissingInput(recipe) ?? "?")}",
-                RecipeStatus.OutputFull => "paused, output full",
-                RecipeStatus.Running => "running",
-                _ => "idle",
-            };
-            DevLog.Add(LogCategory.Skill, $"{c.Recipe(recipe).Name}: {why}.");
-        };
-
+        LichManager.Instance.SkillXpChanged += (_, _) => RefreshSkillButtons();
         var crypt = CryptManager.Instance;
         crypt.StorageRatesUpdated += RefreshResources;
         crypt.StockChanged += (_, _) => { if (!TickManager.Instance.Scheduler.IsRunning) RefreshResources(); };
         crypt.StorageCapsChanged += RefreshResources;
-        var wm = WorldManager.Instance;
-        wm.BattleStarted += area => DevLog.Add(LogCategory.Battle, $"Battle started at {area}.");
-        wm.Resolved += r => DevLog.Add(LogCategory.Battle, MapPanel.ResultText(r));
-        crypt.ResearchNodeStarted += (id, bench) => DevLog.Add(LogCategory.Research, $"Started {crypt.Research?.Node(id)?.Name ?? id} on bench {bench + 1}.");
-        crypt.ResearchNodeCompleted += id => DevLog.Add(LogCategory.Research,
-            $"Completed {crypt.Research?.Node(id)?.Name ?? id}: {string.Join("; ", crypt.Research?.Node(id)?.Effects ?? new())}.");
-        crypt.ResearchNodeAvailable += id => DevLog.Add(LogCategory.Research, $"Now available: {crypt.Research?.Node(id)?.Name ?? id}.");
-        crypt.ResearchNodeCancelled += (id, bench) => DevLog.Add(LogCategory.Research, $"Cancelled {crypt.Research?.Node(id)?.Name ?? id} on bench {bench + 1} (refunded).");
-        lm.EquipmentChanged += slot =>
-        {
-            if (slot.Length == 0) return; // reloaded from a save
-            var worn = lm.Equipment?.WornDefinition(slot);
-            DevLog.Add(LogCategory.Lich, worn is null ? $"{slot}: nothing worn." : $"{slot}: wearing {worn.Name} ({string.Join(", ", worn.Modifiers)}).");
-        };
-        lm.ItemUsed += id => DevLog.Add(LogCategory.Lich, $"Used {StockIds.NameOf(content, id)}.");
-        crypt.BuildingLevelChanged += (id, level) =>
-        {
-            if (level > 1) DevLog.Add(LogCategory.Level, $"{crypt.Building(id)?.Name ?? id} is level {level}.");
-        };
-        crypt.BuildingStatusChanged += (id, status, detail) =>
-        {
-            var b = crypt.Building(id);
-            if (b is null || (Crypt.Buildings.BuildingStatus)status is Crypt.Buildings.BuildingStatus.Passive) return;
-            var what = (Crypt.Buildings.BuildingStatus)status switch
-            {
-                Crypt.Buildings.BuildingStatus.MissingInput => $"paused, missing {StockIds.NameOf(content, detail)}",
-                Crypt.Buildings.BuildingStatus.OutputFull => $"paused, {StockIds.NameOf(content, detail)} full",
-                Crypt.Buildings.BuildingStatus.PoolFull => detail == "target" ? "paused, target reached" : "paused, pool at max",
-                Crypt.Buildings.BuildingStatus.NothingToDo => "nothing to do",
-                Crypt.Buildings.BuildingStatus.Running => "running",
-                _ => "idle",
-            };
-            DevLog.Add(LogCategory.Workshop, $"{b.Name}: {what}.");
-        };
     }
 
-    private Control BuildResourceBar()
+    /// <summary>
+    /// The resources section at the top of the left column, like the skills list: one row per resource
+    /// (name, stock / cap, net rate per tick). Only mana, gold, souls and the four elements are resources.
+    /// </summary>
+    private void BuildResourceList(VBoxContainer into)
     {
-        var box = new VBoxContainer();
-        _resourceNote = new Label { Text = "Resources", ThemeTypeVariation = "HeaderSmall" };
-        box.AddChild(_resourceNote);
-        var scroll = new ScrollContainer { CustomMinimumSize = new Vector2(0, 84), HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
-        box.AddChild(scroll);
-        _resources = new HFlowContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        _resources.AddThemeConstantOverride("h_separation", 24);
-        scroll.AddChild(_resources);
-        return box;
+        _resourceNote = new Label { Text = "Resources", ThemeTypeVariation = "HeaderSmall", MouseFilter = MouseFilterEnum.Pass,
+                                    TooltipText = "Stock / cap and net change per tick over the last tick batch. Exact values in each tooltip." };
+        into.AddChild(_resourceNote);
+        _resources = new GridContainer { Columns = 3 };
+        _resources.AddThemeConstantOverride("h_separation", 6);
+        into.AddChild(_resources);
+        into.AddChild(new HSeparator());
     }
 
     // ---- Refresh ----
@@ -317,121 +252,101 @@ public partial class DevShell : Control
     private void RefreshResources()
     {
         var storage = CryptManager.Instance.Storage;
-        var defs = GameManager.Instance.Content.All<ResourceDefinitionBase>().ToList();
-        _resourceNote.Text = $"Resources ({defs.Count})   stock / cap   net rate per tick (last tick batch)";
-        foreach (var r in defs)
+        foreach (var r in GameManager.Instance.Content.All<ResourceDefinitionBase>())
         {
-            if (!_resourceLabels.TryGetValue(r.Id, out var label))
+            if (!_resourceLabels.TryGetValue(r.Id, out var name))
             {
-                label = new Label { MouseFilter = MouseFilterEnum.Pass };
-                _resources.AddChild(label);
-                _resourceLabels[r.Id] = label;
+                name = new Label { Text = r.Name, MouseFilter = MouseFilterEnum.Pass };
+                _resources.AddChild(name);
+                _resources.AddChild(new Label { Name = "stock_" + r.Id, MouseFilter = MouseFilterEnum.Pass, HorizontalAlignment = HorizontalAlignment.Right, SizeFlagsHorizontal = SizeFlags.ExpandFill });
+                _resources.AddChild(new Label { Name = "rate_" + r.Id, Modulate = new Color(1, 1, 1, 0.65f), MouseFilter = MouseFilterEnum.Pass });
+                _resourceLabels[r.Id] = name;
             }
+            var stockLabel = _resources.GetNode<Label>("stock_" + r.Id);
+            var rateLabel = _resources.GetNode<Label>("rate_" + r.Id);
             var stock = storage.Get(r.Id);
             var cap = storage.Cap(r.Id);
             var rate = storage.RatePerTick(r.Id);
-            label.Text = $"{r.Name}  {DevFormat.Exact(stock)} / {DevFormat.Exact(cap)}  " +
-                         $"{(rate >= 0 ? "+" : "")}{rate.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}/tick" +
-                         (stock >= cap ? "  FULL" : "");
-            label.Modulate = stock >= cap ? new Color(1f, 0.6f, 0.4f) : Colors.White;
-            label.TooltipText = $"{r.Id}{(r.Placeholder ? " (placeholder)" : "")}";
+            stockLabel.Text = $"{DevFormat.Short(stock)}/{DevFormat.Short(cap)}";
+            stockLabel.TooltipText = $"{DevFormat.Exact(stock)} / {DevFormat.Exact(cap)}" + (stock >= cap ? " (full: production stops)" : "");
+            rateLabel.Text = $"{(rate >= 0 ? "+" : "")}{rate.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)}";
+            rateLabel.TooltipText = $"{rate.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)} per tick (last tick batch)";
+            var full = stock >= cap;
+            name.Modulate = stockLabel.Modulate = full ? new Color(1f, 0.6f, 0.4f) : Colors.White;
+            name.TooltipText = $"{r.Id}{(r.Placeholder ? " (placeholder numbers)" : "")}";
         }
     }
 
-    // ---- Event log ----
+    // ---- Ticks, pool and the status line ----
 
-    private void BindLog()
+    private void BindTicksAndPool()
     {
         var gm = GameManager.Instance;
         var lm = LichManager.Instance;
-        gm.GameSaved += slot => DevLog.Add(LogCategory.Save, $"Save written: slot {slot}.");
-        gm.GameStarted += (slot, kind) =>
+        gm.GameStarted += (_, _) =>
         {
-            DevLog.Add(LogCategory.Save, $"{(SessionStart)kind} in slot {slot}.");
             RefreshAll();
             _tickCount.Text = $"Tick {DevFormat.Exact(TickManager.Instance.TickCount)}";   // TickManager synced it from the save first
         };
-        lm.AssignmentChanged += (owner, activity, delta) =>
-            DevLog.Add(LogCategory.Pool, $"{(delta > 0 ? "Assigned" : "Unassigned")} {DevFormat.Exact(Math.Abs(delta))} " +
-                                         $"{owner}/{activity} (now {DevFormat.Exact(lm.GetAssigned(owner, activity))}).");
-        lm.NecromancerPoolChanged += (_, _, _) =>
-        {
-            RefreshPool();
-            var p = lm.State.Pool;
-            if (p.Total != _lastTotal || p.Max != _lastMax)
-            {
-                if (_lastTotal >= 0)
-                    DevLog.Add(LogCategory.Pool, $"Pool total {DevFormat.Exact(p.Total)}, max {DevFormat.Exact(p.Max)}.");
-                _lastTotal = p.Total;
-                _lastMax = p.Max;
-            }
-        };
-        lm.StatChanged += (id, value) => DevLog.Add(LogCategory.Lich, $"Stat {id} = {DevFormat.Exact((Num)value)}.");
-        lm.HealthChanged += (cur, max) => DevLog.Add(LogCategory.Lich, $"Health {DevFormat.Exact((Num)cur)} / {DevFormat.Exact((Num)max)}.");
+        lm.NecromancerPoolChanged += (_, _, _) => RefreshPool();
 
-        var pool = lm.State.Pool;
-        _lastTotal = pool.Total;
-        _lastMax = pool.Max;
-
-        // Ticks. Single live ticks are not logged (one every 2 s would push everything else out of the log);
-        // batches (speed-up, `ticks`, offline) are.
         var tm = TickManager.Instance;
         tm.TickProgress += (elapsed, length) =>
         {
             _tickBar.Value = elapsed / length;
             _tickText.Text = $"{elapsed:0.0}s/{length:0.0}s";
         };
-        tm.TickEnded += (tick, count) =>
-        {
-            _tickCount.Text = $"Tick {DevFormat.Exact(tick)}";
-            if (count > 1 && tm.Scheduler.ActiveRecap is null)
-                DevLog.Add(LogCategory.Tick, $"Ran {DevFormat.Exact(count)} ticks as one batch (now tick {DevFormat.Exact(tick)}).");
-        };
+        tm.TickEnded += (tick, _) => _tickCount.Text = $"Tick {DevFormat.Exact(tick)}";
         tm.PausedChanged += paused =>
         {
             _pause.SetPressedNoSignal(paused);
             _pause.Text = paused ? "Resume" : "Pause";
-            DevLog.Add(LogCategory.Tick, paused ? "Paused." : "Resumed.");
         };
-        tm.SpeedChanged += speed => DevLog.Add(LogCategory.Tick, $"Speed {speed:0.##}x.");
-        tm.OfflineRecap += recap => DevLog.Add(LogCategory.Tick, recap.Describe());
         tm.TickError += msg => DevLog.Error(msg);
+        tm.OfflineRecap += recap => DevLog.Add(LogCategory.Tick, recap.Describe().Replace('\n', ' '));
         _tickCount.Text = $"Tick {DevFormat.Exact(tm.TickCount)}";
     }
 
-    private void LogBoot()
+    /// <summary>The status line shows the latest message from a panel: red for errors, white otherwise, for a few seconds.</summary>
+    private void BindStatus()
+    {
+        DevLog.Posted += (text, error) =>
+        {
+            _status.Text = text;
+            _status.TooltipText = text;
+            _status.Modulate = error ? new Color(1f, 0.45f, 0.45f) : new Color(1, 1, 1, 0.8f);
+            _statusLeft = error ? 10 : 6;
+        };
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_statusLeft <= 0) return;
+        _statusLeft -= delta;
+        if (_statusLeft <= 0) _status.Text = "";
+    }
+
+    private void ShowBootError()
     {
         var gm = GameManager.Instance;
         if (gm.BootError is { } err)
         {
-            _banner.Text = "BOOT ERROR (see log): " + err.Split('\n')[0];
+            _banner.Text = "BOOT ERROR:\n" + err;
             _banner.Visible = true;
-            foreach (var line in err.Split('\n', StringSplitOptions.RemoveEmptyEntries))
-                DevLog.Error("Content/boot: " + line.Trim());
             return;
         }
-        DevLog.Add(LogCategory.Content, $"Loaded {gm.Content.Count} content definitions.");
-        if (gm.Session is { } s)
-        {
-            DevLog.Add(LogCategory.Save, $"{s.StartKind} in slot {s.CurrentSlot}.");
-            if (s.LastLoadWarning is { } w) DevLog.Error($"Main save was unreadable, loaded the backup: {w}");
-            // The boot offline run happened before this scene existed.
-            if (TickManager.Instance.LastRecap is { } recap)
-                DevLog.Add(LogCategory.Tick, recap.Describe());
-        }
-        DevLog.Add(LogCategory.Command, "Type help for console commands.");
+        if (gm.Session?.LastLoadWarning is { } w) DevLog.Error($"Main save was unreadable, loaded the backup: {w}");
+        else if (TickManager.Instance.LastRecap is { } recap) DevLog.Add(LogCategory.Tick, recap.Describe().Replace('\n', ' '));
     }
 
-    // ---- Command-line automation (for headless checks and screenshots) ----
+    // ---- Command-line automation (for screenshots) ----
 
     private void RunCommandLine()
     {
         string? shot = null;
         foreach (var arg in OS.GetCmdlineUserArgs())
         {
-            if (arg.StartsWith("--dev-cmd="))
-                foreach (var c in arg["--dev-cmd=".Length..].Split(';')) _console.Run(c);
-            else if (arg.StartsWith("--dev-tab="))
+            if (arg.StartsWith("--dev-tab="))
             {
                 var name = arg["--dev-tab=".Length..];
                 var i = _panels.FindIndex(p => p.Title.Equals(name, StringComparison.OrdinalIgnoreCase));

@@ -12,7 +12,8 @@ Little Lich is an idle/incremental RPG in Godot with C#, modelled on Melvor Idle
 1. Read `design/Little-Lich-Game-Design-Document.md` for the game design.
 2. Find the current phase in `phases/` (01 to 11). Work on one phase at a time, in order.
 3. Read that phase's file fully: goal, dependencies, tasks, "done when", out of scope.
-4. If the work touches an item listed as open in `phases/00-README.md`, ask the user before deciding.
+4. When building any UI, read `phases/phase-00-ui-spec.md` and look at the matching screenshot in `ui-reference/images/` first.
+5. If the work touches an item listed as open in `phases/00-README.md`, ask the user before deciding.
 
 ## Architecture rules (never break)
 

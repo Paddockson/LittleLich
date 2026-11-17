@@ -16,7 +16,7 @@ public abstract class ItemDefinitionBase : Definition
     /// <summary>Items per inventory slot.</summary>
     public int StackSize { get; init; } = 100;
 
-    /// <summary>Coins per item at the Undead Market. 0 = cannot be sold. Placeholder until phase 11.</summary>
+    /// <summary>Gold per item at the Undead Market. 0 = cannot be sold. Placeholder until phase 11.</summary>
     public long SellPrice { get; init; }
 
     /// <summary>The JSON type ("weapon", "potion" ...), for display and filtering.</summary>

@@ -12,7 +12,7 @@
       "front":  [ { "unit": "graveyard_gate", "count": 1 } ],
       "middle": [ { "unit": "rival_skeleton", "count": 12 } ],
       "back":   [ { "unit": "grave_archer",   "count": 6 } ] },
-    "rewards": { "bones": 60, "souls": 10, "coins": 300 }, "placeholder": true },
+    "rewards": { "bones": 60, "souls": 10, "gold": 300 }, "placeholder": true },
 
   { "type": "area", "id": "woods", "name": "The Woods",
     "description": "Where the wild people live. Brutes hold the line, hunters pick off the weak, shamans mend them.",
@@ -20,5 +20,5 @@
       "front":  [ { "unit": "wild_brute",  "count": 8 } ],
       "middle": [ { "unit": "wild_hunter", "count": 10 } ],
       "back":   [ { "unit": "wild_shaman", "count": 2 } ] },
-    "rewards": { "wolf_hide": 40, "nightshade": 40, "coins": 200 }, "placeholder": true }
+    "rewards": { "wolf_hide": 40, "nightshade": 40, "gold": 200 }, "placeholder": true }
 ]

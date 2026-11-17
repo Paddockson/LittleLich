@@ -125,16 +125,16 @@ public partial class WorkshopPanel : HSplitContainer, IDevPanel
         var upgrade = new Button();
         upgrade.Pressed += () =>
         {
-            if (!Crypt.TryUpgrade(b.Id)) DevLog.Error($"Cannot upgrade {b.Name}: need {DevFormat.Exact(b.UpgradeCost)} coins.");
+            if (!Crypt.TryUpgrade(b.Id)) DevLog.Error($"Cannot upgrade {b.Name}: need {DevFormat.Exact(b.UpgradeCost)} gold.");
         };
         up.AddChild(upgrade);
-        var coins = Label("", wrap: false);
-        up.AddChild(coins);
+        var gold = Label("", wrap: false);
+        up.AddChild(gold);
         _updaters.Add(() =>
         {
-            upgrade.Text = b.IsMaxLevel ? "Max level" : $"Upgrade to {b.Level + 1} ({DevFormat.Exact(b.UpgradeCost)} coins)";
-            upgrade.Disabled = b.IsMaxLevel || Crypt.Storage.Get("coins") < b.UpgradeCost;
-            coins.Text = $"Coins {DevFormat.Exact(Crypt.Storage.Get("coins"))}";
+            upgrade.Text = b.IsMaxLevel ? "Max level" : $"Upgrade to {b.Level + 1} ({DevFormat.Exact(b.UpgradeCost)} gold)";
+            upgrade.Disabled = b.IsMaxLevel || Crypt.Storage.Get("gold") < b.UpgradeCost;
+            gold.Text = $"Gold {DevFormat.Exact(Crypt.Storage.Get("gold"))}";
         });
 
         _page.AddChild(title);
@@ -160,7 +160,7 @@ public partial class WorkshopPanel : HSplitContainer, IDevPanel
         switch (b)
         {
             case ManaWell w: BuildManaWell(w); break;
-            case Infuser i: BuildConverter(i.Conversion, () => i.Progress); break;
+            case Infuser i: BuildInfuser(i); break;
             case SoulWell s: BuildConverter(s.Conversion, () => s.Progress); break;
             case Transmuter t: BuildTransmuter(t); break;
             case SummoningCircle c: BuildCircle(c); break;
@@ -192,6 +192,31 @@ public partial class WorkshopPanel : HSplitContainer, IDevPanel
         {
             bar.Value = progress();
             l.Text = string.Join("   ", d.Inputs.Select(i => Stock(i.Id)).Append(Stock(d.Output.Id)));
+        });
+        _page.AddChild(bar);
+        _page.AddChild(l);
+    }
+
+    private void BuildInfuser(Infuser i)
+    {
+        var d = i.Infusion;
+        _page.AddChild(Label($"Turns {Amount(d.Input)} into 1 of the chosen element; {Num(d.WorkPerOp)} work each. Element:"));
+        var pick = new OptionButton { SizeFlagsHorizontal = SizeFlags.ShrinkBegin };
+        foreach (var e in d.Elements) pick.AddItem(Name(e));
+        pick.Selected = d.Elements.IndexOf(i.Element);
+        pick.ItemSelected += x =>
+        {
+            i.Select(d.Elements[(int)x]);
+            DevLog.Add(LogCategory.Workshop, $"Infuser: making {Name(i.Element)}.");
+            Update();
+        };
+        _page.AddChild(pick);
+        var bar = Bar();
+        var l = Label("");
+        _updaters.Add(() =>
+        {
+            bar.Value = i.Progress;
+            l.Text = string.Join("   ", d.Elements.Prepend(d.Input.Id).Select(Stock));
         });
         _page.AddChild(bar);
         _page.AddChild(l);
@@ -286,7 +311,7 @@ public partial class WorkshopPanel : HSplitContainer, IDevPanel
 
     private void BuildMarket(UndeadMarket m)
     {
-        _page.AddChild(Label("Sell list: each unit of work sells one unit, top to bottom, keeping the reserve. Stops when coins are full."));
+        _page.AddChild(Label("Sell list: each unit of work sells one unit, top to bottom, keeping the reserve. Stops when gold is full."));
         var grid = new GridContainer { Columns = 5 };
         _page.AddChild(grid);
         foreach (var h in new[] { "Sell", "Item", "Price", "Stock", "Reserve" }) grid.AddChild(Label(h, "HeaderSmall", false));
@@ -311,10 +336,10 @@ public partial class WorkshopPanel : HSplitContainer, IDevPanel
             grid.AddChild(reserve);
             _updaters.Add(() => stock.Text = DevFormat.Exact(Crypt.Stockpile.Get(id)));
         }
-        var coins = Label("");
-        _updaters.Add(() => coins.Text = $"Coins {DevFormat.Exact(Crypt.Storage.Get("coins"))} / {DevFormat.Exact(Crypt.Storage.Cap("coins"))}, " +
-                                         $"{Crypt.Storage.RatePerTick("coins").ToString("+0.##;-0.##;0", CultureInfo.InvariantCulture)}/tick");
-        _page.AddChild(coins);
+        var gold = Label("");
+        _updaters.Add(() => gold.Text = $"Gold {DevFormat.Exact(Crypt.Storage.Get("gold"))} / {DevFormat.Exact(Crypt.Storage.Cap("gold"))}, " +
+                                         $"{Crypt.Storage.RatePerTick("gold").ToString("+0.##;-0.##;0", CultureInfo.InvariantCulture)}/tick");
+        _page.AddChild(gold);
     }
 
     private void BuildStorage(MagicalStorage st)
@@ -322,7 +347,7 @@ public partial class WorkshopPanel : HSplitContainer, IDevPanel
         var l = Label("");
         _updaters.Add(() => l.Text =
             $"Every resource cap is base cap x {Num(st.CapMultiplier)} (+{Num(((MagicalStorageDefinition)st.Definition).CapBonusPerLevel)} per level). " +
-            $"For example {Stock("mana")}, {Stock("coins")}.");
+            $"For example {Stock("mana")}, {Stock("gold")}.");
         _page.AddChild(l);
     }
 

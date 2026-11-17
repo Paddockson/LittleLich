@@ -153,8 +153,8 @@ public class InventoryTests
         var w = new World();
         w.Lich.DebugAddNecromancers(5);
         w.Smithing.DebugSetLevel(5);
-        w.Storage.Add("copper_bar", 300);
-        w.Inventory.SlotCapacity = 1;
+        w.Stock.Add("copper_bar", 300);
+        w.Inventory.SlotCapacity = 2;                // one slot for the bars (a material item now), one for swords
         w.Inventory.Add("copper_sword", 49);                   // stack size 50: one more fits
         w.Smithing.AddNecromancer("copper_sword", 5);
         w.Ticks.RunTicks(10);
