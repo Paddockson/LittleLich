@@ -44,3 +44,5 @@ Open question: budget or cap. Resolve here if spell equipping needs it; otherwis
 
 ## Out of scope
 Rune attachment, item upgrading, spell book content.
+
+> **Note (phase 4):** a minimal stack-only `Inventory` (counts by item id, no space limit, no equipping), placeholder `item` definitions with a `kind`, and a dev Inventory tab already exist. Build on them: add item subclasses, inventory space, equipping and use.

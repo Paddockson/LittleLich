@@ -194,8 +194,15 @@ public partial class LichPanel : ScrollContainer, IDevPanel
             DevLog.Error("Assign: owner and activity are both required.");
             return;
         }
-        if (LichManager.Instance.TryAssign(owner, activity, 1) == 0)
-            DevLog.Error("Assign: no free necromancers.");
+        try
+        {
+            if (LichManager.Instance.AssignVia(owner, activity, 1) == 0)
+                DevLog.Error("Assign: nothing assigned (no free necromancers, or the activity is locked).");
+        }
+        catch (ArgumentException e)
+        {
+            DevLog.Error("Assign: " + e.Message);
+        }
     }
 
     private static Label Header(string text) => new() { Text = text, ThemeTypeVariation = "HeaderSmall" };

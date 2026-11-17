@@ -1,0 +1,12 @@
+// Placeholder crafting outputs (phase 4). Phase 6 adds gear stats and slots, phase 11 the full item schema.
+{
+  "type": "item",
+  "entries": [
+    { "id": "copper_sword",      "name": "Copper Sword",      "kind": "weapon", "placeholder": true },
+    { "id": "iron_armour",       "name": "Iron Armour",       "kind": "armour", "placeholder": true },
+    { "id": "mend_flesh_potion", "name": "Mend Flesh Potion", "kind": "potion", "placeholder": true },
+    { "id": "rot_bomb",          "name": "Rot Bomb",          "kind": "bomb",   "placeholder": true },
+    { "id": "rune_of_rot",       "name": "Rune of Rot",       "kind": "rune",   "placeholder": true },
+    { "id": "rune_of_warding",   "name": "Rune of Warding",   "kind": "rune",   "placeholder": true }
+  ]
+}

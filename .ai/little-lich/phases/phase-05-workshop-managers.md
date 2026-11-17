@@ -57,3 +57,5 @@ Coin purchases raise building level, output or storage cap. Upgrade definitions 
 
 ## Out of scope
 Final numbers, remaining building pages beyond the first slice, Undead Market item pricing.
+
+> **Note (phase 4):** a minimal `CryptManager` with `Storage` (resources: stock, base cap, net rate per tick) and `Stockpile` already exists (`Scripts/Crypt`, `Scripts/Managers/CryptManager.cs`). Build on it: add cap upgrades, buildings and the Workshop panel.

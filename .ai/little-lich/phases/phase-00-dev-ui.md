@@ -89,7 +89,7 @@ public interface IDevPanel {
 ## Tasks
 - [x] `DevShell.tscn` with top bar, left list, tabbed main panel, right console, bottom resource bar.
 - [x] `IDevPanel` and panel registry.
-- [ ] Resource bar bound to Storage (stock, cap, rate). *Built from content now; stock and rate wait for Storage (phase 5).*
+- [x] Resource bar bound to Storage (stock, cap, net rate per tick; the minimal Storage from phase 4).
 - [x] Top bar bound to TickManager and the necromancer pool (phase 3).
 - [x] Debug console with the commands above and autocomplete (commands for unbuilt systems say which phase brings them).
 - [x] Event log with category filters.
@@ -129,5 +129,10 @@ The shell is in place with the Lich (phase 2) and Saves (phase 1) panels. Parts 
 
 ### Follow-ups
 - ~~Phase 3: tick bar, pause/speed, `ticks`/`offline`/`speed`/`pause`/`resume`, Tick log entries.~~ Done in phase 3: per-frame bar and `0.7s/2.0s` text, Pause/Resume toggle, 1x/5x, tick counter; batches, offline recaps, pause and speed are logged (single live ticks are not, to keep the log readable).
-- Phase 4: skills list buttons (`Name level/999`), skill pages replacing the main panel, `xp`/`level`, Level log category.
-- Phase 5: resource bar stock/rate from Storage, `give`, Workshop panel.
+- ~~Phase 4: skills list, skill pages, `xp`/`level`, Level log.~~ Done in phase 4:
+  - Sidebar: grouped skill buttons (`Mining  12/999`) and a "Crypt tabs" button to return to the tabs.
+  - Skill pages built from content: gathering rows; crafting rows with owned/needed inputs and the reason when paused; level-only pages.
+  - Console: `xp`, `level`, `give` (resources and items), and `assign`/`unassign` routed through skills so locks apply.
+  - Level and Skill log categories, a minimal Inventory tab, and `--dev-tab=<skill id>`.
+  - The resource bar is live.
+- Phase 5: Workshop panel. (The resource bar and `give` were done in phase 4.)

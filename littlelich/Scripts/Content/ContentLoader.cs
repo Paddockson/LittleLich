@@ -44,7 +44,10 @@ public sealed class ContentLoader
     {
         var loader = new ContentLoader();
         loader.Register<ResourceDefinition>("resource");
-        // Later phases register items, units, recipes, activities, research nodes ...
+        loader.Register<ItemDefinition>("item");
+        loader.Register<GatheringActivityDefinition>("gathering_activity");
+        loader.Register<RecipeDefinition>("recipe");
+        // Later phases register units, research nodes, upgrades ...
         return loader;
     }
 

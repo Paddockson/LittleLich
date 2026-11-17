@@ -9,7 +9,7 @@ namespace LittleLich.UI.Dev;
 /// and -All, -, +, +10, +100, +1K, +Max buttons. "+" buttons are disabled when no necromancer is free.
 ///
 /// It only calls the delegates it is given, so phase 4 can pass e.g. MiningManager.AddNecromancer.
-/// By default it calls LichManager.TryAssign/Unassign for an owner + activity.
+/// By default it calls LichManager.AssignVia/UnassignVia (through the skill when the owner is one, so locks apply).
 /// </summary>
 public partial class AssignmentRow : HBoxContainer
 {
@@ -26,8 +26,8 @@ public partial class AssignmentRow : HBoxContainer
     public AssignmentRow(string ownerId, string activityId, string? label = null, Func<string>? rate = null)
         : this(label ?? $"{ownerId} / {activityId}",
                () => LichManager.Instance.GetAssigned(ownerId, activityId),
-               n => LichManager.Instance.TryAssign(ownerId, activityId, n),
-               n => LichManager.Instance.Unassign(ownerId, activityId, n),
+               n => LichManager.Instance.AssignVia(ownerId, activityId, n),
+               n => LichManager.Instance.UnassignVia(ownerId, activityId, n),
                rate)
     { }
 
@@ -81,13 +81,16 @@ public partial class AssignmentRow : HBoxContainer
         return b;
     }
 
+    /// <summary>Locked rows (level too low) cannot take necromancers but can still release them.</summary>
+    public bool Locked { get; set; }
+
     public void Refresh()
     {
         var n = _current();
         DevFormat.SetCount(_count, n);
         if (_rateLabel is not null) _rateLabel.Text = _rate!();
         var free = LichManager.Instance.State.Pool.Free;
-        foreach (var b in _plus) b.Disabled = free <= 0;
+        foreach (var b in _plus) b.Disabled = free <= 0 || Locked;
         foreach (var b in _minus) b.Disabled = n <= 0;
     }
 }

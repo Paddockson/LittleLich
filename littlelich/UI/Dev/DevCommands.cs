@@ -4,6 +4,8 @@ using System.Linq;
 using LittleLich.Core;
 using LittleLich.Core.Lich;
 using LittleLich.Managers;
+using LittleLich.Skills;
+using LittleLich.Content.Definitions;
 
 namespace LittleLich.UI.Dev;
 
@@ -49,18 +51,18 @@ public static class DevCommands
             var added = Lich.DebugAddNecromancers(n);
             return $"Added {DevFormat.Exact(added)} necromancers. Free {DevFormat.Exact(Lich.State.Pool.Free)}.";
         }));
-        Add(new("assign", "assign <owner> <activity> <n|max>", "Assign necromancers (any owner/activity until phase 4).", a =>
+        Add(new("assign", "assign <owner> <activity> <n|max>", "Assign necromancers (through the skill when the owner is one, so locks apply).", a =>
         {
             Need(a, 3);
             var n = a[2].Equals("max", StringComparison.OrdinalIgnoreCase) ? long.MaxValue : Count(a, 2);
-            var done = Lich.TryAssign(a[0], a[1], n);
+            var done = Assign(a[0], a[1], n, true);
             return $"Assigned {DevFormat.Exact(done)} to {a[0]}/{a[1]} (now {DevFormat.Exact(Lich.GetAssigned(a[0], a[1]))}).";
         }, CompleteAssignment));
         Add(new("unassign", "unassign <owner> <activity> <n|all>", "Free necromancers from an assignment.", a =>
         {
             Need(a, 3);
             var n = a[2].Equals("all", StringComparison.OrdinalIgnoreCase) ? long.MaxValue : Count(a, 2);
-            var done = Lich.Unassign(a[0], a[1], n);
+            var done = Assign(a[0], a[1], n, false);
             return $"Freed {DevFormat.Exact(done)} from {a[0]}/{a[1]} (now {DevFormat.Exact(Lich.GetAssigned(a[0], a[1]))}).";
         }, CompleteAssignment));
         Add(new("mod", "mod <stat> <add|mul> <value> [ticks]", "Add a modifier (source 'console'); with ticks it is a timed buff.", a =>
@@ -165,9 +167,33 @@ public static class DevCommands
             (i.MainCorrupt ? ", main corrupt" : "") + (i.HasBackup ? ", backup" : "")))));
 
         // ---- Not built yet: listed so the console matches the plan ----
-        Later("give", "give <resource|item> <amount>", "Add to storage.", "Storage (phase 5)", (i, _) => i == 0 ? ContentIds() : Empty);
-        Later("xp", "xp <skill> <amount>", "Give skill XP.", "skills (phase 4)");
-        Later("level", "level <skill> <n>", "Set a skill level.", "skills (phase 4)");
+        Add(new("give", "give <resource|item> <amount>", "Add a resource (capped) or item; a negative amount removes.", a =>
+        {
+            Need(a, 2);
+            if (!long.TryParse(a[1], out var signed) && !DevFormat.TryParseCount(a[1], out signed))
+                throw new DevCommandException($"'{a[1]}' is not an amount.");
+            try
+            {
+                var done = CryptManager.Instance.DebugGive(a[0], signed);
+                return $"{(signed >= 0 ? "Gave" : "Removed")} {DevFormat.Exact(Math.Abs(done))} {a[0]} " +
+                       $"(now {DevFormat.Exact(CryptManager.Instance.Stockpile.Get(a[0]))}).";
+            }
+            catch (ArgumentException e) { throw new DevCommandException(e.Message); }
+        }, (i, _) => i == 0 ? StockIdsAll() : i == 1 ? new[] { "10", "100", "1K" } : Empty));
+        Add(new("xp", "xp <skill> <amount>", "Give skill XP.", a =>
+        {
+            var s = SkillArg(a);
+            s.GrantXp(NumArg(a, 1));
+            return $"{s.Name}: level {s.Level}, {DevFormat.Exact(s.Xp)} XP.";
+        }, (i, _) => i == 0 ? SkillIds.All : Empty));
+        Add(new("level", "level <skill> <n>", "Raise a skill to level n (sets XP to that level; never lowers).", a =>
+        {
+            var s = SkillArg(a);
+            var n = (int)Math.Clamp(Count(a, 1), 1, XpCurve.MaxLevel);
+            if (n < s.Level) throw new DevCommandException($"{s.Name} is already level {s.Level}; levels never go down.");
+            s.DebugSetLevel(n);
+            return $"{s.Name}: level {s.Level}.";
+        }, (i, _) => i == 0 ? SkillIds.All : i == 1 ? new[] { "5", "10", "15", "99" } : Empty));
         Later("unlock", "unlock <id>", "Unlock research, a unit or a recipe.", "research (phase 7)", (i, _) => i == 0 ? ContentIds() : Empty);
         Later("battle", "battle <area>", "Start a test battle.", "the world map (phase 8)");
     }
@@ -255,13 +281,35 @@ public static class DevCommands
     private static IEnumerable<string> StatIds() =>
         new[] { LichStats.MaxHealth, LichStats.MaxInsight, LichStats.MaxNecromancers }.Concat(Lich.State.Stats.KnownStats);
 
+    private static long Assign(string owner, string activity, long n, bool add)
+    {
+        try { return add ? Lich.AssignVia(owner, activity, n) : Lich.UnassignVia(owner, activity, n); }
+        catch (ArgumentException e) { throw new DevCommandException(e.Message); }
+    }
+
+    private static SkillBase SkillArg(string[] a)
+    {
+        Need(a, 2);
+        return Lich.Skill(a[0].ToLowerInvariant())
+            ?? throw new DevCommandException($"No skill '{a[0]}' ({string.Join(", ", SkillIds.All)}).");
+    }
+
+    private static IEnumerable<string> StockIdsAll() =>
+        GameManager.Instance.Content.All<ResourceDefinitionBase>().Select(d => d.Id)
+            .Concat(GameManager.Instance.Content.All<ItemDefinitionBase>().Select(d => d.Id));
+
     private static IEnumerable<string> CompleteAssignment(int i, string[] typed)
     {
         var assignments = Lich.AllAssignments();
         return i switch
         {
-            0 => assignments.Select(a => a.OwnerId),
-            1 => assignments.Where(a => a.OwnerId == typed[0]).Select(a => a.ActivityId).Concat(ContentIds()),
+            0 => assignments.Select(a => a.OwnerId).Concat(SkillIds.Gathering).Concat(SkillIds.Crafting),
+            1 => Lich.Skill(typed[0]) switch
+            {
+                GatheringSkill g => g.Activities.Select(x => x.Id),
+                CraftingSkill c => c.Recipes.Select(x => x.Id),
+                _ => assignments.Where(a => a.OwnerId == typed[0]).Select(a => a.ActivityId),
+            },
             2 => new[] { "1", "10", "100", "1K", "max", "all" },
             _ => Empty,
         };

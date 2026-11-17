@@ -28,4 +28,5 @@ project/assembly_name="LittleLich"
 
 GameManager="*res://Scripts/Managers/GameManager.cs"
 LichManager="*res://Scripts/Managers/LichManager.cs"
+CryptManager="*res://Scripts/Managers/CryptManager.cs"
 TickManager="*res://Scripts/Managers/TickManager.cs"

@@ -5,6 +5,7 @@ using Godot;
 using LittleLich.Content.Definitions;
 using LittleLich.Core;
 using LittleLich.Managers;
+using LittleLich.Skills;
 
 namespace LittleLich.UI.Dev;
 
@@ -38,6 +39,10 @@ public partial class DevShell : Control
     private Label _tickText = null!;
     private Label _tickCount = null!;
     private Button _pause = null!;
+    private SkillPage _skillPage = null!;
+    private readonly Dictionary<string, Button> _skillButtons = new();
+    private Button _tabsButton = null!;
+    private readonly Dictionary<string, Label> _resourceLabels = new();
 
     private long _lastTotal = -1, _lastMax = -1;
 
@@ -64,8 +69,13 @@ public partial class DevShell : Control
 
         var inner = new HSplitContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         outer.AddChild(inner);
-        _tabs = new TabContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(420, 0) };
-        inner.AddChild(_tabs);
+        // Main panel: the tabs, or a skill page when a skill is selected in the sidebar.
+        var center = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(420, 0) };
+        inner.AddChild(center);
+        _tabs = new TabContainer { SizeFlagsVertical = SizeFlags.ExpandFill };
+        center.AddChild(_tabs);
+        _skillPage = new SkillPage { SizeFlagsVertical = SizeFlags.ExpandFill, Visible = false };
+        center.AddChild(_skillPage);
         _console = new DevConsole();
         _console.CommandRan += RefreshAll;
         inner.AddChild(_console);
@@ -82,6 +92,9 @@ public partial class DevShell : Control
 
         BindLog();
         foreach (var p in _panels) p.Bind();
+        _skillPage.Bind();
+        BindSkillsAndStock();
+        BuildSkillButtons();
         RefreshAll();
         LogBoot();
         RunCommandLine();
@@ -138,10 +151,97 @@ public partial class DevShell : Control
         var scroll = new ScrollContainer { CustomMinimumSize = new Vector2(170, 0), HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
         _skills = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         scroll.AddChild(_skills);
-        _skills.AddChild(new Label { Text = "Skills", ThemeTypeVariation = "HeaderSmall" });
-        // Phase 4 fills this with one button per skill ("Mining  12/999") that opens its page in the main panel.
-        _skills.AddChild(new Label { Text = "No skills yet\n(phase 4).", Modulate = new Color(1, 1, 1, 0.6f) });
+        _tabsButton = new Button { Text = "Crypt tabs", ToggleMode = true, ButtonPressed = true, Alignment = HorizontalAlignment.Left };
+        _tabsButton.Pressed += ShowTabs;
+        _skills.AddChild(_tabsButton);
         return scroll;
+    }
+
+    /// <summary>One button per skill ("Mining  12/999"), grouped Lich / Gathering / Crafting. Built after boot.</summary>
+    private void BuildSkillButtons()
+    {
+        var skills = LichManager.Instance.Skills;
+        if (skills.Count == 0)
+        {
+            _skills.AddChild(new Label { Text = "No skills (boot failed?)", Modulate = new Color(1, 1, 1, 0.6f) });
+            return;
+        }
+        string? group = null;
+        foreach (var s in skills)
+        {
+            var g = s switch { GatheringSkill => "Gathering", CraftingSkill => "Crafting", _ => "Lich" };
+            if (g != group)
+            {
+                group = g;
+                _skills.AddChild(new Label { Text = g, ThemeTypeVariation = "HeaderSmall" });
+            }
+            var b = new Button { ToggleMode = true, Alignment = HorizontalAlignment.Left };
+            var skill = s;
+            b.Pressed += () => ShowSkill(skill);
+            _skills.AddChild(b);
+            _skillButtons[s.Id] = b;
+        }
+        RefreshSkillButtons();
+    }
+
+    private void RefreshSkillButtons()
+    {
+        foreach (var s in LichManager.Instance.Skills)
+            if (_skillButtons.TryGetValue(s.Id, out var b))
+            {
+                b.Text = $"{s.Name}  {s.Level}/{XpCurve.MaxLevel}";
+                b.TooltipText = $"{DevFormat.Exact(s.Xp)} XP, {s.LevelProgress:P0} to next level";
+            }
+    }
+
+    private void ShowSkill(SkillBase skill)
+    {
+        _tabs.Visible = false;
+        _skillPage.Visible = true;
+        _skillPage.Show(skill);
+        _tabsButton.SetPressedNoSignal(false);
+        foreach (var (id, b) in _skillButtons) b.SetPressedNoSignal(id == skill.Id);
+    }
+
+    private void ShowTabs()
+    {
+        _skillPage.Visible = false;
+        _tabs.Visible = true;
+        _tabsButton.SetPressedNoSignal(true);
+        foreach (var b in _skillButtons.Values) b.SetPressedNoSignal(false);
+        foreach (var p in _panels) p.Refresh();
+    }
+
+    /// <summary>Skill buttons, the resource bar and the Level/Skill log.</summary>
+    private void BindSkillsAndStock()
+    {
+        var lm = LichManager.Instance;
+        var content = GameManager.Instance.Content;
+        lm.SkillXpChanged += (_, _) => RefreshSkillButtons();
+        lm.SkillLeveledUp += (id, from, to) =>
+            DevLog.Add(LogCategory.Level, $"{lm.Skill(id)?.Name ?? id} level {from} -> {to}.");
+        lm.ActivityCappedChanged += (skill, activity, capped) =>
+        {
+            var name = lm.Gathering(skill)?.Activity(activity).Name ?? activity;
+            DevLog.Add(LogCategory.Skill, capped ? $"{name}: output full, production stopped." : $"{name}: producing again.");
+        };
+        lm.RecipeStatusChanged += (skill, recipe, status) =>
+        {
+            var c = lm.Crafting(skill);
+            if (c is null) return;
+            var why = (RecipeStatus)status switch
+            {
+                RecipeStatus.MissingInput => $"paused, missing {StockIds.NameOf(content, c.MissingInput(recipe) ?? "?")}",
+                RecipeStatus.OutputFull => "paused, output full",
+                RecipeStatus.Running => "running",
+                _ => "idle",
+            };
+            DevLog.Add(LogCategory.Skill, $"{c.Recipe(recipe).Name}: {why}.");
+        };
+
+        var crypt = CryptManager.Instance;
+        crypt.StorageRatesUpdated += RefreshResources;
+        crypt.StockChanged += (_, _) => { if (!TickManager.Instance.Scheduler.IsRunning) RefreshResources(); };
     }
 
     private Control BuildResourceBar()
@@ -149,7 +249,7 @@ public partial class DevShell : Control
         var box = new VBoxContainer();
         _resourceNote = new Label { Text = "Resources", ThemeTypeVariation = "HeaderSmall" };
         box.AddChild(_resourceNote);
-        var scroll = new ScrollContainer { CustomMinimumSize = new Vector2(0, 70), HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        var scroll = new ScrollContainer { CustomMinimumSize = new Vector2(0, 84), HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
         box.AddChild(scroll);
         _resources = new HFlowContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         _resources.AddThemeConstantOverride("h_separation", 24);
@@ -180,18 +280,25 @@ public partial class DevShell : Control
     /// <summary>Built from the content database: adding a resource to JSON adds a line here.</summary>
     private void RefreshResources()
     {
-        foreach (var c in _resources.GetChildren()) c.QueueFree();
+        var storage = CryptManager.Instance.Storage;
         var defs = GameManager.Instance.Content.All<ResourceDefinitionBase>().ToList();
-        // Storage (phase 5) provides stock, cap and rate; until then stock and rate are unknown and cap is the base cap.
-        _resourceNote.Text = $"Resources ({defs.Count})   stock / cap   rate per tick   [Storage arrives in phase 5]";
+        _resourceNote.Text = $"Resources ({defs.Count})   stock / cap   net rate per tick (last tick batch)";
         foreach (var r in defs)
         {
-            _resources.AddChild(new Label
+            if (!_resourceLabels.TryGetValue(r.Id, out var label))
             {
-                Text = $"{r.Name}  - / {DevFormat.Exact(r.BaseCap)}  -/tick",
-                TooltipText = $"{r.Id}{(r.Placeholder ? " (placeholder)" : "")}",
-                MouseFilter = MouseFilterEnum.Pass,
-            });
+                label = new Label { MouseFilter = MouseFilterEnum.Pass };
+                _resources.AddChild(label);
+                _resourceLabels[r.Id] = label;
+            }
+            var stock = storage.Get(r.Id);
+            var cap = storage.Cap(r.Id);
+            var rate = storage.RatePerTick(r.Id);
+            label.Text = $"{r.Name}  {DevFormat.Exact(stock)} / {DevFormat.Exact(cap)}  " +
+                         $"{(rate >= 0 ? "+" : "")}{rate.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}/tick" +
+                         (stock >= cap ? "  FULL" : "");
+            label.Modulate = stock >= cap ? new Color(1f, 0.6f, 0.4f) : Colors.White;
+            label.TooltipText = $"{r.Id}{(r.Placeholder ? " (placeholder)" : "")}";
         }
     }
 
@@ -292,6 +399,7 @@ public partial class DevShell : Control
                 var name = arg["--dev-tab=".Length..];
                 var i = _panels.FindIndex(p => p.Title.Equals(name, StringComparison.OrdinalIgnoreCase));
                 if (i >= 0) _tabs.CurrentTab = i;
+                else if (LichManager.Instance.Skill(name.ToLowerInvariant()) is { } skill) ShowSkill(skill);
             }
             else if (arg.StartsWith("--dev-screenshot=")) shot = arg["--dev-screenshot=".Length..];
         }

@@ -1,0 +1,13 @@
+// Gathering activities. rate = units per tick per necromancer, xp = per unit. Placeholder numbers.
+{
+  "type": "gathering_activity",
+  "entries": [
+    { "id": "copper_ore", "name": "Copper Seam", "skill": "mining",    "required_level": 1,  "rate": 0.5, "xp": 5,  "output": "copper_ore", "placeholder": true },
+    { "id": "coal",       "name": "Coal Seam",   "skill": "mining",    "required_level": 5,  "rate": 0.4, "xp": 8,  "output": "coal",       "placeholder": true },
+    { "id": "iron_ore",   "name": "Iron Seam",   "skill": "mining",    "required_level": 10, "rate": 0.3, "xp": 12, "output": "iron_ore",   "placeholder": true },
+
+    { "id": "eel_pool",   "name": "Eel Pool",    "skill": "fishing",   "required_level": 1,  "rate": 0.4, "xp": 5,  "output": "raw_eel",    "placeholder": true },
+    { "id": "wolf_den",   "name": "Wolf Den",    "skill": "hunting",   "required_level": 1,  "rate": 0.3, "xp": 6,  "output": "wolf_hide",  "placeholder": true },
+    { "id": "nightshade", "name": "Nightshade Patch", "skill": "herbalism", "required_level": 1, "rate": 0.5, "xp": 4, "output": "nightshade", "placeholder": true }
+  ]
+}

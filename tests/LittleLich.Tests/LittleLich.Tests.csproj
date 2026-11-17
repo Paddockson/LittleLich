@@ -10,6 +10,8 @@
   <ItemGroup>
     <Compile Include="../../littlelich/Scripts/Core/**/*.cs" Link="Game/Core/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../littlelich/Scripts/Content/**/*.cs" Link="Game/Content/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../littlelich/Scripts/Skills/**/*.cs" Link="Game/Skills/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../littlelich/Scripts/Crypt/**/*.cs" Link="Game/Crypt/%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="../../littlelich/Data/**/*.json" Link="Data/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>

@@ -11,6 +11,8 @@ public enum LogCategory
     Lich,
     Save,
     Content,
+    Level,
+    Skill,
     Command,
     Error,
 }

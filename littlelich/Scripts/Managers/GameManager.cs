@@ -12,7 +12,8 @@ namespace LittleLich.Managers;
 /// Autoload singleton (first in the autoload list). Boots the game:
 ///   1. Load content JSON from res://Data into the ContentDatabase.
 ///   2. Find saves in user://saves; load the latest, or create a new game.
-///   3. Create/load LichManager, CryptManager state (registered as saveables before the save is read).
+///   3. Create Storage/Inventory (CryptManager) and the ten skills (LichManager) for the loaded content and register
+///      every saveable (lich, storage, inventory, skills) before the save is read.
 ///   4. Compute time away and hold it for the TickManager, which processes it as offline ticks.
 ///   5. The main scene (UI/Main.tscn) shows the shell.
 ///
@@ -74,8 +75,15 @@ public partial class GameManager : Node
             Fail("LichManager autoload is missing (check project.godot [autoload]).");
             return;
         }
+        if (CryptManager.Instance is null)
+        {
+            Fail("CryptManager autoload is missing (check project.godot [autoload]).");
+            return;
+        }
+        // Load order matters: the lich (pool, modifiers) before skills, so skills read restored assignments.
         Session.Register(LichManager.Instance.State);
-        //    Later: Session.Register(CryptManager.Instance.State); ...
+        foreach (var s in CryptManager.Instance.Initialize(content)) Session.Register(s);
+        foreach (var s in LichManager.Instance.InitializeSkills(content, CryptManager.Instance.Stockpile)) Session.Register(s);
 
         try
         {

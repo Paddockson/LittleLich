@@ -32,7 +32,7 @@ public static class DevPanelRegistry
         () => new LichPanel(),   // phase 2
         () => new SavePanel(),   // phase 1
         // Phase 5: () => new WorkshopPanel(),
-        // Phase 6: () => new InventoryPanel(),
+        () => new InventoryPanel(), // phase 4 (minimal; phase 6 adds gear)
         // Phase 7: () => new ResearchPanel(),
         // Phase 8: () => new WorldMapPanel(), () => new BattlePanel(),
         // Phase 9: () => new UnitsPanel(),
