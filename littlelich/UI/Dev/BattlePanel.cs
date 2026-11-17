@@ -137,8 +137,8 @@ public partial class BattlePanel : VBoxContainer, IDevPanel
         var who = a.Source.Side == BattleSide.Attacker ? "#9ecbff" : "#ff9e9e";
         var what = a.Action.Effect switch
         {
-            "attack" => $"hits {a.Target?.Unit.Name} for {a.Amount:0.#}{(a.Braced ? " (braced, -10%)" : "")}",
-            "brace" => "braces",
+            "damage" => $"hits {a.Target?.Unit.Name} for {a.Amount:0.#}{(a.Braced ? " (braced, -10%)" : "")}",
+            "reduce_next_incoming" => "braces",
             "heal" => $"heals {a.Target?.Unit.Name} for {a.Amount:0.#}",
             _ => a.Action.Effect,
         };

@@ -176,11 +176,14 @@ public partial class UnitsPanel : ScrollContainer, IDevPanel
         var defence = armour is null ? 0 : content.Get<ArmourDefinition>(armour).Defence;
         var hp = b.Hp + defence * UnitBuilder.HpPerDefence;
         _preview.Text =
-            $"{b.Name}{(u.IsBaseLocked(b.Id) ? "  [locked: needs research]" : "")}   mana {b.ManaCost} per summon, {b.SummonWork:0.##} circle work\n" +
+            $"{b.Name} ({b.Type}, {b.Role}){(u.IsBaseLocked(b.Id) ? $"  [locked: needs research {b.Unlock?.Research}]" : "")}   " +
+            $"mana {b.ManaCost} per summon, {b.SummonWork:0.##} circle work\n" +
+            (b.Description.Length > 0 ? b.Description + "\n" : "") +
+            $"Gear: {(b.WeaponSlots.Count > 0 ? "weapon" : "no weapon")}, {(b.ArmourSlots.Count > 0 ? "armour" : "no armour")}.   " +
             $"HP {b.Hp:0} -> {hp:0}   " +
-            string.Join("   ", b.Actions.Select(a => a.Effect == "attack"
-                ? $"{a.Name} {a.Value:0.##} -> {a.Value + damage:0.##} every {a.Cooldown:0.##}s ({a.Range})"
-                : $"{a.Name} {a.Effect} {a.Value:0.##} every {a.Cooldown:0.##}s"));
+            string.Join("   ", b.ResolvedActions.Select(a => a.Effect == "damage"
+                ? $"{a.Name} {a.Value:0.##} -> {a.Value + damage:0.##} every {a.CooldownSeconds:0.##}s ({a.Range})"
+                : $"{a.Name} {a.Effect} {a.Value:0.##} every {a.CooldownSeconds:0.##}s"));
     }
 
     private void Build()
@@ -229,7 +232,7 @@ public partial class UnitsPanel : ScrollContainer, IDevPanel
     private static string? Picked(OptionButton o) =>
         o.Selected <= 0 ? null : o.GetItemMetadata(o.Selected).AsString() is { Length: > 0 } s ? s : null;
 
-    private static string Stats(UnitDefinitionBase u) =>
+    private static string Stats(World.BattleUnit u) =>
         $"{u.Hp:0} hp; " + string.Join(", ", u.Actions.Select(a => $"{a.Name} {a.Value.ToString("0.##", CultureInfo.InvariantCulture)}/{a.Cooldown:0.##}s"));
 
     public override void _Notification(int what)

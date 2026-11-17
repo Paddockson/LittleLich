@@ -115,6 +115,9 @@ public sealed class ResearchManager : ITickable, ISaveable
         foreach (var n in _nodes.Values.Select(x => x.Node))
             foreach (var e in n.Effects)
                 if (KindOf(e) is { } kind) unlocks.SetLockable(kind, e.Id!);
+        // Units name their own unlocking node (unlock.research, phase 10): they start locked too.
+        foreach (var u in content.All<UnitDefinitionBase>().Where(u => u.Unlock?.Research is { Length: > 0 }))
+            unlocks.SetLockable(Unlocks.Unit, u.Id);
         SyncBenches();
     }
 
@@ -302,6 +305,9 @@ public sealed class ResearchManager : ITickable, ISaveable
                     break;
             }
         }
+        // Units whose unlock.research is this node.
+        foreach (var u in _content.All<UnitDefinitionBase>().Where(u => u.Unlock?.Research == node.Id))
+            Unlocks.Unlock(Unlocks.Unit, u.Id);
         SetModifiers(SourcePrefix + node.Id, mods);
     }
 

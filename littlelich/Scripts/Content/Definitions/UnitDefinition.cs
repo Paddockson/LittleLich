@@ -1,74 +1,130 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace LittleLich.Content.Definitions;
 
 /// <summary>
-/// One battle action (data). Fires every <see cref="Cooldown"/> seconds on the battle clock.
-///   effect: attack (value damage per living unit), brace (the next attack against the group does value x 100% less),
-///           heal (value HP per living unit to the target group)
-///   target: front (the enemy's front-most living section), back (the enemy's back-most), lowest (the enemy group with
-///           the lowest HP fraction), self, ally_lowest (own group with the lowest HP fraction)
-///   range:  melee (only usable from the front-most living section of its side) or ranged (any section)
+/// Family base for reusable battle actions (JSON type "battle_action", Data/units/actions.json). Units list them by id.
+/// Fires every <see cref="CooldownSeconds"/> on the battle clock (battles run on their own clock, in seconds).
+///   effect: damage (value per living unit), reduce_next_incoming (the next attack against the group does value x 100% less),
+///           heal (value HP per living unit to the target)
+///   target: front (the enemy's front-most living section), back (its back-most), lowest (the enemy group with the lowest
+///           HP fraction), self, ally_lowest (own group with the lowest HP fraction)
+///   range:  melee (only from the front-most living section of its side) or ranged (any section)
 /// </summary>
-public sealed class UnitAction
+public abstract class BattleActionDefinitionBase : Definition
 {
-    public static readonly IReadOnlySet<string> Effects = new HashSet<string> { "attack", "brace", "heal" };
+    public static readonly IReadOnlySet<string> Effects = new HashSet<string> { "damage", "reduce_next_incoming", "heal" };
     public static readonly IReadOnlySet<string> Targets = new HashSet<string> { "front", "back", "lowest", "self", "ally_lowest" };
 
-    public string Id { get; init; } = "";
-    public string Name { get; init; } = "";
-    public double Cooldown { get; init; } = 1;
-    public string Effect { get; init; } = "attack";
+    public double CooldownSeconds { get; init; } = 1;
+    public string Effect { get; init; } = "damage";
     public double Value { get; init; }
     public string Target { get; init; } = "front";
     public string Range { get; init; } = "melee";
 
-    public bool IsMelee => Range == "melee";
+    public override void Validate(ContentErrors errors)
+    {
+        base.Validate(errors);
+        if (!(CooldownSeconds >= 0.1)) errors.Add("cooldown_seconds", "must be at least 0.1 seconds");
+        if (!Effects.Contains(Effect)) errors.Add("effect", $"'{Effect}' is not one of {string.Join(", ", Effects)}");
+        if (!Targets.Contains(Target)) errors.Add("target", $"'{Target}' is not one of {string.Join(", ", Targets)}");
+        if (Range is not ("melee" or "ranged")) errors.Add("range", "must be melee or ranged");
+        if (!(Value >= 0)) errors.Add("value", "must be 0 or more");
+        if (Effect == "reduce_next_incoming" && Value > 1) errors.Add("value", "reduce_next_incoming is a fraction (0.1 = 10% less damage)");
+        if (Effect == "reduce_next_incoming" && Target != "self") errors.Add("target", "reduce_next_incoming must target self");
+    }
+}
+
+/// <summary>JSON type "battle_action".</summary>
+public sealed class BattleActionDefinition : BattleActionDefinitionBase { }
+
+/// <summary>How a player unit base is unlocked: { "research": "nec1_raise_skeletons" }.</summary>
+public sealed class UnitUnlock
+{
+    public string? Research { get; init; }
 }
 
 /// <summary>
-/// Family base for units. Placeholder schema pulled forward from phase 10 so phase 8 battles have something to fight
-/// with: hit points per unit and up to three actions. Phase 10 adds roles, damage types, costs and gear.
+/// Family base for units. Subclasses are picked by the JSON type: undead, wild, boss, structure.
+/// Player bases (side "player", Data/units/bases.json) appear in the Unit Builder; enemies (side "enemy",
+/// Data/units/enemies.json) are listed as defenders by areas (Data/world.json).
+/// Adding a unit is a JSON entry only: the Unit Builder lists every player base and battles use any unit.
 /// </summary>
 public abstract class UnitDefinitionBase : Definition
 {
     public const int MaxActions = 3;
 
     /// <summary>"player" (raised by the lich) or "enemy".</summary>
-    public string Side { get; init; } = "player";
+    public string Side { get; init; } = "enemy";
+    /// <summary>Hit points per unit.</summary>
     public double Hp { get; init; } = 1;
-    public List<UnitAction> Actions { get; init; } = new();
-
-    /// <summary>Mana per summon (player bases; phase 9 decision: summons cost mana as well as their gear).</summary>
+    /// <summary>Swarm, tank, ranged ... (shown in the Unit Builder).</summary>
+    public string Role { get; init; } = "";
+    public string Description { get; init; } = "";
+    /// <summary>Battle action ids (Data/units/actions.json), at most three.</summary>
+    public List<string> Actions { get; init; } = new();
+    /// <summary>Player bases: the research node that unlocks it (none = available from the start).</summary>
+    public UnitUnlock? Unlock { get; init; }
+    /// <summary>Player bases: slots for a weapon / armour. Empty = this body cannot carry one. v0.1 uses one of each.</summary>
+    public List<string> WeaponSlots { get; init; } = new();
+    public List<string> ArmourSlots { get; init; } = new();
+    /// <summary>Player bases: mana per summon (phase 9 decision) and Summoning Circle work per summon.</summary>
     public long ManaCost { get; init; }
-
-    /// <summary>Summoning Circle work per summon (player bases).</summary>
     public double SummonWork { get; init; } = 1;
+
+    /// <summary>The actions resolved from <see cref="Actions"/> (filled in when references are validated).</summary>
+    [JsonIgnore]
+    public IReadOnlyList<BattleActionDefinitionBase> ResolvedActions { get; private set; } = new List<BattleActionDefinitionBase>();
+
+    public bool IsPlayer => Side == "player";
 
     public override void Validate(ContentErrors errors)
     {
         base.Validate(errors);
         if (Side is not ("player" or "enemy")) errors.Add("side", "must be player or enemy");
         if (!(Hp > 0)) errors.Add("hp", "must be above 0");
+        if (Actions.Count > MaxActions) errors.Add("actions", $"has {Actions.Count} actions; at most {MaxActions}");
+        if (Actions.GroupBy(a => a).Any(g => g.Count() > 1)) errors.Add("actions", "lists the same action twice");
         if (ManaCost < 0) errors.Add("mana_cost", "must be 0 or more");
         if (!(SummonWork > 0)) errors.Add("summon_work", "must be above 0");
-        if (Actions.Count > MaxActions) errors.Add("actions", $"at most {MaxActions} actions per unit");
-        if (Actions.GroupBy(a => a.Id).Any(g => g.Count() > 1)) errors.Add("actions", "action ids must be unique");
-        for (var i = 0; i < Actions.Count; i++)
+        if (WeaponSlots.Count > 1 || ArmourSlots.Count > 1) errors.Add("weapon_slots", "v0.1 supports at most one weapon slot and one armour slot");
+        if (!IsPlayer && (Unlock is not null || ManaCost > 0 || WeaponSlots.Count > 0 || ArmourSlots.Count > 0))
+            errors.Add("side", "unlock, mana_cost and gear slots are for player units only");
+        if (Unlock is { Research: null or "" }) errors.Add("unlock.research", "is missing");
+    }
+
+    public override void ValidateReferences(ContentDatabase db, ContentErrors errors)
+    {
+        var resolved = new List<BattleActionDefinitionBase>();
+        foreach (var id in Actions)
         {
-            var a = Actions[i];
-            var f = $"actions[{i}]";
-            if (string.IsNullOrWhiteSpace(a.Id)) errors.Add($"{f}.id", "is missing");
-            if (!(a.Cooldown >= 0.1)) errors.Add($"{f}.cooldown", "must be at least 0.1 seconds");
-            if (!UnitAction.Effects.Contains(a.Effect)) errors.Add($"{f}.effect", $"must be one of {string.Join(", ", UnitAction.Effects)}");
-            if (!UnitAction.Targets.Contains(a.Target)) errors.Add($"{f}.target", $"must be one of {string.Join(", ", UnitAction.Targets)}");
-            if (a.Range is not ("melee" or "ranged")) errors.Add($"{f}.range", "must be melee or ranged");
-            if (!(a.Value >= 0)) errors.Add($"{f}.value", "must be 0 or more");
-            if (a.Effect == "brace" && a.Value > 1) errors.Add($"{f}.value", "brace is a fraction (0.1 = 10% less damage)");
+            if (db.TryGet<BattleActionDefinitionBase>(id, out var a)) resolved.Add(a);
+            else errors.Add("actions", $"unknown action id '{id}'");
         }
+        ResolvedActions = resolved;
+        if (Unlock?.Research is { Length: > 0 } r && !db.Contains<ResearchNodeDefinitionBase>(r))
+            errors.Add("unlock.research", $"unknown research node '{r}'");
     }
 }
 
-/// <summary>JSON type "unit".</summary>
-public sealed class UnitDefinition : UnitDefinitionBase { }
+/// <summary>JSON type "undead": the lich's bodies and rival undead.</summary>
+public sealed class UndeadUnitDefinition : UnitDefinitionBase { }
+
+/// <summary>JSON type "wild": the wild people of the Woods and other living foes.</summary>
+public sealed class WildUnitDefinition : UnitDefinitionBase { }
+
+/// <summary>JSON type "boss": a single strong enemy (basic boss; boss mechanics are out of scope).</summary>
+public sealed class BossUnitDefinition : UnitDefinitionBase { }
+
+/// <summary>JSON type "structure": walls and gates. Enemy only, no actions; it just has to be broken.</summary>
+public sealed class StructureUnitDefinition : UnitDefinitionBase
+{
+    public override void Validate(ContentErrors errors)
+    {
+        base.Validate(errors);
+        if (IsPlayer) errors.Add("side", "structures are enemy only");
+        if (Actions.Count > 0) errors.Add("actions", "structures have no actions");
+    }
+}

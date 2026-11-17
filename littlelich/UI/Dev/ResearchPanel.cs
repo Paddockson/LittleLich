@@ -119,7 +119,9 @@ public partial class ResearchPanel : VBoxContainer, IDevPanel
             $"Cost (paid at start): {cost}.   Work: {DevFormat.Exact(n.ResearchTicks)} (1 per staffed necromancer per tick)." +
             (n.Xp > 0 && tomeSkill is { Length: > 0 } ? $"   +{n.Xp:0} {tomeSkill} XP." : "") +
             (n.SkillLevel > 0 ? $"   Needs {tomeSkill} level {n.SkillLevel}." : "") + "\n" +
-            "Effects: " + (n.Effects.Count == 0 ? "none" : string.Join("; ", n.Effects));
+            "Effects: " + string.Join("; ", n.Effects.Select(x => x.ToString())
+                .Concat(content.All<UnitDefinitionBase>().Where(u => u.Unlock?.Research == id).Select(u => $"Unlocks unit {u.Name}"))
+                .DefaultIfEmpty("none"));
         _start.Disabled = state != NodeState.Available || !r.CanAfford(n) || r.Benches.All(b => b.NodeId is not null);
         _start.TooltipText = state != NodeState.Available ? "Not available."
             : !r.CanAfford(n) ? "Not enough to pay the cost."

@@ -187,7 +187,7 @@ public sealed class WorldState : ISaveable
     private void Start(AreaDefinition area, ArmyPlan plan)
     {
         var attackers = plan.Entries.Select(e => (e.Section, _units.BattleUnit(e.Unit), e.Count));
-        var defenders = area.Defenders.SelectMany(s => s.Value.Select(u => (s.Key, Unit(u.Unit), u.Count)));
+        var defenders = area.Defenders.SelectMany(s => s.Value.Select(u => (s.Key, BattleUnit.From(Unit(u.Unit)), u.Count)));
         Battle = new BattleController(attackers, defenders);
         BattleArea = area.Id;
         BattlePlan = plan;

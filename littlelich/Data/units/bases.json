@@ -1,0 +1,19 @@
+// Player unit bases (phase 10): bodies the lich raises. They appear in the Unit Builder.
+// unlock.research = the Necromancy node that unlocks the body. weapon_slots / armour_slots: empty = cannot carry one.
+// mana_cost per summon; summon_work = Summoning Circle work per summon. Placeholder numbers.
+[
+  { "type": "undead", "id": "skeleton", "name": "Skeleton", "side": "player", "role": "swarm",
+    "description": "Cheap, quick to summon, huge numbers.",
+    "hp": 20, "actions": [ "strike", "brace" ], "unlock": { "research": "nec1_raise_skeletons" },
+    "weapon_slots": [ "weapon" ], "armour_slots": [ "body" ], "mana_cost": 5, "summon_work": 1, "placeholder": true },
+
+  { "type": "undead", "id": "zombie", "name": "Zombie", "side": "player", "role": "tank",
+    "description": "Slow and durable.",
+    "hp": 45, "actions": [ "bite" ], "unlock": { "research": "nec1_raise_zombies" },
+    "weapon_slots": [ "weapon" ], "armour_slots": [ "body" ], "mana_cost": 12, "summon_work": 2, "placeholder": true },
+
+  { "type": "undead", "id": "bone_archer", "name": "Bone Archer", "side": "player", "role": "ranged",
+    "description": "Skeletons with bows: they shoot from the back while the front holds.",
+    "hp": 14, "actions": [ "bone_arrow" ], "unlock": { "research": "nec1_bone_archers" },
+    "weapon_slots": [ "weapon" ], "armour_slots": [ "body" ], "mana_cost": 8, "summon_work": 1.5, "placeholder": true }
+]

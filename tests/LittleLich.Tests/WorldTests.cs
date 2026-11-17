@@ -14,16 +14,17 @@ namespace LittleLich.Tests;
 
 public class BattleTests
 {
-    private static UnitDefinition Unit(string id, double hp, params UnitAction[] actions) =>
-        new() { Id = id, Name = id, Hp = hp, Actions = actions.ToList() };
+    private static BattleUnit Unit(string id, double hp, params BattleUnitAction[] actions) => new(id, id, hp, actions.ToList());
 
-    private static UnitAction Attack(double cd, double value, string target = "front", string range = "melee", string id = "hit") =>
-        new() { Id = id, Name = id, Cooldown = cd, Effect = "attack", Value = value, Target = target, Range = range };
+    private static BattleUnitAction Attack(double cd, double value, string target = "front", string range = "melee", string id = "hit") =>
+        new(id, id, cd, "damage", value, target, range);
 
-    private static UnitAction Brace(double cd, double value = 0.1) =>
-        new() { Id = "brace", Name = "Brace", Cooldown = cd, Effect = "brace", Value = value, Target = "self" };
+    private static BattleUnitAction Brace(double cd, double value = 0.1) =>
+        new("brace", "Brace", cd, "reduce_next_incoming", value, "self", "melee");
 
-    private static (string, UnitDefinitionBase, long) G(string section, UnitDefinitionBase u, long n) => (section, u, n);
+    private static (string, BattleUnit, long) G(string section, BattleUnit u, long n) => (section, u, n);
+
+    private static BattleUnit FromContent(string id) => BattleUnit.From(World.SampleContent.Get<UnitDefinitionBase>(id));
 
     [Fact]
     public void Cooldowns_fire_at_the_right_times()
@@ -45,7 +46,7 @@ public class BattleTests
         var wall = Unit("wall", 1000, Brace(0.5));          // braces at 0.5 s, 1.0 s ... before each hit lands
         var b = new BattleController(new[] { G("front", hitter, 1) }, new[] { G("front", wall, 1) });
         var hits = new List<(double Amount, bool Braced)>();
-        b.ActionFired += x => { if (x.Action.Effect == "attack") hits.Add((x.Amount, x.Braced)); };
+        b.ActionFired += x => { if (x.Action.Effect == "damage") hits.Add((x.Amount, x.Braced)); };
         b.Advance(1);
         Assert.Equal((9.0, true), hits[0]);
         Assert.Equal(991, b.Groups[1].Hp, 9);
@@ -53,7 +54,7 @@ public class BattleTests
         var lazyWall = Unit("lazy", 1000, Brace(10));       // braces once at 10 s
         var c = new BattleController(new[] { G("front", hitter, 1) }, new[] { G("front", lazyWall, 1) });
         var amounts = new List<double>();
-        c.ActionFired += x => { if (x.Action.Effect == "attack") amounts.Add(x.Amount); };
+        c.ActionFired += x => { if (x.Action.Effect == "damage") amounts.Add(x.Amount); };
         c.Advance(12);
         // Hits at 1..12 s; the brace at 10 s (fires before the 10 s hit: defender acts after attacker on ties, so it
         // protects the 11 s hit), and only that one.
@@ -95,7 +96,7 @@ public class BattleTests
     {
         var a = Unit("a", 1000, Attack(1, 8));
         var tank = Unit("tank", 50);
-        var healer = Unit("healer", 50, new UnitAction { Id = "mend", Name = "Mend", Cooldown = 2, Effect = "heal", Value = 5, Target = "ally_lowest", Range = "ranged" });
+        var healer = Unit("healer", 50, new BattleUnitAction("mend", "Mend", 2, "heal", 5, "ally_lowest", "ranged"));
         var b = new BattleController(new[] { G("front", a, 1) }, new[] { G("front", tank, 1), G("back", healer, 1) });
         b.Advance(2);                                         // -8 at 1 s, -8 at 2 s, +5 at 2 s
         Assert.Equal(39, b.Groups[1].Hp, 9);
@@ -126,8 +127,8 @@ public class BattleTests
             var db = World.SampleContent;
             var area = db.Get<AreaDefinitionBase>("woods");
             var b = new BattleController(
-                new[] { G("front", db.Get<UnitDefinitionBase>("skeleton"), 25), G("front", db.Get<UnitDefinitionBase>("zombie"), 12) },
-                area.Defenders.SelectMany(s => s.Value.Select(u => G(s.Key, db.Get<UnitDefinitionBase>(u.Unit), u.Count))));
+                new[] { G("front", FromContent("skeleton"), 25), G("front", FromContent("zombie"), 12) },
+                area.Defenders.SelectMany(s => s.Value.Select(u => G(s.Key, FromContent(u.Unit), u.Count))));
             var log = new List<string>();
             b.ActionFired += x => log.Add($"{x.AtMs}:{x.Source.Unit.Id}:{x.Action.Id}:{x.Target?.Unit.Id}:{x.Amount:0.###}");
             drive(b);
@@ -309,15 +310,13 @@ public class WorldContentTests
     [Fact]
     public void Units_have_at_most_three_valid_actions()
     {
-        var e = Fails("""
-            [ { "type": "unit", "id": "x", "name": "X", "hp": 5, "actions": [
-                { "id": "a", "cooldown": 1, "effect": "attack", "value": 1 }, { "id": "b", "cooldown": 1, "effect": "attack", "value": 1 },
-                { "id": "c", "cooldown": 1, "effect": "attack", "value": 1 }, { "id": "d", "cooldown": 0.01, "effect": "explode", "target": "moon" } ] } ]
-            """);
-        Assert.Contains(e.Errors, x => x.Field == "actions" && x.Message.Contains("at most 3"));
-        Assert.Contains(e.Errors, x => x.Field == "actions[3].cooldown");
-        Assert.Contains(e.Errors, x => x.Field == "actions[3].effect");
-        Assert.Contains(e.Errors, x => x.Field == "actions[3].target");
+        var e = Fails("""[ { "type": "wild", "id": "x", "name": "X", "hp": 5, "actions": [ "strike", "brace", "bite", "smash" ] } ]""");
+        Assert.Contains(e.Errors, x => x.Id == "x" && x.Field == "actions" && x.Message.Contains("at most 3"));
+        e = Fails("""[ { "type": "battle_action", "id": "zap", "name": "Zap", "cooldown_seconds": 0.01, "effect": "explode", "target": "moon", "value": -1 } ]""");
+        Assert.Contains(e.Errors, x => x.Field == "cooldown_seconds");
+        Assert.Contains(e.Errors, x => x.Field == "effect");
+        Assert.Contains(e.Errors, x => x.Field == "target");
+        Assert.Contains(e.Errors, x => x.Field == "value");
     }
 
     [Fact]

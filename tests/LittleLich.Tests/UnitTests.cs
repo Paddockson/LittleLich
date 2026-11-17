@@ -116,8 +116,8 @@ public class UnitBuilderTests
         var armed = w.Units.BattleUnit(w.Units.Build("skeleton", "copper_sword", "iron_armour").Type!.Id);
         Assert.Equal(20, bare.Hp);
         Assert.Equal(20 + 6 * UnitBuilder.HpPerDefence, armed.Hp);
-        Assert.Equal(3, bare.Actions.Single(a => a.Id == "slash").Value);
-        Assert.Equal(7, armed.Actions.Single(a => a.Id == "slash").Value);          // + sword damage 4
+        Assert.Equal(3, bare.Actions.Single(a => a.Id == "strike").Value);
+        Assert.Equal(7, armed.Actions.Single(a => a.Id == "strike").Value);          // + sword damage 4
         Assert.Equal(0.1, armed.Actions.Single(a => a.Id == "brace").Value);       // brace unchanged
     }
 

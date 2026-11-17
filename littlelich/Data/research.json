@@ -15,11 +15,18 @@
 
   { "type": "research_node", "tome": "necromancy_1", "id": "nec1_raise_skeletons", "name": "Raise Skeletons",
     "requires": [ "nec1_grave_lore" ], "position": [-2, 1], "cost": { "mana": 60 }, "research_ticks": 30, "xp": 40,
-    "effects": [ { "type": "unlock_unit", "id": "skeleton" } ], "placeholder": true },
+    "description": "Unlocks the Skeleton body (units name their unlocking node).",
+    "effects": [], "placeholder": true },
+
+  { "type": "research_node", "tome": "necromancy_1", "id": "nec1_bone_archers", "name": "Bone Archers",
+    "description": "Unlocks the Bone Archer body.",
+    "requires": [ "nec1_raise_skeletons" ], "position": [-2, 2], "cost": { "mana": 90, "bones": 10 }, "research_ticks": 50, "xp": 60,
+    "effects": [], "placeholder": true },
 
   { "type": "research_node", "tome": "necromancy_1", "id": "nec1_raise_zombies", "name": "Raise Zombies",
     "requires": [ "nec1_grave_lore" ], "position": [-1, 2], "cost": { "mana": 80, "raw_eel": 10 }, "research_ticks": 40, "xp": 40,
-    "effects": [ { "type": "unlock_unit", "id": "zombie" } ], "placeholder": true },
+    "description": "Unlocks the Zombie body.",
+    "effects": [], "placeholder": true },
 
   { "type": "research_node", "tome": "necromancy_1", "id": "nec1_second_bench", "name": "Second Bench",
     "requires": [ "nec1_grave_lore" ], "position": [2, 1], "cost": { "mana": 100, "copper_bar": 10 }, "research_ticks": 40, "xp": 40,

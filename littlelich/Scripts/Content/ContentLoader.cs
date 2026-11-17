@@ -64,7 +64,11 @@ public sealed class ContentLoader
         loader.Register<TomeDefinition>("tome");
         loader.Register<ResearchNodeDefinition>("research_node");
         loader.Register<ResearchBenchDefinition>("research_bench");
-        loader.Register<UnitDefinition>("unit");
+        loader.Register<BattleActionDefinition>("battle_action");
+        loader.Register<UndeadUnitDefinition>("undead");
+        loader.Register<WildUnitDefinition>("wild");
+        loader.Register<BossUnitDefinition>("boss");
+        loader.Register<StructureUnitDefinition>("structure");
         loader.Register<MapNodeDefinition>("map_node");
         loader.Register<AreaDefinition>("area");
         // Later phases register units, research nodes, upgrades ...

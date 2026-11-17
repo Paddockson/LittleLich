@@ -135,9 +135,9 @@ public partial class MapPanel : ScrollContainer, IDevPanel
                 $"  {s}: " + string.Join(", ", area.Defenders[s].Select(u =>
                 {
                     var def = content.Get<UnitDefinitionBase>(u.Unit);
-                    var actions = def.Actions.Count == 0
+                    var actions = def.ResolvedActions.Count == 0
                         ? "no actions"
-                        : string.Join(", ", def.Actions.Select(a => $"{a.Name} {a.Effect} {a.Value:0.##}/{a.Cooldown:0.##}s"));
+                        : string.Join(", ", def.ResolvedActions.Select(a => $"{a.Name} {a.Effect} {a.Value:0.##}/{a.CooldownSeconds:0.##}s"));
                     return $"{def.Name} x{u.Count} ({def.Hp:0} hp; {actions})";
                 }))));
             _details.Text = $"{area.Name}: {w.State(areaId)}{(w.IsReachable(areaId) ? "" : " (no path yet)")}\n{area.Description}\n" +

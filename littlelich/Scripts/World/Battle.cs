@@ -23,7 +23,7 @@ public enum BattleOutcome
 /// </summary>
 public sealed class BattleGroup
 {
-    internal BattleGroup(BattleSide side, string section, UnitDefinitionBase unit, long count, int order)
+    internal BattleGroup(BattleSide side, string section, BattleUnit unit, long count, int order)
     {
         Side = side;
         Section = section;
@@ -36,7 +36,7 @@ public sealed class BattleGroup
 
     public BattleSide Side { get; }
     public string Section { get; }
-    public UnitDefinitionBase Unit { get; }
+    public BattleUnit Unit { get; }
     public long StartCount { get; }
     public double MaxHp => StartCount * Unit.Hp;
     public double Hp { get; internal set; }
@@ -57,7 +57,7 @@ public sealed class BattleGroup
 }
 
 /// <summary>What happened when an action fired (for the battle log and UI).</summary>
-public sealed record BattleAction(long AtMs, BattleGroup Source, UnitAction Action, BattleGroup? Target, double Amount, bool Braced);
+public sealed record BattleAction(long AtMs, BattleGroup Source, BattleUnitAction Action, BattleGroup? Target, double Amount, bool Braced);
 
 /// <summary>
 /// One fight, created per battle by the WorldManager. Runs on its own clock in whole milliseconds, separate from
@@ -67,7 +67,7 @@ public sealed record BattleAction(long AtMs, BattleGroup Source, UnitAction Acti
 /// ties go to the attacker, then front to back, then group order, then action order, so Advance(10 s) equals
 /// ten Advance(1 s). Melee actions are only usable from the front-most living section of their side; an action that is
 /// due but unusable waits and fires as soon as it can.
-/// Damage = value x units standing; a braced target takes (1 - brace) of it and the brace is used up.
+/// Damage = value x units standing; a target with reduce_next_incoming (brace) takes (1 - brace) of it and the brace is used up.
 /// The battle ends when one side has no one standing, on retreat, or at the time limit (counted as a defeat).
 /// </summary>
 public sealed class BattleController
@@ -78,8 +78,8 @@ public sealed class BattleController
     private double _carryMs;
 
     public BattleController(
-        IEnumerable<(string Section, UnitDefinitionBase Unit, long Count)> attackers,
-        IEnumerable<(string Section, UnitDefinitionBase Unit, long Count)> defenders,
+        IEnumerable<(string Section, BattleUnit Unit, long Count)> attackers,
+        IEnumerable<(string Section, BattleUnit Unit, long Count)> defenders,
         long timeLimitMs = DefaultTimeLimitMs)
     {
         TimeLimitMs = timeLimitMs;
@@ -149,7 +149,7 @@ public sealed class BattleController
 
     // ---- internals ----
 
-    private void Add(BattleSide side, IEnumerable<(string Section, UnitDefinitionBase Unit, long Count)> units)
+    private void Add(BattleSide side, IEnumerable<(string Section, BattleUnit Unit, long Count)> units)
     {
         foreach (var (section, unit, count) in units
                      .Where(u => u.Count > 0)
@@ -162,7 +162,7 @@ public sealed class BattleController
 
     private bool SideAlive(BattleSide side) => GroupsOf(side).Any(g => g.IsAlive);
 
-    private bool Usable(BattleGroup g, UnitAction a) => g.IsAlive && (!a.IsMelee || FrontSection(g.Side) == g.Section);
+    private bool Usable(BattleGroup g, BattleUnitAction a) => g.IsAlive && (!a.IsMelee || FrontSection(g.Side) == g.Section);
 
     /// <summary>The earliest usable action due at or before <paramref name="limit"/> (stable tie order).</summary>
     private (BattleGroup Group, int Action, long At)? NextDue(long limit)
@@ -191,7 +191,7 @@ public sealed class BattleController
         var braced = false;
         switch (a.Effect)
         {
-            case "attack" when target is not null:
+            case "damage" when target is not null:
                 amount = a.Value * g.Alive;
                 if (target.Brace > 0)
                 {
@@ -201,7 +201,7 @@ public sealed class BattleController
                 }
                 target.Hp = Math.Max(0, target.Hp - amount);
                 break;
-            case "brace":
+            case "reduce_next_incoming":
                 target = g;
                 g.Brace = Math.Max(g.Brace, a.Value);
                 amount = a.Value;
@@ -215,7 +215,7 @@ public sealed class BattleController
         ActionFired?.Invoke(new BattleAction(NowMs, g, a, target, amount, braced));
     }
 
-    private BattleGroup? PickTarget(BattleGroup g, UnitAction a)
+    private BattleGroup? PickTarget(BattleGroup g, BattleUnitAction a)
     {
         var enemy = g.Side == BattleSide.Attacker ? BattleSide.Defender : BattleSide.Attacker;
         var foes = GroupsOf(enemy).Where(x => x.IsAlive).ToList();

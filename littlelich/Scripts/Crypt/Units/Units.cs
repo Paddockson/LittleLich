@@ -30,6 +30,10 @@ public enum BuildResult
     BadWeapon,
     BadArmour,
     BadItem,
+    /// <summary>The base has no weapon slot (weapon_slots is empty).</summary>
+    NoWeaponSlot,
+    /// <summary>The base has no armour slot (armour_slots is empty).</summary>
+    NoArmourSlot,
 }
 
 /// <summary>
@@ -78,8 +82,9 @@ public sealed class FormationSlot
 /// inventory). <see cref="TrySummon"/> is instant and all-or-nothing; the Summoning Circle uses
 /// <see cref="SummonUpTo"/> over ticks to keep a type's stack at a target.
 ///
-/// Battle stats for a type (placeholder rules until phase 10): HP = base hp + armour defence x 5;
-/// every attack action does + weapon damage. Items are used up but have no battle effect yet (runes later).
+/// Battle stats for a type (placeholder rules): HP = base hp + armour defence x 5; every damage action does
+/// + weapon damage. A base takes a weapon / armour only if it has a weapon / armour slot. Items are used up but have
+/// no battle effect yet (runes later).
 /// </summary>
 public sealed class UnitBuilder : ISaveable
 {
@@ -92,7 +97,7 @@ public sealed class UnitBuilder : ISaveable
     private readonly List<UnitType> _types = new();
     private readonly Dictionary<string, long> _roster = new(StringComparer.Ordinal);
     private readonly List<Formation> _formations = new();
-    private readonly Dictionary<string, UnitDefinition> _battleCache = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, World.BattleUnit> _battleCache = new(StringComparer.Ordinal);
 
     public UnitBuilder(ContentDatabase content, Stockpile stock, Unlocks unlocks)
     {
@@ -131,6 +136,8 @@ public sealed class UnitBuilder : ISaveable
         if (IsBaseLocked(baseId)) return (BuildResult.BaseLocked, null);
         if (weapon is { Length: > 0 } && !(_content.TryGet<WeaponDefinition>(weapon, out var w) && !w.FitsLich)) return (BuildResult.BadWeapon, null);
         if (armour is { Length: > 0 } && !(_content.TryGet<ArmourDefinition>(armour, out var a) && !a.FitsLich)) return (BuildResult.BadArmour, null);
+        if (weapon is { Length: > 0 } && b.WeaponSlots.Count == 0) return (BuildResult.NoWeaponSlot, null);
+        if (armour is { Length: > 0 } && b.ArmourSlots.Count == 0) return (BuildResult.NoArmourSlot, null);
         if (itemList.Any(i => !_content.Contains<ItemDefinitionBase>(i) || _content.Contains<EquippableDefinitionBase>(i))) return (BuildResult.BadItem, null);
 
         var id = UnitType.IdFor(baseId, weapon, armour, itemList);
@@ -242,25 +249,15 @@ public sealed class UnitBuilder : ISaveable
     // ---- Battle stats ----
 
     /// <summary>The type as a battle unit: base stats plus its gear (placeholder rules, see the class summary).</summary>
-    public UnitDefinitionBase BattleUnit(string typeId)
+    public World.BattleUnit BattleUnit(string typeId)
     {
         if (_battleCache.TryGetValue(typeId, out var cached)) return cached;
         var t = Type(typeId) ?? throw new ArgumentException($"No unit type '{typeId}'.", nameof(typeId));
         var b = _content.Get<UnitDefinitionBase>(t.Base);
         var damage = t.Weapon is { } w ? _content.Get<WeaponDefinition>(w).Damage : 0;
         var defence = t.Armour is { } a ? _content.Get<ArmourDefinition>(a).Defence : 0;
-        var u = new UnitDefinition
-        {
-            Id = t.Id,
-            Name = t.Name,
-            Side = "player",
-            Hp = b.Hp + defence * HpPerDefence,
-            ManaCost = b.ManaCost,
-            SummonWork = b.SummonWork,
-            Actions = b.Actions.Select(x => x.Effect == "attack"
-                ? new UnitAction { Id = x.Id, Name = x.Name, Cooldown = x.Cooldown, Effect = x.Effect, Value = x.Value + damage, Target = x.Target, Range = x.Range }
-                : x).ToList(),
-        };
+        var u = new World.BattleUnit(t.Id, t.Name, b.Hp + defence * HpPerDefence,
+            b.ResolvedActions.Select(x => World.BattleUnitAction.From(x, damage)).ToList());
         _battleCache[typeId] = u;
         return u;
     }

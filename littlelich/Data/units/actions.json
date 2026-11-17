@@ -1,0 +1,18 @@
+// Reusable battle actions (phase 10). Units list them by id; a unit has at most 3.
+// cooldown_seconds runs on the battle clock. effect: damage | reduce_next_incoming | heal.
+// target: front | back | lowest | self | ally_lowest. range: melee (front-most section only) | ranged. Placeholder numbers.
+{
+  "type": "battle_action",
+  "entries": [
+    { "id": "strike",       "name": "Strike",       "cooldown_seconds": 2,   "effect": "damage", "value": 3,   "target": "front",  "range": "melee" },
+    { "id": "brace",        "name": "Brace",        "cooldown_seconds": 10,  "effect": "reduce_next_incoming", "value": 0.1, "target": "self", "range": "melee" },
+    { "id": "bite",         "name": "Bite",         "cooldown_seconds": 3,   "effect": "damage", "value": 5,   "target": "front",  "range": "melee" },
+    { "id": "bone_arrow",   "name": "Bone Arrow",   "cooldown_seconds": 2.5, "effect": "damage", "value": 2.5, "target": "front",  "range": "ranged" },
+    { "id": "grave_shot",   "name": "Grave Shot",   "cooldown_seconds": 2.5, "effect": "damage", "value": 2,   "target": "front",  "range": "ranged" },
+    { "id": "smash",        "name": "Smash",        "cooldown_seconds": 3,   "effect": "damage", "value": 6,   "target": "front",  "range": "melee" },
+    { "id": "thick_hide",   "name": "Thick Hide",   "cooldown_seconds": 8,   "effect": "reduce_next_incoming", "value": 0.1, "target": "self", "range": "melee" },
+    { "id": "thrown_spear", "name": "Thrown Spear", "cooldown_seconds": 2.5, "effect": "damage", "value": 3,   "target": "lowest", "range": "ranged" },
+    { "id": "mend",         "name": "Mend",         "cooldown_seconds": 4,   "effect": "heal",   "value": 4,   "target": "ally_lowest", "range": "ranged" },
+    { "id": "hex",          "name": "Hex",          "cooldown_seconds": 6,   "effect": "damage", "value": 2,   "target": "back",   "range": "ranged" }
+  ]
+}

@@ -1,0 +1,17 @@
+// Enemy units (phase 10). Areas list them as defenders by section and count (Data/world.json). Placeholder numbers.
+[
+  { "type": "structure", "id": "graveyard_gate", "name": "Graveyard Gate", "side": "enemy", "role": "wall",
+    "description": "The graveyard gates are the walls.", "hp": 600, "placeholder": true },
+
+  { "type": "undead", "id": "rival_skeleton", "name": "Rival Skeleton", "side": "enemy", "role": "swarm",
+    "hp": 18, "actions": [ "strike", "brace" ], "placeholder": true },
+  { "type": "undead", "id": "grave_archer", "name": "Grave Archer", "side": "enemy", "role": "ranged",
+    "hp": 12, "actions": [ "grave_shot" ], "placeholder": true },
+
+  { "type": "wild", "id": "wild_brute", "name": "Wild Brute", "side": "enemy", "role": "tank",
+    "hp": 30, "actions": [ "smash", "thick_hide" ], "placeholder": true },
+  { "type": "wild", "id": "wild_hunter", "name": "Wild Hunter", "side": "enemy", "role": "ranged",
+    "hp": 14, "actions": [ "thrown_spear" ], "placeholder": true },
+  { "type": "wild", "id": "wild_shaman", "name": "Wild Shaman", "side": "enemy", "role": "support",
+    "hp": 16, "actions": [ "mend", "hex" ], "placeholder": true }
+]

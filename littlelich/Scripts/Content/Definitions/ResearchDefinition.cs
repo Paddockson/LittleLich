@@ -151,7 +151,9 @@ public abstract class ResearchNodeDefinitionBase : Definition
                 case "building_level" when !db.Contains<BuildingDefinitionBase>(e.Building!):
                     errors.Add($"{f}.building", $"no building '{e.Building}'");
                     break;
-                // unlock_unit ids are checked once units exist (phase 9/10); they are recorded meanwhile.
+                case "unlock_unit" when !(db.TryGet<UnitDefinitionBase>(e.Id!, out var unit) && unit.IsPlayer):
+                    errors.Add($"{f}.id", $"no player unit '{e.Id}'");
+                    break;
             }
         }
     }
