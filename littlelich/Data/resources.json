@@ -1,0 +1,11 @@
+{
+  "type": "resource",
+  "entries": [
+    { "id": "mana",          "name": "Mana",          "icon": "mana",          "base_cap": 1000, "placeholder": true },
+    { "id": "infused_mana",  "name": "Infused Mana",  "icon": "infused_mana",  "base_cap": 500,  "placeholder": true },
+    { "id": "souls",         "name": "Souls",         "icon": "souls",         "base_cap": 100,  "placeholder": true },
+    { "id": "coins",         "name": "Coins",         "icon": "coins",         "base_cap": 1000000, "placeholder": true },
+    { "id": "bones",         "name": "Bones",         "icon": "bones",         "base_cap": 1000, "placeholder": true },
+    { "id": "iron_ore",      "name": "Iron Ore",      "icon": "iron_ore",      "base_cap": 1000, "placeholder": true }
+  ]
+}

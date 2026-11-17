@@ -44,4 +44,4 @@ Godot + C#. Each phase is one markdown file. Build in order; each phase ends wit
 - Summon slots growing beyond 3 (phase 8).
 - Restocking inside a dungeon (phase 8).
 - Health gives regeneration? (phase 2)
-- Big-number type (phase 1).
+- ~~Big-number type (phase 1).~~ Decided: `Num` struct backed by `double`; counts and stock stay `long`.
