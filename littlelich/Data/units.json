@@ -2,12 +2,12 @@
 // hp is per unit. Up to 3 actions, each on its own cooldown (seconds on the battle clock).
 // effect attack|brace|heal, target front|back|lowest|self|ally_lowest, range melee|ranged. All numbers are placeholders.
 [
-  { "type": "unit", "id": "skeleton", "name": "Skeleton", "side": "player", "hp": 20, "placeholder": true,
+  { "type": "unit", "id": "skeleton", "name": "Skeleton", "side": "player", "hp": 20, "mana_cost": 5, "summon_work": 1, "placeholder": true,
     "actions": [
       { "id": "slash", "name": "Slash", "cooldown": 2,  "effect": "attack", "value": 3,   "target": "front", "range": "melee" },
       { "id": "brace", "name": "Brace", "cooldown": 10, "effect": "brace",  "value": 0.1, "target": "self",  "range": "melee" } ] },
 
-  { "type": "unit", "id": "zombie", "name": "Zombie", "side": "player", "hp": 45, "placeholder": true,
+  { "type": "unit", "id": "zombie", "name": "Zombie", "side": "player", "hp": 45, "mana_cost": 12, "summon_work": 2, "placeholder": true,
     "actions": [
       { "id": "bite",  "name": "Bite",  "cooldown": 3,  "effect": "attack", "value": 5,   "target": "front", "range": "melee" } ] },
 

@@ -96,3 +96,5 @@ Rings, layers, Dread, relief armies, boss mechanics beyond a basic boss.
 - Boss/dungeon encounters (lich + 3 fixed summon slots, gear used up per summon, a basic boss).
 - Battle rewards beyond the first clear, scouting, retreat thresholds, damage types and armour (phase 10 unit schema).
 - A battle in progress is not shown in the away recap; battles do not run offline.
+
+> **Note (phase 9):** the garrison stub was replaced by the Unit Builder roster; armies are unit types sent from formations.

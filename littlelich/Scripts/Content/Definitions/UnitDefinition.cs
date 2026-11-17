@@ -40,11 +40,19 @@ public abstract class UnitDefinitionBase : Definition
     public double Hp { get; init; } = 1;
     public List<UnitAction> Actions { get; init; } = new();
 
+    /// <summary>Mana per summon (player bases; phase 9 decision: summons cost mana as well as their gear).</summary>
+    public long ManaCost { get; init; }
+
+    /// <summary>Summoning Circle work per summon (player bases).</summary>
+    public double SummonWork { get; init; } = 1;
+
     public override void Validate(ContentErrors errors)
     {
         base.Validate(errors);
         if (Side is not ("player" or "enemy")) errors.Add("side", "must be player or enemy");
         if (!(Hp > 0)) errors.Add("hp", "must be above 0");
+        if (ManaCost < 0) errors.Add("mana_cost", "must be 0 or more");
+        if (!(SummonWork > 0)) errors.Add("summon_work", "must be above 0");
         if (Actions.Count > MaxActions) errors.Add("actions", $"at most {MaxActions} actions per unit");
         if (Actions.GroupBy(a => a.Id).Any(g => g.Count() > 1)) errors.Add("actions", "action ids must be unique");
         for (var i = 0; i < Actions.Count; i++)

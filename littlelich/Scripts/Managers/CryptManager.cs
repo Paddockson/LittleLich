@@ -16,7 +16,7 @@ namespace LittleLich.Managers;
 /// Autoload singleton (after LichManager, before TickManager). Owns the Crypt:
 /// <see cref="Storage"/> (resources, capped), the minimal <see cref="Inventory"/> (phase 6 completes it), joined by
 /// <see cref="Stockpile"/>, the seven Workshop buildings (one class each), research (phase 7: <see cref="Research"/>,
-/// one class per tome, Necromancy 1 only) and the shared <see cref="Unlocks"/>. The Unit Builder comes in phase 9. Does not own the necromancer pool: the Summoning Circle adds to the
+/// one class per tome, Necromancy 1 only), the shared <see cref="Unlocks"/> and the Unit Builder (phase 9: <see cref="Units"/>). Does not own the necromancer pool: the Summoning Circle adds to the
 /// LichManager's pool, and buildings are staffed through LichManager assignments (owner = building id).
 /// </summary>
 public partial class CryptManager : Node
@@ -35,6 +35,9 @@ public partial class CryptManager : Node
     [Signal] public delegate void ResearchNodeAvailableEventHandler(string nodeId);
     [Signal] public delegate void ResearchNodeCancelledEventHandler(string nodeId, int bench);
     [Signal] public delegate void ResearchBenchesChangedEventHandler();
+    [Signal] public delegate void UnitTypesChangedEventHandler();
+    [Signal] public delegate void UnitRosterChangedEventHandler(string unitTypeId, long count);
+    [Signal] public delegate void FormationsChangedEventHandler();
 
     public Storage Storage { get; private set; } = new(ContentDatabase.Empty);
     public Inventory Inventory { get; private set; } = new(ContentDatabase.Empty);
@@ -47,6 +50,9 @@ public partial class CryptManager : Node
 
     /// <summary>Research benches and tomes (null until boot).</summary>
     public Crypt.Research.ResearchManager? Research { get; private set; }
+
+    /// <summary>Unit types, the roster and formations (null until boot).</summary>
+    public Crypt.Units.UnitBuilder? Units { get; private set; }
 
     /// <summary>The seven buildings in flow order (empty until boot).</summary>
     public IReadOnlyList<BuildingBase> Buildings => _buildings;
@@ -88,7 +94,12 @@ public partial class CryptManager : Node
         Research.BenchesChanged += () => EmitSignal(SignalName.ResearchBenchesChanged);
         tm.Register(Research, TickGroup.Research);
 
-        var ctx = new CryptContext(lich, Stockpile, content, () => tm.Scheduler.ActiveRecap) { Unlocks = Unlocks };
+        Units = new Crypt.Units.UnitBuilder(content, Stockpile, Unlocks);
+        Units.TypesChanged += () => EmitSignal(SignalName.UnitTypesChanged);
+        Units.RosterChanged += (id, n) => EmitSignal(SignalName.UnitRosterChanged, id, n);
+        Units.FormationsChanged += () => EmitSignal(SignalName.FormationsChanged);
+
+        var ctx = new CryptContext(lich, Stockpile, content, () => tm.Scheduler.ActiveRecap) { Unlocks = Unlocks, Units = Units };
         var order = 0;
         foreach (var b in BuildingFactory.CreateAll(ctx))
         {
@@ -99,8 +110,9 @@ public partial class CryptManager : Node
             order += 100; // ManaWell 100 ... UndeadMarket 600 (TickOrder constants)
             if (b.Ticks) tm.Register(b, TickGroup.Buildings, order);
         }
-        // Research loads before the buildings so its extra building levels count when levels are restored.
-        return new ISaveable[] { Storage, Inventory, Research }.Concat(_buildings).ToList();
+        // Research loads before the buildings so its extra building levels count when levels are restored;
+        // the Unit Builder before the buildings so the Summoning Circle finds its unit type.
+        return new ISaveable[] { Storage, Inventory, Research, Units }.Concat(_buildings).ToList();
     }
 
     public override void _Ready()

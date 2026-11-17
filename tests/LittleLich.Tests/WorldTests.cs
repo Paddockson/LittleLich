@@ -147,7 +147,7 @@ public class WorldTests
     {
         db ??= World.SampleContent;
         stock = new Stockpile(new Storage(db), new Inventory(db));
-        var w = new WorldState(db, stock);
+        var w = new WorldState(db, stock, new LittleLich.Crypt.Units.UnitBuilder(db, stock, Unlocks.None));
         w.Load(new SaveData());
         return w;
     }
@@ -164,7 +164,7 @@ public class WorldTests
         w.AddUnits("skeleton", 30);
         Assert.Equal(SendResult.Ok, w.Send("graveyard", Skeletons(30)));
         Assert.Equal(AreaState.InProgress, w.State("graveyard"));
-        Assert.Equal(0, w.InGarrison("skeleton"));
+        Assert.Equal(0, w.InRoster("skeleton"));
         Assert.Equal(SendResult.BattleRunning, w.Send("woods", Skeletons(1)));   // one battle at a time
 
         for (var i = 0; i < 300 && w.Battle is not null; i++) w.Advance(1);
@@ -172,7 +172,7 @@ public class WorldTests
         Assert.Equal(BattleOutcome.Victory, r.Outcome);
         Assert.Equal(AreaState.Cleared, w.State("graveyard"));
         Assert.InRange(r.Survivors["skeleton"], 1, 29);
-        Assert.Equal(r.Survivors["skeleton"], w.InGarrison("skeleton"));
+        Assert.Equal(r.Survivors["skeleton"], w.InRoster("skeleton"));
         Assert.Equal(30, r.Lost + r.Survivors["skeleton"]);
         Assert.Equal(60, stock.Get("bones"));
         Assert.Equal(300, stock.Get("coins"));
@@ -188,7 +188,7 @@ public class WorldTests
         for (var i = 0; i < 300 && w.Battle is not null; i++) w.Advance(1);
         Assert.Equal(BattleOutcome.Defeat, w.LastResult!.Outcome);
         Assert.Equal(AreaState.NotStarted, w.State("woods"));
-        Assert.Equal(0, w.InGarrison("skeleton"));
+        Assert.Equal(0, w.InRoster("skeleton"));
         Assert.Equal(0, stock.Get("coins"));
     }
 
@@ -201,7 +201,7 @@ public class WorldTests
         w.Advance(4);
         Assert.True(w.Retreat());
         Assert.Equal(BattleOutcome.Retreat, w.LastResult!.Outcome);
-        Assert.Equal(w.LastResult.Survivors["zombie"], w.InGarrison("zombie"));
+        Assert.Equal(w.LastResult.Survivors["zombie"], w.InRoster("zombie"));
         Assert.False(w.Retreat());
     }
 
@@ -210,13 +210,13 @@ public class WorldTests
     {
         var w = Fresh(out _);
         Assert.Equal(SendResult.EmptyArmy, w.Send("graveyard", new ArmyPlan()));
-        Assert.Equal(SendResult.NotEnoughUnits, w.Send("graveyard", Skeletons(1)));
+        Assert.Equal(SendResult.UnknownUnit, w.Send("graveyard", Skeletons(1)));   // no "skeleton" unit type yet
         w.AddUnits("skeleton", 5);
         Assert.Equal(SendResult.NotEnoughUnits, w.Send("graveyard", Skeletons(6)));
         Assert.Equal(SendResult.UnknownUnit, w.Send("graveyard", new ArmyPlan().Set(Sections.Front, "rival_skeleton", 1)));
         Assert.Equal(SendResult.UnknownArea, w.Send("castle", Skeletons(1)));
-        Assert.Throws<ArgumentException>(() => w.AddUnits("grave_archer", 5));   // enemies cannot join the garrison
-        Assert.Equal(5, w.InGarrison("skeleton"));
+        Assert.Throws<ArgumentException>(() => w.AddUnits("grave_archer", 5));   // enemies cannot join the roster
+        Assert.Equal(5, w.InRoster("skeleton"));
     }
 
     [Fact]
@@ -248,9 +248,11 @@ public class WorldSaveTests : IDisposable
     {
         var db = World.SampleContent;
         var stock = new Stockpile(new Storage(db), new Inventory(db));
-        var w = new WorldState(db, stock);
+        var units = new LittleLich.Crypt.Units.UnitBuilder(db, stock, Unlocks.None);
+        var w = new WorldState(db, stock, units);
         var s = new GameSession(db, new SaveService(_dir.Path, _clock.Get), _clock.Get);
         s.Register(stock.Storage);
+        s.Register(units);   // before the world, as at boot
         s.Register(w);
         return (s, w, stock);
     }
@@ -269,8 +271,8 @@ public class WorldSaveTests : IDisposable
         var (s2, b, stock) = Session();
         s2.LoadSlot(1);
         Assert.Equal(AreaState.Cleared, b.State("graveyard"));
-        Assert.Equal(a.InGarrison("skeleton"), b.InGarrison("skeleton"));
-        Assert.Equal(4, b.InGarrison("zombie"));
+        Assert.Equal(a.InRoster("skeleton"), b.InRoster("skeleton"));
+        Assert.Equal(4, b.InRoster("zombie"));
         Assert.Equal(300, stock.Get("coins"));
     }
 
@@ -291,10 +293,10 @@ public class WorldSaveTests : IDisposable
         Assert.Equal(0, b.Battle!.NowMs);                          // restarted from the beginning
         Assert.Equal(b.Battle.SideMaxHp(BattleSide.Defender), b.Battle.SideHp(BattleSide.Defender));
         Assert.Equal(30, b.Battle.Survivors(BattleSide.Attacker)["skeleton"]);
-        Assert.Equal(10, b.InGarrison("skeleton"));                // the 30 sent are out, not doubled
+        Assert.Equal(10, b.InRoster("skeleton"));                // the 30 sent are out, not doubled
         for (var i = 0; i < 300 && b.Battle is not null; i++) b.Advance(1);
         Assert.Equal(AreaState.Cleared, b.State("graveyard"));
-        Assert.Equal(10 + b.LastResult!.Survivors["skeleton"], b.InGarrison("skeleton"));
+        Assert.Equal(10 + b.LastResult!.Survivors["skeleton"], b.InRoster("skeleton"));
     }
 }
 

@@ -13,6 +13,9 @@ public sealed record CryptContext(LichState Lich, Stockpile Stock, ContentDataba
     /// <summary>Research unlocks (phase 7): locked transmutations/summons and extra building levels.</summary>
     public Unlocks Unlocks { get; init; } = Unlocks.None;
 
+    /// <summary>The Unit Builder (phase 9), for the Summoning Circle's unit mode. Null in tests that do not need it.</summary>
+    public Units.UnitBuilder? Units { get; init; }
+
     public Storage Storage => Stock.Storage;
 }
 

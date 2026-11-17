@@ -289,17 +289,21 @@ public static class DevCommands
             return $"Completed {r.Node(a[0])!.Name}.";
         }, (i, _) => i == 0 ? ResearchNodes(null) : Empty));
         // ---- World and battles (phase 8) ----
-        Add(new("addunits", "addunits <unit> <n>", "Debug: add player units to the garrison (stub until phase 9).", a =>
+        Add(new("addunits", "addunits <type|base> <n>", "Debug: add units to the roster without summoning (a base id uses its gear-less type).", a =>
         {
             Need(a, 2);
             try { WorldManager.Instance.DebugAddUnits(a[0], Count(a, 1)); }
             catch (ArgumentException e) { throw new DevCommandException(e.Message); }
-            return $"Garrison: {DevFormat.Exact(WorldManager.Instance.State!.InGarrison(a[0]))} {a[0]}.";
+            var units = CryptManager.Instance.Units!;
+            var id = units.Type(a[0])?.Id ?? a[0];
+            return $"Roster: {DevFormat.Exact(units.Count(id))} {id}.";
         }, (i, _) => i == 0 ? GameManager.Instance.Content.All<UnitDefinitionBase>().Where(u => u.Side == "player").Select(u => u.Id) : Empty));
-        Add(new("battle", "battle <area>", "Send the whole garrison (all in the front section) to fight an area.", a =>
+        Add(new("battle", "battle <area> [formation]", "Send a formation (or the whole roster, all in front) to fight an area.", a =>
         {
             Need(a, 1);
-            var plan = WorldManager.Instance.WholeGarrison();
+            var plan = a.Length > 1 && CryptManager.Instance.Units!.GetFormation(a[1]) is { } f
+                ? WorldManager.Instance.State!.PlanFor(f)
+                : WorldManager.Instance.WholeRoster();
             var r = WorldManager.Instance.Send(a[0], plan);
             if (r != World.SendResult.Ok) throw new DevCommandException($"Cannot send to {a[0]}: {r}.");
             return $"Sent {string.Join(", ", plan.Totals().Select(t => $"{t.Value} {t.Key}"))} to {a[0]}.";
@@ -324,6 +328,70 @@ public static class DevCommands
             if (!WorldManager.Instance.Retreat()) throw new DevCommandException("No battle is running.");
             return "Retreated.";
         }));
+
+        // ---- Unit Builder and formations (phase 9) ----
+        Add(new("build", "build <base> [weapon|-] [armour|-] [item ...]", "Make a unit type from a base and a loadout ('-' = none).", a =>
+        {
+            Need(a, 1);
+            string? Opt(int i) => a.Length > i && a[i] != "-" ? a[i] : null;
+            var (r, t) = Units.Build(a[0], Opt(1), Opt(2), a.Skip(3));
+            if (r != Crypt.Units.BuildResult.Ok) throw new DevCommandException($"Cannot build: {r}.");
+            return $"Unit type {t!.Id} ({t.Name}). Cost per unit: {string.Join(", ", Units.CostPerUnit(t.Id).Select(c => $"{c.Count} {c.Id}"))}.";
+        }, (i, _) => i switch
+        {
+            0 => Units.Bases.Select(b => b.Id),
+            1 => GameManager.Instance.Content.All<WeaponDefinition>().Where(w => !w.FitsLich).Select(w => w.Id).Append("-"),
+            2 => GameManager.Instance.Content.All<ArmourDefinition>().Where(x => !x.FitsLich).Select(x => x.Id).Append("-"),
+            _ => GameManager.Instance.Content.All<ItemDefinitionBase>().Where(x => x is not EquippableDefinitionBase).Select(x => x.Id),
+        }));
+        Add(new("summon", "summon <type> <n>", "Summon n units now: pays mana and uses up their gear and items (all or nothing).", a =>
+        {
+            Need(a, 2);
+            var n = Count(a, 1);
+            if (Units.Type(a[0]) is null) throw new DevCommandException($"No unit type '{a[0]}'. Build one first.");
+            if (!Units.TrySummon(a[0], n))
+            {
+                var (can, limiting) = Units.Affordable(a[0]);
+                throw new DevCommandException(Units.IsBaseLocked(Units.Type(a[0])!.Base)
+                    ? $"{Units.Type(a[0])!.Base} is locked behind research."
+                    : $"Can only afford {DevFormat.Exact(can)} (short of {limiting}).");
+            }
+            return $"Summoned {DevFormat.Exact(n)} {a[0]}; roster {DevFormat.Exact(Units.Count(a[0]))}.";
+        }, (i, _) => i == 0 ? Units.Types.Select(t => t.Id) : Empty));
+        Add(new("roster", "roster", "List unit types and how many are in the roster.", _ =>
+            Units.Types.Count == 0 ? "No unit types yet (build <base> ...)." :
+            string.Join("\n", Units.Types.Select(t => $"{t.Id}: {DevFormat.Exact(Units.Count(t.Id))}  ({t.Name}; can afford {DevFormat.Exact(Units.Affordable(t.Id).Count)} more)"))));
+        Add(new("formation", "formation [name]", "Create a formation (8 slots: 1-2 front, 3-5 middle, 6-8 back), or list them.", a =>
+        {
+            if (a.Length == 0)
+                return Units.Formations.Count == 0 ? "No formations." : string.Join("\n", Units.Formations.Select(f =>
+                    $"{f.Id} ({f.Name}): " + string.Join(", ", f.Slots.Where(s => s.UnitType is not null).Select(s => $"{s.Index + 1}/{s.Section} {s.UnitType} x{s.Count}"))));
+            var created = Units.CreateFormation(string.Join(' ', a));
+            return $"Created {created.Id} ({created.Name}).";
+        }));
+        Add(new("slot", "slot <formation> <1-8> <type|-> [count]", "Put a unit type and count in a formation slot ('-' clears it).", a =>
+        {
+            Need(a, 3);
+            var index = (int)Count(a, 1) - 1;
+            var type = a[2] == "-" ? null : a[2];
+            var n = a.Length > 3 ? Count(a, 3) : (type is null ? 0 : Units.Count(type));
+            if (!Units.SetSlot(a[0], index, type, n)) throw new DevCommandException("Bad formation, slot (1-8) or unit type.");
+            return $"Slot {index + 1} ({Crypt.Units.Formation.SlotSections[index]}): {type ?? "empty"}{(type is null ? "" : $" x{n}")}.";
+        }, (i, _) => i switch
+        {
+            0 => Units.Formations.Select(f => f.Id),
+            1 => new[] { "1", "2", "3", "4", "5", "6", "7", "8" },
+            2 => Units.Types.Select(t => t.Id).Append("-"),
+            _ => Empty,
+        }));
+        Add(new("circleunit", "circleunit <type|-> [target]", "Summoning Circle: keep a unit type's stack at a target ('-' = back to necromancers).", a =>
+        {
+            Need(a, 1);
+            var c = CryptManager.Instance.Building<Crypt.Buildings.SummoningCircle>() ?? throw new DevCommandException("No circle.");
+            try { c.SetUnitTarget(a[0] == "-" ? null : a[0], a.Length > 1 ? Count(a, 1) : 0); }
+            catch (ArgumentException e) { throw new DevCommandException(e.Message); }
+            return c.UnitType is null ? "Circle: summoning necromancers." : $"Circle: keeping {c.UnitType} at {DevFormat.Exact(c.UnitTarget)}.";
+        }, (i, _) => i == 0 ? Units.Types.Select(t => t.Id).Append("-") : Empty));
     }
 
     public static void Add(DevCommand c) => _commands[c.Name] = c;
@@ -360,6 +428,7 @@ public static class DevCommands
     private static LichManager Lich => LichManager.Instance;
     private static GameManager Game => GameManager.Instance;
     private static TickManager Ticks => TickManager.Instance;
+    private static Crypt.Units.UnitBuilder Units => CryptManager.Instance.Units ?? throw new DevCommandException("No Unit Builder (boot failed?).");
     private static readonly string[] Empty = Array.Empty<string>();
 
     private static void Later(string name, string usage, string help, string needs, Func<int, string[], IEnumerable<string>>? complete = null) =>

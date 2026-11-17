@@ -58,3 +58,5 @@ Same schema as a base unit plus `section` (front/mid/back), `count`, and `reward
 
 ## Out of scope
 Unit leveling, art references beyond an icon id, balance.
+
+> **Note (phase 9):** placeholder unit content already exists in `Data/units.json` (`unit` type: side, hp, actions, mana_cost, summon_work) and unit types take battle stats from gear (`UnitBuilder.BattleUnit`). Build the real schema from it and move the files into `Data/units/`.

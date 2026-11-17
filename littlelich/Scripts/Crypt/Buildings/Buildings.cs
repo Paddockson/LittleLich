@@ -186,9 +186,65 @@ public sealed class SummoningCircle : BuildingBase
     /// <summary>Summons per tick at the current work (ignores costs).</summary>
     public double SummonsPerTick => Recipe is { } r ? WorkPerTick / r.Work : 0;
 
+    // ---- Unit mode (phase 9): keep one unit type's stack topped up to a target ----
+
+    private long _unitCarry;
+
+    /// <summary>The unit type the circle keeps topped up (null = summon necromancers).</summary>
+    public string? UnitType { get; private set; }
+
+    /// <summary>The stack size to keep the unit type at.</summary>
+    public long UnitTarget { get; private set; }
+
+    /// <summary>
+    /// Switch the circle to keep <paramref name="typeId"/>'s roster stack at <paramref name="target"/> (null = back to
+    /// necromancers). Progress resets. Throws for an unknown type.
+    /// </summary>
+    public void SetUnitTarget(string? typeId, long target)
+    {
+        if (typeId is not null && Context.Units?.Type(typeId) is null) throw new ArgumentException($"No unit type '{typeId}'.", nameof(typeId));
+        UnitType = typeId;
+        UnitTarget = Math.Max(0, target);
+        _unitCarry = 0;
+        SetStatus(BuildingStatus.Idle);
+    }
+
+    /// <summary>0..1 progress toward the next unit (unit mode).</summary>
+    public double UnitProgress =>
+        UnitType is { } t && Context.Units is { } u && u.Type(t) is not null
+            ? Math.Clamp(_unitCarry / (double)FixedPoint.ToMicro(u.BaseOf(t).SummonWork), 0, 1) : 0;
+
+    private void TickUnits(long ticks, Units.UnitBuilder units, string typeId)
+    {
+        if (units.Type(typeId) is null)
+        {
+            SetStatus(BuildingStatus.NothingToDo);
+            return;
+        }
+        var room = Math.Max(0, UnitTarget - units.Count(typeId));
+        var (can, limiting) = units.Affordable(typeId);
+        if (units.IsBaseLocked(units.Type(typeId)!.Base)) can = 0;
+        var work = WorkMicroPerTick;
+        var (ops, carry, limited) = FixedPoint.Run(_unitCarry, work, ticks, FixedPoint.ToMicro(units.BaseOf(typeId).SummonWork), Math.Min(can, room));
+        _unitCarry = carry;
+        if (ops > 0)
+        {
+            var made = units.SummonUpTo(typeId, ops);
+            Context.Recap()?.AddGained("units", typeId, made);
+        }
+        if (limited)
+            SetStatus(room <= can ? BuildingStatus.PoolFull : BuildingStatus.MissingInput, room <= can ? "target" : limiting);
+        else SetStatus(work > 0 ? BuildingStatus.Running : BuildingStatus.Idle);
+    }
+
     public override void Tick(long ticks)
     {
         if (ticks <= 0) return;
+        if (UnitType is { } unitType && Context.Units is { } units)
+        {
+            TickUnits(ticks, units, unitType);
+            return;
+        }
         if (Recipe is not { } r)
         {
             SetStatus(BuildingStatus.NothingToDo);
@@ -224,12 +280,18 @@ public sealed class SummoningCircle : BuildingBase
         foreach (var m in old) stats.RemoveWhere(x => ReferenceEquals(x, m));
     }
 
-    protected override void SaveExtra(SaveData d) => d.Set("carry", _carry).Set("target", _target);
+    protected override void SaveExtra(SaveData d) => d.Set("carry", _carry).Set("target", _target)
+        .Set("unit_type", UnitType).Set("unit_target", UnitTarget).Set("unit_carry", _unitCarry);
 
+    /// <summary>The Unit Builder loads first, so a unit type that no longer exists switches the circle back to necromancers.</summary>
     protected override void LoadExtra(SaveData d)
     {
         _carry = Math.Max(0, d.Get("carry", 0L));
         _target = Math.Max(0, d.Get("target", 0L));
+        var type = d.Get<string?>("unit_type", null);
+        UnitType = type is not null && Context.Units?.Type(type) is not null ? type : null;
+        UnitTarget = UnitType is null ? 0 : Math.Max(0, d.Get("unit_target", 0L));
+        _unitCarry = UnitType is null ? 0 : Math.Max(0, d.Get("unit_carry", 0L));
     }
 }
 

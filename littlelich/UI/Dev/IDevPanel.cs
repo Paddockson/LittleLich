@@ -36,7 +36,8 @@ public static class DevPanelRegistry
         () => new ResearchPanel(),  // phase 7
         () => new MapPanel(),       // phase 8
         () => new BattlePanel(),    // phase 8
-        // Phase 9: () => new UnitsPanel(),
+        () => new UnitsPanel(),     // phase 9
+        () => new ArmyPanel(),      // phase 9
         // Phase 10-11: () => new ContentBrowserPanel(),
     };
 }

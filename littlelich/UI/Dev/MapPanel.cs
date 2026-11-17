@@ -62,8 +62,8 @@ public partial class MapView : Control
 }
 
 /// <summary>
-/// Phase 8: the world map. The map, the selected node's area (state, defenders, rewards), the garrison stub with a
-/// simple army builder (count and section per unit; phase 9 brings real formations) and Send.
+/// Phase 8: the world map. The map, the selected node's area (state, defenders, rewards), and (phase 9) a formation
+/// picker with the roster to send a formation to the selected area. Formations are edited on the Army tab.
 /// </summary>
 public partial class MapPanel : ScrollContainer, IDevPanel
 {
@@ -72,10 +72,10 @@ public partial class MapPanel : ScrollContainer, IDevPanel
 
     private readonly MapView _map;
     private readonly Label _details;
-    private readonly GridContainer _army;
+    private readonly OptionButton _formation;
+    private readonly Label _army;
     private readonly Button _send;
     private readonly Label _result;
-    private readonly Dictionary<string, (LineEdit Count, OptionButton Section)> _rows = new();
 
     private static WorldState? W => WorldManager.Instance.State;
 
@@ -93,18 +93,17 @@ public partial class MapPanel : ScrollContainer, IDevPanel
         top.AddChild(_details);
 
         col.AddChild(new HSeparator());
-        col.AddChild(new Label { Text = "Garrison (stub until phase 9): choose how many to send and where", ThemeTypeVariation = "HeaderSmall" });
-        _army = new GridContainer { Columns = 4 };
-        col.AddChild(_army);
+        col.AddChild(new Label { Text = "Send a formation (edit formations on the Army tab)", ThemeTypeVariation = "HeaderSmall" });
         var buttons = new HFlowContainer();
         col.AddChild(buttons);
-        _send = new Button { Text = "Send army to selected area" };
+        _formation = new OptionButton { CustomMinimumSize = new Vector2(200, 0) };
+        _formation.ItemSelected += _ => Refresh();
+        buttons.AddChild(_formation);
+        _send = new Button { Text = "Send to selected area" };
         _send.Pressed += Send;
         buttons.AddChild(_send);
-        var all = new Button { Text = "Fill: whole garrison" };
-        all.Pressed += () => { foreach (var (unit, row) in _rows) row.Count.Text = (W?.InGarrison(unit) ?? 0).ToString(CultureInfo.InvariantCulture); };
-        buttons.AddChild(all);
-        buttons.AddChild(new Label { Text = "Add units: addunits <unit> <n>" });
+        _army = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
+        col.AddChild(_army);
         _result = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
         col.AddChild(_result);
     }
@@ -112,10 +111,11 @@ public partial class MapPanel : ScrollContainer, IDevPanel
     public void Bind()
     {
         var wm = WorldManager.Instance;
-        wm.GarrisonChanged += Refresh;
+        CryptManager.Instance.UnitRosterChanged += (_, _) => Refresh();
+        CryptManager.Instance.FormationsChanged += Refresh;
         wm.AreaStateChanged += _ => Refresh();
         wm.BattleEnded += (_, _) => Refresh();
-        GameManager.Instance.GameStarted += (_, _) => { _rows.Clear(); Refresh(); };
+        GameManager.Instance.GameStarted += (_, _) => Refresh();
     }
 
     public void Refresh()
@@ -146,47 +146,48 @@ public partial class MapPanel : ScrollContainer, IDevPanel
         }
         else _details.Text = node.Home ? $"{node.Name}: home. Armies leave from here." : $"{node.Name}: a crossing on the path.";
 
-        // Army builder rows, one per player unit.
-        var units = content.All<UnitDefinitionBase>().Where(u => u.Side == "player").ToList();
-        if (_rows.Count != units.Count)
+        // Formation picker (keeps the selection by id) and what it would send against the roster.
+        var units = w.Units;
+        var selectedId = SelectedFormation()?.Id;
+        _formation.Clear();
+        foreach (var f in units.Formations)
         {
-            foreach (var c in _army.GetChildren()) c.QueueFree();
-            _rows.Clear();
-            foreach (var h in new[] { "Unit", "In garrison", "Send", "Section" }) _army.AddChild(new Label { Text = h });
-            foreach (var u in units)
-            {
-                _army.AddChild(new Label { Text = u.Name, TooltipText = u.Id, MouseFilter = MouseFilterEnum.Pass });
-                _army.AddChild(new Label { Name = "have_" + u.Id });
-                var count = new LineEdit { Text = "0", CustomMinimumSize = new Vector2(90, 0) };
-                var section = new OptionButton();
-                foreach (var s in Sections.All) section.AddItem(s);
-                _army.AddChild(count);
-                _army.AddChild(section);
-                _rows[u.Id] = (count, section);
-            }
+            _formation.AddItem(f.Name);
+            _formation.SetItemMetadata(_formation.ItemCount - 1, f.Id);
+            if (f.Id == selectedId) _formation.Select(_formation.ItemCount - 1);
         }
-        foreach (var u in units)
-            if (_army.GetNodeOrNull<Label>("have_" + u.Id) is { } have) have.Text = DevFormat.Exact(w.InGarrison(u.Id));
+        if (_formation.ItemCount > 0 && _formation.Selected < 0) _formation.Select(0);
+        var formation = SelectedFormation();
+        var plan = formation is null ? null : w.PlanFor(formation);
+        var short_ = plan?.Totals().Where(t => units.Count(t.Key) < t.Value).Select(t => $"{t.Key} {DevFormat.Exact(units.Count(t.Key))}/{DevFormat.Exact(t.Value)}").ToList();
+        _army.Text = (formation is null ? "No formations yet: make one on the Army tab.\n"
+                         : "Sends: " + (plan!.Totals().Count == 0 ? "nothing (empty formation)" :
+                             string.Join(", ", plan.Entries.Select(e => $"{units.Type(e.Unit)?.Name ?? e.Unit} x{DevFormat.Exact(e.Count)} ({e.Section})"))) +
+                           (short_!.Count > 0 ? "\nNot enough in the roster: " + string.Join(", ", short_) : "") + "\n") +
+                     "Roster: " + (units.Roster.Count(r => r.Value > 0) == 0 ? "empty" :
+                         string.Join(", ", units.Roster.Where(r => r.Value > 0).Select(r => $"{units.Type(r.Key)?.Name ?? r.Key} {DevFormat.Exact(r.Value)}")));
 
-        _send.Disabled = node.Area is null || w.Battle is not null || w.State(node.Area) == AreaState.Cleared || !w.IsReachable(node.Area);
+        _send.Disabled = node.Area is null || formation is null || w.Battle is not null || w.State(node.Area) == AreaState.Cleared
+                         || !w.IsReachable(node.Area) || plan!.Totals().Count == 0 || short_!.Count > 0;
         _send.TooltipText = w.Battle is not null ? "One battle at a time (v0.1)." : "";
         _result.Text = w.LastResult is { } r ? ResultText(r) : "";
     }
 
     private void Send()
     {
-        if (W is not { } w || w.Nodes.First(n => n.Id == _map.Selected).Area is not { } area) return;
-        var plan = new ArmyPlan();
-        foreach (var (unit, row) in _rows)
-            if (DevFormat.TryParseCount(row.Count.Text, out var n) && n > 0) plan.Set(Sections.All[row.Section.Selected], unit, n);
-        var res = WorldManager.Instance.Send(area, plan);
+        if (W is not { } w || w.Nodes.First(n => n.Id == _map.Selected).Area is not { } area || SelectedFormation() is not { } f) return;
+        var res = w.Send(area, f);
         if (res != SendResult.Ok) DevLog.Error($"Cannot send: {res}.");
     }
+
+    private Crypt.Units.Formation? SelectedFormation() =>
+        _formation.Selected >= 0 && W is { } w ? w.Units.GetFormation(_formation.GetItemMetadata(_formation.Selected).AsString()) : null;
 
     public static string ResultText(BattleResult r)
     {
         var content = GameManager.Instance.Content;
-        string Units(IReadOnlyDictionary<string, long> d) => string.Join(", ", d.Select(kv => $"{content.Get<UnitDefinitionBase>(kv.Key).Name} {DevFormat.Exact(kv.Value)}"));
+        var types = CryptManager.Instance.Units;
+        string Units(IReadOnlyDictionary<string, long> d) => string.Join(", ", d.Select(kv => $"{types?.Type(kv.Key)?.Name ?? kv.Key} {DevFormat.Exact(kv.Value)}"));
         return $"Last battle at {content.Get<AreaDefinitionBase>(r.AreaId).Name}: {r.Outcome} after {r.Seconds:0.#}s. " +
                $"Sent {Units(r.Sent)}; back {Units(r.Survivors)} (lost {DevFormat.Exact(r.Lost)})." +
                (r.Rewards.Count > 0 ? " Rewards: " + string.Join(", ", r.Rewards.Select(kv => $"{StockIds.NameOf(content, kv.Key)} {DevFormat.Exact(kv.Value)}")) + "." : "");

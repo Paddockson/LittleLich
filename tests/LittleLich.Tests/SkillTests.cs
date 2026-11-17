@@ -30,6 +30,8 @@ internal sealed class World
     public LittleLich.Gear.Equipment Equipment { get; }
     public Unlocks Unlocks { get; } = new();
     public LittleLich.Crypt.Research.ResearchManager Research { get; }
+    public LittleLich.Crypt.Units.UnitBuilder Units { get; }
+    public LittleLich.World.WorldState WorldMap { get; }
     public LittleLich.Gear.ItemUser Items { get; }
 
     public World(ContentDatabase? content = null)
@@ -39,8 +41,10 @@ internal sealed class World
         Inventory = new Inventory(content);
         Stock = new Stockpile(Storage, Inventory);
         Research = new LittleLich.Crypt.Research.ResearchManager(Lich, Stock, content, Unlocks, () => Ticks.ActiveRecap);
+        Units = new LittleLich.Crypt.Units.UnitBuilder(content, Stock, Unlocks);
         Buildings = LittleLich.Crypt.Buildings.BuildingFactory.CreateAll(
-            new LittleLich.Crypt.Buildings.CryptContext(Lich, Stock, content, () => Ticks.ActiveRecap) { Unlocks = Unlocks });
+            new LittleLich.Crypt.Buildings.CryptContext(Lich, Stock, content, () => Ticks.ActiveRecap) { Unlocks = Unlocks, Units = Units });
+        WorldMap = new LittleLich.World.WorldState(content, Stock, Units);
         Skills = SkillFactory.CreateAll(new SkillContext(Lich, Stock, content, () => Ticks.ActiveRecap) { Unlocks = Unlocks });
         Research.SkillLevel = id => Skills.First(s => s.Id == id).Level;     // as GameManager wires it
         Research.SkillXpEarned += (id, xp) => Skills.First(s => s.Id == id).GrantXp(xp);
@@ -56,7 +60,7 @@ internal sealed class World
         Ticks.Register(Research, TickGroup.Research);
     }
 
-    public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory, Research }.Concat(Buildings).Concat(Skills).Append(Equipment);
+    public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory, Research, Units }.Concat(Buildings).Concat(Skills).Append(Equipment).Append(WorldMap);
 
     public T Skill<T>() where T : SkillBase => Skills.OfType<T>().Single();
     public MiningManager Mining => Skill<MiningManager>();

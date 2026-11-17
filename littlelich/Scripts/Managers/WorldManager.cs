@@ -24,7 +24,6 @@ public partial class WorldManager : Node
     /// <summary>An action fired (side 0 attacker / 1 defender, unit id, action id, amount).</summary>
     [Signal] public delegate void BattleActionFiredEventHandler(int side, string unitId, string actionId, double amount);
     [Signal] public delegate void AreaStateChangedEventHandler(string areaId);
-    [Signal] public delegate void GarrisonChangedEventHandler();
 
     public WorldState? State { get; private set; }
 
@@ -36,10 +35,10 @@ public partial class WorldManager : Node
     public WorldManager() => Instance = this;
 
     /// <summary>Boot step 3: creates the world for the loaded content. Returns its saveable.</summary>
-    public WorldState Initialize(ContentDatabase content, Stockpile stock)
+    public WorldState Initialize(ContentDatabase content, Stockpile stock, Crypt.Units.UnitBuilder units)
     {
         if (State is not null) throw new InvalidOperationException("WorldManager is already initialised.");
-        State = new WorldState(content, stock);
+        State = new WorldState(content, stock, units);
         State.BattleStarted += area =>
         {
             State.Battle!.ActionFired += a =>
@@ -55,7 +54,6 @@ public partial class WorldManager : Node
             EmitSignal(SignalName.BattleEnded, r.AreaId, (int)r.Outcome);
         };
         State.AreaStateChanged += id => EmitSignal(SignalName.AreaStateChanged, id);
-        State.GarrisonChanged += () => EmitSignal(SignalName.GarrisonChanged);
         return State;
     }
 
@@ -70,12 +68,12 @@ public partial class WorldManager : Node
     public bool Retreat() => State?.Retreat() ?? false;
     public void DebugAddUnits(string unitId, long count) => State?.AddUnits(unitId, count);
 
-    /// <summary>Dev helper: every unit in the garrison, all in the front section (phase 9 builds real formations).</summary>
-    public ArmyPlan WholeGarrison()
+    /// <summary>Dev helper: the whole roster, all in the front section (use a formation for anything better).</summary>
+    public ArmyPlan WholeRoster()
     {
         var plan = new ArmyPlan();
         if (State is null) return plan;
-        foreach (var (unit, n) in State.Garrison.Where(g => g.Value > 0))
+        foreach (var (unit, n) in State.Units.Roster.Where(g => g.Value > 0))
             plan.Set(Content.Definitions.Sections.Front, unit, n);
         return plan;
     }

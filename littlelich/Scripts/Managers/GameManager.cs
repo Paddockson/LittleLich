@@ -94,7 +94,7 @@ public partial class GameManager : Node
             Fail("WorldManager autoload is missing (check project.godot [autoload]).");
             return;
         }
-        Session.Register(WorldManager.Instance.Initialize(content, CryptManager.Instance.Stockpile));
+        Session.Register(WorldManager.Instance.Initialize(content, CryptManager.Instance.Stockpile, CryptManager.Instance.Units!));
 
         try
         {

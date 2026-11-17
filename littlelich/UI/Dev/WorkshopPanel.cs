@@ -228,6 +228,28 @@ public partial class WorkshopPanel : HSplitContainer, IDevPanel
 
     private void BuildCircle(SummoningCircle c)
     {
+        // Phase 9: unit mode (keep a unit type's stack at a target; set it from the Units tab).
+        var unitMode = Label("");
+        var unitBar = Bar();
+        var back = new Button { Text = "Back to necromancers", SizeFlagsHorizontal = SizeFlags.ShrinkBegin };
+        back.Pressed += () => { c.SetUnitTarget(null, 0); Build(); };
+        _page.AddChild(unitMode);
+        _page.AddChild(unitBar);
+        _page.AddChild(back);
+        _updaters.Add(() =>
+        {
+            var units = CryptManager.Instance.Units;
+            var on = c.UnitType is not null;
+            unitMode.Text = on
+                ? $"Unit mode: keeping {units?.Type(c.UnitType!)?.Name ?? c.UnitType} at {DevFormat.Exact(c.UnitTarget)} " +
+                  $"(roster {DevFormat.Exact(units?.Count(c.UnitType!) ?? 0)}). Costs come from the unit type."
+                : "Necromancer mode. (Units tab: 'Circle: keep stack at this count' switches to a unit type.)";
+            unitBar.Visible = on;
+            unitBar.Value = c.UnitProgress;
+            back.Visible = on;
+        });
+        if (c.UnitType is not null) return;
+
         var r = c.Recipe;
         _page.AddChild(Label(r is null ? "No summon recipes." :
             $"Summons {r.Count} {r.Name} for {Amounts(r.Costs)}; {Num(r.Work)} work each. " +
