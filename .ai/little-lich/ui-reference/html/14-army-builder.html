@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Army builder reference</title>
+<style>
+:root{--border:rgba(0,0,0,.12);--border-strong:rgba(0,0,0,.28);--border-accent:#378ADD;--surface-1:#f5f4ee;--surface-2:#ffffff;--bg-accent:#E6F1FB;--text-accent:#0C447C;--text-primary:#1f1e1c;--text-secondary:#5f5e5a;--text-muted:#8a8984;--bg-neutral:#eceae2}
+body{margin:0;padding:20px;background:#fff;width:680px;font-family:Arial,Helvetica,sans-serif}
+.ab{border:0.5px solid var(--border-strong);border-radius:8px;overflow:hidden;font-size:12px;color:var(--text-primary)}
+.tp{display:flex;justify-content:space-between;padding:8px 12px;background:var(--surface-1);border-bottom:0.5px solid var(--border-strong)}
+.bd{display:grid;grid-template-columns:172px minmax(0,1fr);gap:12px;padding:10px;align-items:start}
+.bx{border:0.5px solid var(--border-strong);border-radius:6px;padding:8px;background:var(--surface-1);box-sizing:border-box}
+.hd{font-weight:500;margin:0 0 6px;font-size:13px}
+.sg{display:flex;margin-bottom:8px;border:0.5px solid var(--border-strong);border-radius:6px;overflow:hidden}
+.sg span{flex:1;text-align:center;padding:5px 0;cursor:pointer;color:var(--text-secondary)}
+.sg span.on{background:var(--bg-accent);color:var(--text-accent);font-weight:500}
+.uc{border:0.5px solid var(--border-strong);border-radius:6px;padding:5px 8px;background:var(--surface-2);cursor:grab;margin-bottom:5px;line-height:1.4}
+.uc.sel{border-color:var(--border-accent);background:var(--bg-accent)}
+.uc:hover{border-color:var(--border-accent)}
+.tag{font-size:11px;color:var(--text-secondary)}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ch{text-align:center;color:var(--text-secondary);font-size:11px;margin-bottom:4px}
+.sl{height:70px;border:0.5px dashed var(--border-strong);border-radius:6px;padding:4px;display:flex;flex-direction:column;justify-content:center;align-items:center;box-sizing:border-box;position:relative;color:var(--text-muted);text-align:center}
+.sl.f{border-style:solid;background:var(--bg-accent);border-color:var(--border-accent);color:var(--text-accent);cursor:grab}
+.x{position:absolute;top:2px;right:5px;cursor:pointer;color:var(--text-muted);font-size:13px}
+.dt{margin-top:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;min-height:118px}
+.dl{display:flex;justify-content:space-between;line-height:1.7}
+.ac{margin-bottom:5px}
+</style></head><body>
+<div class="ab">
+<div class="tp"><span>Little Lich · Army</span><span>Souls 1,240 &nbsp; Mana 340/500 &nbsp; Coins 85</span></div>
+<div class="bd">
+<div class="bx"><p class="hd">Units</p>
+<div class="sg"><span id="mb">Base</span><span id="mc">Custom</span></div>
+<div id="lib" style="max-height:300px;overflow-y:auto"></div></div>
+<div>
+<div class="cols"><div class="ch">Back</div><div class="ch">Mid</div><div class="ch">Front</div></div>
+<div class="cols" id="grid"></div>
+<div class="tag" style="margin-top:6px">Drag a unit onto a slot, or click a unit then a slot. Drag between slots to swap.</div>
+<div class="bx dt" id="dt"></div>
+</div>
+</div></div>
+<script>
+var U=[
+{id:'sk',n:'Skeleton',t:'Melee',hp:60,d:6,p:2,stock:40,cost:'2 bones',acts:[['Slash',2,'6 damage to the front line']]},
+{id:'sw',n:'Swordsman',t:'Melee',hp:90,d:9,p:2,stock:12,cost:'sword, 2 bones',acts:[['Slash',2,'9 damage'],['Brace',10,'Next hit taken does 10% less']]},
+{id:'ar',n:'Archer',t:'Ranged',hp:40,d:5,p:3,stock:18,cost:'bow, 2 bones',acts:[['Shoot',3,'5 damage from the mid line']]},
+{id:'gh',n:'Ghoul',t:'Melee',hp:70,d:7,p:2.5,stock:20,cost:'3 flesh',acts:[['Claw',2.5,'7 damage'],['Gnaw',9,'Heals itself a little']]},
+{id:'mg',n:'Mage',t:'Magic',hp:36,d:12,p:4,stock:6,cost:'staff, 2 souls',acts:[['Necrotic bolt',4,'12 damage'],['Curse',14,'Target takes 10% more damage']]}];
+var S=[null,'ar','sw','mg','gh','sw',null,'ar','sw'];
+function get(id){return U.filter(function(u){return u.id==id})[0]}
+document.getElementById('mb').className='on';
+document.getElementById('lib').innerHTML=U.map(function(u){return '<div class="uc'+(u.id=='sw'?' sel':'')+'"><b style="font-weight:500">'+u.n+'</b><div class="tag">'+u.t+' · HP '+u.hp+'</div></div>'}).join('');
+var g='';for(var i=0;i<9;i++){var u=S[i]?get(S[i]):null;
+g+=u?'<div class="sl f"><span class="x">×</span><b style="font-weight:500">'+u.n+'</b><div class="tag" style="color:inherit;opacity:.8">'+u.t+'</div></div>':'<div class="sl">Empty</div>'}
+document.getElementById('grid').innerHTML=g;
+var u=get('sw'),n=3;
+document.getElementById('dt').innerHTML='<div><p class="hd" style="margin-bottom:2px">'+u.n+'</p><div class="tag" style="margin-bottom:4px">Base · '+u.t+'</div><div class="dl"><span class="tag">Health</span><span>'+u.hp+'</span></div><div class="dl"><span class="tag">Damage</span><span>'+u.d+'</span></div><div class="dl"><span class="tag">Attack speed</span><span>'+u.p+'s</span></div></div><div><p class="hd" style="margin-bottom:4px">Actions</p>'+u.acts.map(function(a){return '<div class="ac"><div class="dl" style="line-height:1.4"><b style="font-weight:500">'+a[0]+'</b><span class="tag">every '+a[1]+'s</span></div><div class="tag">'+a[2]+'</div></div>'}).join('')+'</div><div><p class="hd" style="margin-bottom:4px">Supply</p><div class="tag">Uses</div><div style="margin-bottom:4px">'+u.cost+'</div><div class="dl" style="line-height:1.5"><span class="tag">Stock</span><span>'+u.stock+'</span></div><div class="dl" style="line-height:1.5"><span class="tag">In formation</span><span>'+n+' of 9</span></div></div>';
+</script></body></html>

@@ -12,13 +12,13 @@ using static LittleLich.UI.Pages.Kit;
 
 namespace LittleLich.UI.Pages;
 
-/// <summary>Shared world state for the map, prep and battle pages: the selected area and formation.</summary>
+/// <summary>Shared world state for the map, prep and battle pages: the selected area. The army is the Army page's formation.</summary>
 public static class WorldUi
 {
     public static WorldState? W => WorldManager.Instance.State;
     public static UnitBuilder? U => CryptMgr.Units;
 
-    private static string? _area, _formation;
+    private static string? _area;
 
     public static string? SelectedArea
     {
@@ -31,16 +31,6 @@ public static class WorldUi
         set => _area = value;
     }
 
-    public static Formation? SelectedFormation
-    {
-        get => U is { } u ? (_formation is not null ? u.GetFormation(_formation) : null) ?? u.Formations.FirstOrDefault() : null;
-        set => _formation = value?.Id;
-    }
-
-    /// <summary>Total HP of an army plan (count x unit HP with gear).</summary>
-    public static double PlanHp(ArmyPlan plan) => U is { } u
-        ? plan.Entries.Sum(e => u.Type(e.Unit) is null ? 0 : e.Count * u.BattleUnit(e.Unit).Hp) : 0;
-
     public static double DefenderHp(AreaDefinition a) =>
         a.Defenders.Values.SelectMany(x => x).Sum(d => Db.TryGet<UnitDefinitionBase>(d.Unit, out var u) ? d.Count * u.Hp : 0);
 
@@ -50,8 +40,7 @@ public static class WorldUi
         SendResult.BattleRunning => "One battle at a time: wait for the current one or recall it.",
         SendResult.AlreadyCleared => "That area is already taken.",
         SendResult.NotReachable => "No path leads there yet. Take the areas on the way first.",
-        SendResult.EmptyArmy => "The formation is empty. Put units in its slots.",
-        SendResult.NotEnoughUnits => "The roster does not have enough units for this formation.",
+        SendResult.EmptyArmy => "No figures are standing yet. Put units in the Army formation and let the lich summon them.",
         _ => r.ToString(),
     };
 
@@ -67,8 +56,8 @@ public partial class MapPage : PageBase
         WorldManager.Instance.BattleStarted += _ => Rebuild();
         WorldManager.Instance.BattleEnded += (_, _) => Rebuild();
         WorldManager.Instance.AreaStateChanged += _ => Rebuild();
-        CryptMgr.FormationsChanged += MarkDirty;
-        CryptMgr.UnitRosterChanged += (_, _) => MarkDirty();
+        CryptMgr.ArmyFormationChanged += MarkDirty;
+        CryptMgr.ArmyFiguresChanged += MarkDirty;
     }
 
     public override void _Process(double delta)
@@ -168,30 +157,27 @@ public partial class MapPage : PageBase
     {
         var card = new Card(8);
         card.Body.AddChild(Ui.Heading("Your Host", 15));
-        var f = WorldUi.SelectedFormation;
-        var (r1, units) = KeyValue("Units in the roster");
-        var (r2, strength) = KeyValue($"HP: {f?.Name ?? "no formation"} vs defenders", Tokens.Green);
+        var (r1, units) = KeyValue("Figures standing");
+        var (r2, strength) = KeyValue("HP: your squads vs defenders", Tokens.Green);
         var bar = new StatBar(Tokens.Green, 6);
         var note = Ui.Text("", Tokens.FontLabel, Tokens.TextMuted, wrap: true);
         foreach (var c in new Control[] { r1, r2, bar, note }) card.Body.AddChild(c);
         var send = new ActionButton("Send the Host", primary: true, padY: 10, fontSize: 14) { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         send.Pressed += () =>
         {
-            if (WorldUi.SelectedFormation is not { } fm) { Navigate("BossPrep"); return; }
-            var res = w.Send(a.Id, fm);
+            var res = WorldManager.Instance.Send(a.Id);
             Toast.Show(WorldUi.SendText(res), res != SendResult.Ok);
             if (res == SendResult.Ok) Navigate("Battle");
         };
-        var edit = new ActionButton("Edit formation", padY: 8) { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        edit.Pressed += () => Navigate("BossPrep");
+        var edit = new ActionButton("Edit army", padY: 8) { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        edit.Pressed += () => Navigate("Crypt/Army");
         card.Body.AddChild(send);
         card.Body.AddChild(edit);
         Update(() =>
         {
-            var total = WorldUi.U?.Roster.Values.Sum() ?? 0;
-            units.Text = Fmt.Short(total);
-            var plan = WorldUi.SelectedFormation is { } fm ? w.PlanFor(fm) : new ArmyPlan();
-            var mine = WorldUi.PlanHp(plan);
+            var squads = Enumerable.Range(0, ArmyFormation.SlotCount).Count(i => WorldUi.U?.GetSlot(i) is not null);
+            units.Text = $"{Fmt.Short(w.ArmyFigures)} of {Fmt.Short(squads * ArmyFormation.SquadSize)}";
+            var mine = w.ArmyHp;
             var theirs = WorldUi.DefenderHp(a);
             strength.Text = $"{Fmt.Short(mine)} vs {Fmt.Short(theirs)}";
             strength.AddThemeColorOverride("font_color", mine >= theirs ? Tokens.Green : Tokens.Yellow);
@@ -199,8 +185,9 @@ public partial class MapPage : PageBase
             var state = w.State(a.Id);
             send.Disabled = state != AreaState.NotStarted || !w.IsReachable(a.Id) || w.Battle is not null;
             note.Text = state == AreaState.Cleared ? "Already taken." : !w.IsReachable(a.Id) ? "No path leads here yet." :
-                w.Battle is not null ? "One battle at a time." : mine == 0 ? "The formation is empty or the roster has none of its units." :
-                mine >= theirs ? "More HP than the defenders. One battle runs at a time." : "Fewer HP than the defenders: expect losses.";
+                w.Battle is not null ? "One battle at a time." : squads == 0 ? "The formation is empty. Place units on the Army page." :
+                mine == 0 ? "The lich has not summoned any figures yet." :
+                mine >= theirs ? "More HP than the defenders. The lich keeps summoning during the fight." : "Fewer HP than the defenders: expect losses.";
         });
         return card;
     }
@@ -303,17 +290,17 @@ public partial class WorldMapView : Control
 }
 
 /// <summary>
-/// Battle prep (image 08, v0.1: area battles, no bosses): the area's defenders; the formation as eight slots
-/// (2 front, 3 middle, 3 back) with unit and count; saved formations; supply check against the roster; Begin fight.
+/// Battle prep (image 08, v0.1: area battles, no bosses): the area's defenders; the army formation (adjustment 03,
+/// 3 by 3, edited on the Army page) with each squad's figures; supply check against the stock; Begin fight.
 /// </summary>
 public partial class BossPrepPage : PageBase
 {
     public override void Bind()
     {
         base.Bind();
-        CryptMgr.FormationsChanged += MarkDirty;
+        CryptMgr.ArmyFormationChanged += Rebuild;
         CryptMgr.UnitTypesChanged += Rebuild;
-        CryptMgr.UnitRosterChanged += (_, _) => MarkDirty();
+        CryptMgr.ArmyFiguresChanged += MarkDirty;
         WorldManager.Instance.BattleStarted += _ => MarkDirty();
         WorldManager.Instance.BattleEnded += (_, _) => MarkDirty();
     }
@@ -329,7 +316,7 @@ public partial class BossPrepPage : PageBase
         SupplyCard(right, u);
         var rules = new Card(6);
         rules.Body.AddChild(Ui.Heading("Rules", 15));
-        foreach (var r in new[] { "Re-summon when a unit dies", "Retry after a loss", "Swap units when the enemy shields" })
+        foreach (var r in new[] { "Retry after a loss", "Swap units when the enemy shields" })
         {
             var ir = new InsetRow();
             ir.Body.AddChild(Ui.Expand(Ui.Text(r, Tokens.FontSmall, Tokens.TextSoft)));
@@ -342,8 +329,7 @@ public partial class BossPrepPage : PageBase
         var begin = new ActionButton("Begin fight", primary: true, padY: 11, fontSize: 14) { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         begin.Pressed += () =>
         {
-            if (WorldUi.SelectedFormation is not { } f) { Toast.Show("Make a formation first.", true); return; }
-            var res = w.Send(areaId, f);
+            var res = WorldManager.Instance.Send(areaId);
             Toast.Show(WorldUi.SendText(res), res != SendResult.Ok);
             if (res == SendResult.Ok) Navigate("Battle");
         };
@@ -389,109 +375,68 @@ public partial class BossPrepPage : PageBase
         return card;
     }
 
+    /// <summary>The army formation, read only: Back, Mid, Front columns; each squad's figures out of five.</summary>
     private Control LoadoutCard(UnitBuilder u)
     {
         var card = new Card(10) { SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
-        card.Body.AddChild(Ui.Row(8, Ui.Heading("Encounter loadout", 18), Ui.Fill(), Ui.Text("The formation sent into battle", Tokens.FontSmall, Tokens.TextMuted)));
-
-        // Saved formations
-        var saved = Ui.Row(6);
-        foreach (var fm in u.Formations)
+        var edit = new ActionButton("Edit army", padX: 12, padY: 5);
+        edit.Pressed += () => Navigate("Crypt/Army");
+        card.Body.AddChild(Ui.Row(8, Ui.Heading("Encounter loadout", 18), Ui.Fill(), edit));
+        card.Body.AddChild(Ui.Muted("The army formation marches as it stands. The lich summons a figure every few seconds into the squad missing the most, also during the fight."));
+        var heads = new GridContainer { Columns = ArmyFormation.Columns, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        heads.AddThemeConstantOverride("h_separation", 8);
+        foreach (var h in new[] { "Back", "Mid", "Front" })
         {
-            var b = new ActionButton(fm.Name, padX: 12, padY: 5);
-            b.SetSelected(fm.Id == WorldUi.SelectedFormation?.Id);
-            b.AddThemeColorOverride("font_color", fm.Id == WorldUi.SelectedFormation?.Id ? Tokens.Green : Tokens.TextSoft);
-            var f = fm;
-            b.Pressed += () => { WorldUi.SelectedFormation = f; Rebuild(); };
-            saved.AddChild(b);
+            var l = Ui.Expand(Ui.Text(h, Tokens.FontLabel, Tokens.TextMuted));
+            l.HorizontalAlignment = HorizontalAlignment.Center;
+            heads.AddChild(l);
         }
-        var add = new ActionButton("Save as new", padX: 12, padY: 5);
-        add.Pressed += () =>
-        {
-            var nf = u.CreateFormation("");
-            if (WorldUi.SelectedFormation is { } cur)
-                foreach (var s in cur.Slots) u.SetSlot(nf.Id, s.Index, s.UnitType, s.Count);
-            WorldUi.SelectedFormation = nf;
-            Rebuild();
-        };
-        saved.AddChild(add);
-        card.Body.AddChild(Ui.Section("Saved formations"));
-        card.Body.AddChild(saved);
-
-        if (WorldUi.SelectedFormation is not { } form)
-        {
-            card.Body.AddChild(Ui.Muted("No formation yet. Press Save as new to make one."));
-            return card;
-        }
-        card.Body.AddChild(Ui.Section("Slots · 2 front, 3 middle, 3 back"));
-        card.Body.AddChild(new StepSelector());
-        var scroll = new ScrollContainer { SizeFlagsVertical = SizeFlags.ExpandFill, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
-        var grid = new GridContainer { Columns = 3, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        card.Body.AddChild(heads);
+        var grid = new GridContainer { Columns = ArmyFormation.Columns, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         grid.AddThemeConstantOverride("h_separation", 8);
         grid.AddThemeConstantOverride("v_separation", 8);
-        scroll.AddChild(grid);
-        card.Body.AddChild(scroll);
-        foreach (var section in Sections.All)
-        {
-            var slots = form.Slots.Where(s => s.Section == section).ToList();
-            foreach (var s in slots) grid.AddChild(SlotCard(u, form, s));
-            for (var i = slots.Count; i < 3; i++) grid.AddChild(new Control());
-        }
+        card.Body.AddChild(grid);
+        for (var i = 0; i < ArmyFormation.SlotCount; i++) grid.AddChild(SlotCard(u, i));
         return card;
     }
 
-    private Control SlotCard(UnitBuilder u, Formation form, FormationSlot s)
+    private Control SlotCard(UnitBuilder u, int index)
     {
-        var p = new PanelContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        var filled = s.UnitType is not null && s.Count > 0;
-        p.AddThemeStyleboxOverride("panel", filled ? Tokens.Box(Tokens.NecroBg, Tokens.NecroBorder, Tokens.RadiusInset, 10, 8)
-                                                   : Tokens.Box(Tokens.BgInset, Tokens.Border, Tokens.RadiusInset, 10, 8));
-        var col = Ui.Col(5);
+        var p = new PanelContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(0, 74) };
+        var unit = u.GetSlot(index);
+        p.AddThemeStyleboxOverride("panel", unit is not null ? Tokens.Box(Tokens.SelectedBg, Tokens.SelectedBorder, Tokens.RadiusInset, 10, 8)
+                                                             : Tokens.Box(Tokens.BgInset, Tokens.Border, Tokens.RadiusInset, 10, 8));
+        var col = Ui.Col(4);
         p.AddChild(col);
-        col.AddChild(Ui.Text($"SLOT {s.Index + 1} · {s.Section.ToUpperInvariant()}", 10, Tokens.TextMuted, Tokens.LabelFont));
-        var types = u.Types.Where(t => !u.IsBaseLocked(t.Base)).ToList();
-        var name = s.UnitType is { } id ? u.Type(id)?.Name ?? id : "Empty";
-        var prev = new ActionButton("‹", padX: 6, padY: 0);
-        var next = new ActionButton("›", padX: 6, padY: 0);
-        void Cycle(int dir)
+        if (unit is null)
         {
-            var i = s.UnitType is null ? -1 : types.FindIndex(t => t.Id == s.UnitType);
-            var n = i + dir;
-            if (n < -1) n = types.Count - 1;
-            if (n >= types.Count) n = -1;
-            var t = n < 0 ? null : types[n].Id;
-            u.SetSlot(form.Id, s.Index, t, t is null ? 0 : Math.Max(s.Count, Math.Min(10, u.Count(t))));
-            Rebuild();
+            var empty = Ui.Text("Empty", Tokens.FontSmall, Tokens.TextDim);
+            empty.HorizontalAlignment = HorizontalAlignment.Center;
+            empty.SizeFlagsVertical = SizeFlags.ExpandFill;
+            col.AddChild(empty);
+            return p;
         }
-        prev.Pressed += () => Cycle(-1);
-        next.Pressed += () => Cycle(1);
-        var nameLabel = Ui.Bold(name, Tokens.FontSmall, filled ? Tokens.TextMain : Tokens.TextDim);
-        nameLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        nameLabel.ClipText = true;
-        col.AddChild(Ui.Row(4, prev, nameLabel, next));
-        var stepper = new Stepper(() => s.Count,
-            n => { if (s.UnitType is { } t) u.SetSlot(form.Id, s.Index, t, n == long.MaxValue ? u.Count(t) : Sat(s.Count, n)); return n; },
-            n => { if (s.UnitType is { } t) u.SetSlot(form.Id, s.Index, t, Math.Max(0, s.Count - n)); return n; })
-        { Locked = s.UnitType is null };
-        col.AddChild(stepper);
-        var roster = Ui.Text("", Tokens.FontLabel, Tokens.TextMuted);
-        col.AddChild(roster);
+        var name = Ui.Bold(u.UnitName(unit), Tokens.FontSmall, Tokens.Green);
+        name.ClipText = true;
+        col.AddChild(name);
+        var figures = Ui.Text("", Tokens.FontLabel, Tokens.TextMuted);
+        var bar = new StatBar(Tokens.Green, 4);
+        col.AddChild(figures);
+        col.AddChild(bar);
         Update(() =>
         {
-            stepper.Refresh();
-            roster.Text = s.UnitType is { } t ? $"{Fmt.Short(u.Count(t))} in the roster" : types.Count == 0 ? "Build units first" : "Pick a unit with ‹ ›";
-            roster.AddThemeColorOverride("font_color", s.UnitType is { } t2 && u.Count(t2) < s.Count ? Tokens.Yellow : Tokens.TextMuted);
+            var n = u.Figures(index);
+            figures.Text = $"{n} of {ArmyFormation.SquadSize} figures";
+            bar.Value = (double)n / ArmyFormation.SquadSize;
         });
         return p;
     }
-
-    private static long Sat(long a, long b) => a > long.MaxValue - b ? long.MaxValue : a + b;
 
     private void SupplyCard(VBoxContainer into, UnitBuilder u)
     {
         var card = new Card(6);
         card.Body.AddChild(Ui.Heading("Supply check", 15));
-        card.Body.AddChild(Ui.Muted("Units this formation needs, against the roster."));
+        card.Body.AddChild(Ui.Muted("Figures the Crypt can still supply for each unit in the formation."));
         var list = Ui.Col(6);
         card.Body.AddChild(list);
         var summary = Ui.Text("", Tokens.FontSmall, Tokens.Yellow, wrap: true);
@@ -500,23 +445,18 @@ public partial class BossPrepPage : PageBase
         Update(() =>
         {
             foreach (var c in list.GetChildren()) c.QueueFree();
-            var f = WorldUi.SelectedFormation;
-            var need = f?.Slots.Where(s => s.UnitType is not null && s.Count > 0).GroupBy(s => s.UnitType!).ToDictionary(g => g.Key, g => g.Sum(s => s.Count))
-                       ?? new Dictionary<string, long>();
-            var shortOf = new List<string>();
-            foreach (var (t, n) in need)
+            var units = u.Army.Slots.OfType<string>().Distinct().ToList();
+            var dry = new List<string>();
+            foreach (var t in units)
             {
-                var have = u.Count(t);
-                var ok = have >= n;
-                if (!ok) shortOf.Add(u.Type(t)?.Name ?? t);
-                var (row, v) = KeyValue(u.Type(t)?.Name ?? t, ok ? Tokens.Green : Tokens.Yellow);
-                v.Text = $"{Fmt.Short(have)} / {Fmt.Short(n)} · {(ok ? "ready" : "short")}";
-                var bar = new StatBar(ok ? Tokens.Green : Tokens.Yellow, 4) { Value = n > 0 ? (double)have / n : 1 };
+                var (stock, limiting) = u.Affordable(t);
+                var (row, v) = KeyValue(u.UnitName(t), stock > 0 ? Tokens.Green : Tokens.Yellow);
+                v.Text = stock > 0 ? $"{Fmt.Short(stock)} in stock" : $"out of {Name(limiting).ToLowerInvariant()}";
                 list.AddChild(row);
-                list.AddChild(bar);
+                if (stock <= 0) dry.Add(u.UnitName(t));
             }
-            summary.Text = need.Count == 0 ? "The formation is empty." : shortOf.Count == 0 ? "Everything is ready." : $"Short of {string.Join(", ", shortOf)}: summon more in the Unit Builder.";
-            summary.AddThemeColorOverride("font_color", need.Count > 0 && shortOf.Count == 0 ? Tokens.Green : Tokens.Yellow);
+            summary.Text = units.Count == 0 ? "The formation is empty." : dry.Count == 0 ? "The lich can keep every squad supplied." : $"No stock for {string.Join(", ", dry)}: the lich skips them until more is made.";
+            summary.AddThemeColorOverride("font_color", units.Count > 0 && dry.Count == 0 ? Tokens.Green : Tokens.Yellow);
         });
     }
 }
@@ -681,7 +621,7 @@ public partial class BattlePage : PageBase
             var f = _floaters.TryGetValue(g, out var fl) ? fl.Text : "";
             floater.Text = f;
             floater.AddThemeColorOverride("font_color", f.StartsWith('+') ? Tokens.Green : g.Side == BattleSide.Attacker ? Tokens.Red : Tokens.TextMain);
-            col.TooltipText = $"{g.Section}: {g.Unit.Name}, {Fmt.Exact(g.Alive)} of {Fmt.Exact(g.StartCount)} alive, {Fmt.Short(g.Hp)} / {Fmt.Short(g.MaxHp)} HP";
+            col.TooltipText = $"{g.Section}: {g.Unit.Name}, {Fmt.Exact(g.Alive)} of {Fmt.Exact(g.Capacity)} alive, {Fmt.Short(g.Hp)} / {Fmt.Short(g.MaxHp)} HP";
         });
         return col;
     }
@@ -710,7 +650,7 @@ public partial class BattlePage : PageBase
         Update(() =>
         {
             hp.Value = g.MaxHp > 0 ? g.Hp / g.MaxHp : 0;
-            state.Text = g.IsAlive ? $"{Fmt.Short(g.Alive)}/{Fmt.Short(g.StartCount)}" : "Fallen";
+            state.Text = g.IsAlive ? $"{Fmt.Short(g.Alive)}/{Fmt.Short(g.Capacity)}" : "Fallen";
             state.AddThemeColorOverride("font_color", g.IsAlive ? Tokens.Green : Tokens.Red);
             foreach (var (bar, i) in bars)
             {

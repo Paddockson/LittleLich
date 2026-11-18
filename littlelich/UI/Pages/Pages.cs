@@ -18,6 +18,7 @@ public static class PageRegistry
         router.Register("Crypt/Workshop", _ => new WorkshopPage());
         router.Register("Crypt/Research", _ => new ResearchPage());
         router.Register("Crypt/UnitBuilder", _ => new UnitBuilderPage());
+        router.Register("Crypt/Army", _ => new ArmyPage());
         router.Register("Crypt/SpellBook", _ => new SpellBookPage());
         router.Register("Crypt/Lich", _ => new LichPage());
         router.Register("Skill/", key => SkillPages.For(key["Skill/".Length..]));

@@ -6,5 +6,5 @@
 
 Order of use: read the design, work through the phases in order, load the skill when coding.
 - `ui-reference/` : screenshots of every UI screen (images/) and static HTML versions with exact CSS (html/); start with ui-reference/README.md
-- `adjustments/` : change briefs for specific fixes (adjust-01-summoning-circle.md, adjust-02-mana-well.md)
+- `adjustments/` : change briefs for specific fixes (adjust-01-summoning-circle.md, adjust-02-mana-well.md, adjust-03-army-builder.md)
 - `design/research-revamp.md` : the research redesign; `data/` : source and refined game data and DATA-AUDIT.md

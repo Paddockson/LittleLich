@@ -239,7 +239,8 @@ public sealed class BenchLevelTier
 
 /// <summary>
 /// JSON type "research_bench" (exactly one, id "research_bench"). Placeholder formula:
-/// work per tick = (base_work + work_per_necromancer x staffed) x level_work_growth ^ (bench level - 1) x research efficiency.
+/// work per tick = (base_work + work_per_necromancer x staffed) x level_work_growth ^ (bench level - 1) x research efficiency,
+/// and 0 with nobody staffed. A click adds click_power x the same growth and efficiency.
 /// Bench level costs come from tiers (rounded to <see cref="RoundSigFigs"/> significant figures, halves up).
 /// </summary>
 public sealed class ResearchBenchDefinition : Definition
@@ -249,6 +250,8 @@ public sealed class ResearchBenchDefinition : Definition
     public long BaseSlotsPerBench { get; init; } = 2;
     public double BaseWork { get; init; } = 1;
     public double WorkPerNecromancer { get; init; } = 0.5;
+    /// <summary>Work one click on a bench adds, before the level growth and research efficiency.</summary>
+    public double ClickPower { get; init; } = 1;
     public double LevelWorkGrowth { get; init; } = 1.1;
     public int RoundSigFigs { get; init; } = 2;
     public List<BenchLevelTier> LevelTiers { get; init; } = new();
@@ -288,6 +291,7 @@ public sealed class ResearchBenchDefinition : Definition
         if (BaseBenches < 1) errors.Add("base_benches", "must be 1 or more");
         if (BaseSlotsPerBench < 0) errors.Add("base_slots_per_bench", "must be 0 or more");
         if (!(BaseWork >= 0) || !(WorkPerNecromancer >= 0)) errors.Add("base_work", "work must be 0 or more");
+        if (!(ClickPower >= 0)) errors.Add("click_power", "must be 0 or more");
         if (!(LevelWorkGrowth >= 1)) errors.Add("level_work_growth", "must be 1 or more");
         if (RoundSigFigs < 1) errors.Add("round_sig_figs", "must be 1 or more");
         for (var i = 0; i < LevelTiers.Count; i++)

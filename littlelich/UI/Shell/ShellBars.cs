@@ -118,7 +118,7 @@ public partial class CryptTabs : PanelContainer
 {
     public static readonly (string Key, string Label)[] Tabs =
     {
-        ("Crypt/Workshop", "Workshop"), ("Crypt/Research", "Research"), ("Crypt/UnitBuilder", "Unit Builder"),
+        ("Crypt/Workshop", "Workshop"), ("Crypt/Research", "Research"), ("Crypt/UnitBuilder", "Unit Builder"), ("Crypt/Army", "Army"),
         ("Crypt/SpellBook", "Spell Book"), ("Crypt/Lich", "Lich"),
     };
 

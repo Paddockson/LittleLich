@@ -241,8 +241,25 @@ public sealed class ResearchManager : ITickable, ISaveable
     public double WorkPerTick(Bench b) => WorkPerTickWith(Math.Min(Staffed(b), Slots), BenchLevel);
 
     /// <summary>The formula, for any staff count and bench level (the bench level card shows the next level).</summary>
-    public double WorkPerTickWith(long staffed, int benchLevel) =>
-        (_bench.BaseWork + _bench.WorkPerNecromancer * Math.Max(0, staffed)) * Math.Pow(_bench.LevelWorkGrowth, benchLevel - 1) * Efficiency;
+    /// <remarks>An unstaffed bench does nothing on the tick (click it instead); base_work only adds while staffed.</remarks>
+    public double WorkPerTickWith(long staffed, int benchLevel) => staffed <= 0 ? 0
+        : (_bench.BaseWork + _bench.WorkPerNecromancer * staffed) * Math.Pow(_bench.LevelWorkGrowth, benchLevel - 1) * Efficiency;
+
+    /// <summary>Work one click on a bench adds: click_power, raised by the bench level and research efficiency like necromancer work.</summary>
+    public double ClickWork => _bench.ClickPower * Math.Pow(_bench.LevelWorkGrowth, BenchLevel - 1) * Efficiency;
+
+    /// <summary>
+    /// Research by hand: one click adds <see cref="ClickWork"/> to the node on this bench and completes any levels it
+    /// pays for. False if the bench is empty or unknown.
+    /// </summary>
+    public bool Click(int bench)
+    {
+        if (bench < 0 || bench >= _benches.Count || _benches[bench].NodeId is null) return false;
+        var b = _benches[bench];
+        b.ProgressMicro = FixedPoint.Clamp((Int128)b.ProgressMicro + FixedPoint.ToMicro(ClickWork));
+        Finish(b);   // a finished level raises NodeCompleted
+        return true;
+    }
 
     /// <summary>0..1 progress of the bench's node level.</summary>
     public double Progress(Bench b) =>

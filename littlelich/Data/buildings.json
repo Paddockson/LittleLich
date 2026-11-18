@@ -1,5 +1,6 @@
 // Workshop buildings (phase 5). All numbers are placeholders.
-// work per tick = (base_work + staffed x work_per_necromancer) x (1 + level_bonus x (level - 1))
+// work per tick = (base_work + staffed x work_per_necromancer) x (1 + level_bonus x (level - 1)), and 0 with no
+// necromancer staffed: nothing runs on its own (base_work only adds while staffed).
 // slots = base_slots + slots_per_level x (level - 1). Levels, max levels and upgrade costs: upgrades.json.
 [
   // Mana Well (adjustment 02): no base work. Output per tick = staffed x work_per_necromancer x (1 + output_bonus)

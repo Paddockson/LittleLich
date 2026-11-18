@@ -127,9 +127,12 @@ public abstract class BuildingBase : ITickable, ISaveable
     /// <summary>Output bonus at a level: the table's output_bonus, or level_bonus x (level - 1). 0.1 = +10%.</summary>
     public double LevelBonusAt(int level) => Definition.Row(level) is { } r ? r.OutputBonus : Definition.LevelBonus * (level - 1);
 
-    /// <summary>Work per tick right now (staff beyond the slot count, e.g. after a load with fewer slots, still counts only up to Slots).</summary>
-    public double WorkPerTick =>
-        (Definition.BaseWork + Math.Min(Staffed, Slots) * WorkPerNecromancer) * LevelMultiplier * OutputModifier;
+    /// <summary>
+    /// Work per tick right now (staff beyond the slot count, e.g. after a load with fewer slots, still counts only up to
+    /// Slots). Nothing runs on its own: with no necromancer assigned the work is 0, and base_work only adds while staffed.
+    /// </summary>
+    public double WorkPerTick => Math.Min(Staffed, Slots) is var n && n <= 0 ? 0
+        : (Definition.BaseWork + n * WorkPerNecromancer) * LevelMultiplier * OutputModifier;
 
     /// <summary>Work each necromancer adds per tick before bonuses (the definition's, plus research for some buildings).</summary>
     public virtual double WorkPerNecromancer => Definition.WorkPerNecromancer;

@@ -50,28 +50,21 @@ public class SummoningCircleTests
     }
 
     [Fact]
-    public void Only_unlocked_units_are_offered_and_more_appear_with_level_and_research()
+    public void Only_necromancer_summons_are_offered_army_units_come_from_the_lich()
     {
         var w = Fresh();
         var c = Circle(w);
-        Assert.Equal(new[] { "necromancer", "wisp" }, c.AvailableUnits().Select(o => o.Id));   // from Summoning
-        Assert.False(c.SetUnit(1, "skeleton"));
+        Assert.Equal(new[] { "necromancer" }, c.AvailableUnits().Select(o => o.Id));
+        Assert.False(c.SetUnit(1, "wisp"));                          // adjustment 03: the lich summons army units
 
         w.Research.DebugComplete("animate_bones");
-        Assert.Equal(new[] { "necromancer", "wisp", "skeleton" }, c.AvailableUnits().Select(o => o.Id));
-        var skeleton = c.Option("skeleton")!;
-        Assert.Equal(new[] { "mana:150", "souls:10", "bones:10" }, skeleton.Cost.Select(x => $"{x.Id}:{x.Count}"));
-        Assert.Contains("boney friend", skeleton.Description);
-
-        w.Research.DebugComplete("elemental_wisps");                // Infusion: the four elemental wisps
-        Assert.Equal(new[] { "necromancer", "wisp", "fire_wisp", "water_wisp", "air_wisp", "earth_wisp", "skeleton" }, c.AvailableUnits().Select(o => o.Id));
-
-        // A Unit Builder loadout is offered after its body, with its gear in the cost.
+        w.Research.DebugComplete("elemental_wisps");
         w.Units.Build("skeleton", "copper_sword");
-        var loadout = c.Option("skeleton_copper_sword")!;
-        Assert.Equal(new[] { "mana", "souls", "bones", "copper_sword" }, loadout.Cost.Select(x => x.Id));
-        Assert.True(c.SetUnit(1, "skeleton"));
-        Assert.Equal("skeleton", c.SummonSlots[1].UnitId);
+        Assert.Equal(new[] { "necromancer" }, c.AvailableUnits().Select(o => o.Id));
+        Assert.False(c.SetUnit(1, "skeleton"));
+        Assert.False(c.SetUnit(1, "skeleton_copper_sword"));
+        Assert.True(c.SetUnit(1, "necromancer"));                    // the same summon may fill two slots
+        Assert.Equal("necromancer", c.SummonSlots[1].UnitId);
     }
 
     [Fact]
@@ -141,14 +134,14 @@ public class SummoningCircleTests
         c.DebugSetLevel(3);                           // 20 more max necromancers, 3 slots
         c.AddNecromancer(3);                          // 3 x 0.2 x 1.2 = 0.72 power/tick, split three ways
         // Ample stock: slots that share scarce stock are served in slot order within a batch (documented),
-        // so this test keeps every cost affordable. Storage level 3 doubles the caps.
+        // so this test keeps every cost affordable (three necromancer slots share mana and souls). Storage level 20.
         w.OpenAll();
-        w.Buildings.OfType<MagicalStorage>().Single().DebugSetLevel(3);
+        w.Buildings.OfType<MagicalStorage>().Single().DebugSetLevel(20);
         w.Research.DebugComplete("animate_bones");
-        Assert.True(c.SetUnit(1, "skeleton"));
-        Assert.True(c.SetUnit(2, "wisp"));
+        Assert.True(c.SetUnit(1, "necromancer"));
+        Assert.True(c.SetUnit(2, "necromancer"));
         w.Storage.Add("mana", 2_000);
-        w.Storage.Add("souls", 200);
+        w.Storage.Add("souls", 1_000);
         w.Inventory.Add("bones", 500);
         w.Ticks.Unregister(w.Buildings.OfType<ManaWell>().Single());
         c.Click();
@@ -157,7 +150,7 @@ public class SummoningCircleTests
     }
 
     private static string Snapshot(World w) => string.Join("|", Circle(w).Save().Node.ToJsonString(), w.Lich.Pool.Total,
-        w.Storage.Get("mana"), w.Units.Count("skeleton"), w.Units.Count("wisp"), Circle(w).Status, Circle(w).StatusDetail);
+        w.Storage.Get("mana"), Circle(w).Status, Circle(w).StatusDetail);
 
     [Theory]
     [InlineData(1)]
@@ -173,13 +166,11 @@ public class SummoningCircleTests
     }
 
     [Fact]
-    public void One_hundred_ticks_summon_necromancers_skeletons_and_wisps()
+    public void One_hundred_ticks_fill_three_slots_of_necromancers()
     {
         var w = Busy();
         w.Ticks.RunTicks(100);
         Assert.True(w.Lich.Pool.Total > 3);
-        Assert.True(w.Units.Count("skeleton") > 0);
-        Assert.True(w.Units.Count("wisp") > 0);
     }
 
     [Fact]
@@ -221,7 +212,7 @@ public class SummoningCircleSaveTests : IDisposable
         c.DebugSetLevel(2);
         a.Lich.DebugAddNecromancers(2);
         c.AddNecromancer(2);
-        Assert.True(c.SetUnit(1, "wisp"));
+        Assert.True(c.SetUnit(1, "necromancer"));
         c.Click();
         c.Click();
         a.Ticks.Unregister(a.Buildings.OfType<ManaWell>().Single());
@@ -233,7 +224,7 @@ public class SummoningCircleSaveTests : IDisposable
         s2.LoadSlot(1);
         var d = b.Buildings.OfType<SummoningCircle>().Single();
         Assert.Equal(2, d.Level);
-        Assert.Equal(new[] { "necromancer", "wisp" }, d.SummonSlots.Select(s => s.UnitId));
+        Assert.Equal(new[] { "necromancer", "necromancer" }, d.SummonSlots.Select(s => s.UnitId));
         Assert.Equal(progress, d.SummonSlots.Select(s => s.Progress).ToArray());
         Assert.Equal(2, d.AssignedNecromancers);
         Assert.Equal(c.Save().Node.ToJsonString(), d.Save().Node.ToJsonString());

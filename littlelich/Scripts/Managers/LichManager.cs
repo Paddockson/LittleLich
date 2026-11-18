@@ -44,6 +44,24 @@ public partial class LichManager : Node
         TickManager.Instance.Register(State, TickGroup.Lich);
     }
 
+    // ---- Army summoning (adjustment 03) ----
+
+    /// <summary>The lich keeps the army formation's squads topped up (null until boot).</summary>
+    public Crypt.Units.LichSummoner? Summoner { get; private set; }
+
+    /// <summary>
+    /// Boot step 3, after the CryptManager: creates the lich's army summoning (one figure every 4 s at base speed,
+    /// stat <see cref="Crypt.Units.LichSummoner.SpeedStat"/>) and registers it at the start of the world step, after
+    /// the buildings have produced this tick's stock. Its progress saves with the army.
+    /// </summary>
+    public void InitializeArmy(Crypt.Units.UnitBuilder units)
+    {
+        if (Summoner is not null) throw new InvalidOperationException("Army summoning is already initialised.");
+        var tm = TickManager.Instance;
+        Summoner = new Crypt.Units.LichSummoner(State, units, () => tm.Scheduler.ActiveRecap);
+        tm.Register(Summoner, TickGroup.World, TickOrder.LichSummons);
+    }
+
 
     // ---- Skills (phase 4) ----
 
@@ -122,6 +140,7 @@ public partial class LichManager : Node
         if (tm is null) return;
         tm.Unregister(State);
         foreach (var s in _skills) tm.Unregister(s);
+        if (Summoner is not null) tm.Unregister(Summoner);
     }
 
     // ---- Equipment and item use (phase 6) ----

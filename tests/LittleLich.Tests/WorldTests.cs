@@ -142,8 +142,55 @@ public class BattleTests
     }
 }
 
+
+public class SquadBattleTests
+{
+    private static BattleUnit Unit(string id, double hp, params BattleUnitAction[] actions) => new(id, id, hp, actions.ToList());
+
+    [Fact]
+    public void A_squad_holds_up_to_its_capacity_and_takes_replacements_mid_fight()
+    {
+        var a = Unit("a", 10, new BattleUnitAction("hit", "Hit", 1, "damage", 1, "front", "melee"));
+        var t = Unit("t", 1_000_000);
+        var b = new BattleController(new[] { new BattleEntry("front", a, 2, 5, Slot: 4) }, new[] { new BattleEntry("front", t, 1) });
+        var g = b.SlotGroup(4)!;
+        Assert.Equal(2, g.Alive);
+        Assert.Equal(50, g.MaxHp, 9);                       // the bar is out of five figures
+        Assert.Equal(3, b.Reinforce(4, 10));                // only room for three more
+        Assert.Equal(5, g.Alive);
+        Assert.Equal(0, b.Reinforce(4, 1));
+        Assert.Equal(0, b.Reinforce(7, 1));                 // no squad for that slot
+        Assert.Equal(new Dictionary<string, long> { ["a"] = 5 }, b.Fielded(BattleSide.Attacker));
+    }
+
+    [Fact]
+    public void An_empty_squad_waits_in_the_battle_for_its_first_figure()
+    {
+        var a = Unit("a", 10, new BattleUnitAction("hit", "Hit", 1, "damage", 1, "front", "melee"));
+        var t = Unit("t", 1_000_000);
+        var b = new BattleController(new[] { new BattleEntry("front", a, 1, 5, 2), new BattleEntry("back", a, 0, 5, 0) }, new[] { new BattleEntry("front", t, 1) });
+        Assert.False(b.SlotGroup(0)!.IsAlive);
+        Assert.Equal(1, b.Reinforce(0, 1));
+        Assert.True(b.SlotGroup(0)!.IsAlive);
+    }
+
+    [Fact]
+    public void Healing_never_raises_a_squad_past_the_figures_it_fielded()
+    {
+        var hitter = Unit("hitter", 1000, new BattleUnitAction("hit", "Hit", 1, "damage", 5, "front", "melee"));
+        var squad = Unit("squad", 10, new BattleUnitAction("mend", "Mend", 1, "heal", 100, "self", "ranged"));
+        var b = new BattleController(new[] { new BattleEntry("front", hitter, 1) }, new[] { new BattleEntry("front", squad, 2, 5, 0) });
+        b.Advance(3);
+        Assert.Equal(20, b.Groups[1].Hp, 9);                // healed back to two figures, not five
+        Assert.Equal(2, b.Groups[1].Alive);
+    }
+}
+
 public class WorldTests
 {
+    /// <summary>Front column first, then mid, then back (top to bottom).</summary>
+    internal static readonly int[] FrontFirst = { 2, 5, 8, 1, 4, 7, 0, 3, 6 };
+
     private static WorldState Fresh(out Stockpile stock, ContentDatabase? db = null)
     {
         db ??= World.SampleContent;
@@ -156,68 +203,113 @@ public class WorldTests
     private static ContentDatabase ContentWith(string json) => ContentLoader.CreateDefault().Load(
         ContentSource.FromDirectory(Path.Combine(AppContext.BaseDirectory, "Data")).Append(new ContentSource("extra.json", json)));
 
-    private static ArmyPlan Skeletons(long n) => new ArmyPlan().Set(Sections.Front, "skeleton", n);
-
-    [Fact]
-    public void A_placeholder_army_clears_the_graveyard_and_gets_its_rewards()
+    /// <summary>Fills <paramref name="squads"/> slots (front first) with full squads of a unit.</summary>
+    internal static void Squads(LittleLich.Crypt.Units.UnitBuilder u, string unit, int squads)
     {
-        var w = Fresh(out var stock);
-        w.AddUnits("skeleton", 30);
-        Assert.Equal(SendResult.Ok, w.Send("graveyard", Skeletons(30)));
-        Assert.Equal(AreaState.InProgress, w.State("graveyard"));
-        Assert.Equal(0, w.InRoster("skeleton"));
-        Assert.Equal(SendResult.BattleRunning, w.Send("woods", Skeletons(1)));   // one battle at a time
+        foreach (var i in FrontFirst.Take(squads)) Assert.True(u.SetSlot(i, unit));
+        u.DebugFillSquads();
+    }
 
+    private static void Fight(WorldState w)
+    {
         for (var i = 0; i < 300 && w.Battle is not null; i++) w.Advance(1);
-        var r = w.LastResult!;
-        Assert.Equal(BattleOutcome.Victory, r.Outcome);
-        Assert.Equal(AreaState.Cleared, w.State("graveyard"));
-        Assert.InRange(r.Survivors["skeleton"], 1, 30);            // data skeletons (100 HP, 10 damage) may lose none
-        Assert.Equal(r.Survivors["skeleton"], w.InRoster("skeleton"));
-        Assert.Equal(30, r.Lost + r.Survivors["skeleton"]);
-        Assert.Equal(60, stock.Get("bones"));
-        Assert.Equal(300, stock.Get("gold"));
-        Assert.Equal(SendResult.AlreadyCleared, w.Send("graveyard", Skeletons(1)));
     }
 
     [Fact]
-    public void A_weak_army_loses_and_the_area_stays_open()
+    public void Six_full_squads_clear_the_graveyard_and_get_its_rewards()
     {
         var w = Fresh(out var stock);
-        w.AddUnits("skeleton", 3);
-        w.Send("woods", Skeletons(3));
-        for (var i = 0; i < 300 && w.Battle is not null; i++) w.Advance(1);
+        Squads(w.Units, "skeleton", 6);
+        Assert.Equal(30, w.ArmyFigures);
+        Assert.Equal(SendResult.Ok, w.Send("graveyard"));
+        Assert.Equal(AreaState.InProgress, w.State("graveyard"));
+        Assert.Equal(SendResult.BattleRunning, w.Send("woods"));   // one battle at a time
+        Assert.Equal(6, w.Battle!.GroupsOf(BattleSide.Attacker).Count());
+        Assert.Equal(new[] { "front", "front", "front", "middle", "middle", "middle" }, w.Battle.GroupsOf(BattleSide.Attacker).Select(g => g.Section));
+
+        Fight(w);
+        var r = w.LastResult!;
+        Assert.Equal(BattleOutcome.Victory, r.Outcome);
+        Assert.Equal(AreaState.Cleared, w.State("graveyard"));
+        Assert.InRange(r.Survivors["skeleton"], 1, 30);
+        Assert.Equal(r.Survivors["skeleton"], w.ArmyFigures);           // survivors stay in their squads
+        Assert.Equal(30, r.Lost + r.Survivors["skeleton"]);
+        Assert.Equal(60, stock.Get("bones"));
+        Assert.Equal(300, stock.Get("gold"));
+        Assert.Equal(SendResult.AlreadyCleared, w.Send("graveyard"));
+    }
+
+    [Fact]
+    public void The_formation_is_locked_while_the_army_fights()
+    {
+        var w = Fresh(out _);
+        Squads(w.Units, "skeleton", 2);
+        w.Send("woods");
+        Assert.False(w.Units.SetSlot(0, "skeleton"));
+        w.Units.ClearSlot(2);
+        w.Units.SwapSlots(2, 0);
+        Assert.Equal("skeleton", w.Units.GetSlot(2));
+        Assert.Null(w.Units.GetSlot(0));
+        w.Retreat();
+        Assert.True(w.Units.SetSlot(0, "skeleton"));
+    }
+
+    [Fact]
+    public void A_weak_army_loses_and_the_squads_are_left_empty()
+    {
+        var w = Fresh(out var stock);
+        Squads(w.Units, "skeleton", 1);
+        w.Units.SyncFigures(2, 3);
+        w.Send("woods");
+        Fight(w);
         Assert.Equal(BattleOutcome.Defeat, w.LastResult!.Outcome);
         Assert.Equal(AreaState.NotStarted, w.State("woods"));
-        Assert.Equal(0, w.InRoster("skeleton"));
+        Assert.Equal(0, w.ArmyFigures);
+        Assert.Equal("skeleton", w.Units.GetSlot(2));                    // the slot keeps its unit for the lich to refill
         Assert.Equal(0, stock.Get("gold"));
     }
 
     [Fact]
-    public void Retreat_brings_survivors_home()
+    public void Retreat_keeps_the_survivors_in_their_squads()
     {
         var w = Fresh(out _);
-        w.AddUnits("skeleton_warrior", 10);
-        w.Send("woods", new ArmyPlan().Set(Sections.Front, "skeleton_warrior", 10));
+        Squads(w.Units, "skeleton_warrior", 2);
+        w.Send("woods");
         w.Advance(4);
         Assert.True(w.Retreat());
         Assert.Equal(BattleOutcome.Retreat, w.LastResult!.Outcome);
-        Assert.Equal(w.LastResult.Survivors["skeleton_warrior"], w.InRoster("skeleton_warrior"));
+        Assert.Equal(w.LastResult.Survivors["skeleton_warrior"], w.ArmyFigures);
         Assert.False(w.Retreat());
     }
 
     [Fact]
-    public void Send_checks_the_garrison_units_and_paths()
+    public void The_lichs_replacements_join_the_running_battle()
+    {
+        var w = Fresh(out var stock);
+        Squads(w.Units, "skeleton", 1);
+        w.Units.SyncFigures(2, 2);
+        stock.Add("mana", 1000);
+        stock.Add("souls", 100);
+        stock.Add("bones", 100);
+        w.Send("woods");
+        Assert.Equal(1, w.Units.SummonIntoSlot(2, 1));
+        Assert.Equal(3, w.Battle!.SlotGroup(2)!.Alive);
+        Assert.Equal(1, w.Battle.SlotGroup(2)!.Reinforced);
+        w.Retreat();
+        Assert.Equal(3, w.LastResult!.Sent["skeleton"]);
+    }
+
+    [Fact]
+    public void Send_needs_a_figure_standing_a_known_area_and_a_path()
     {
         var w = Fresh(out _);
-        Assert.Equal(SendResult.EmptyArmy, w.Send("graveyard", new ArmyPlan()));
-        Assert.Equal(SendResult.UnknownUnit, w.Send("graveyard", Skeletons(1)));   // no "skeleton" unit type yet
-        w.AddUnits("skeleton", 5);
-        Assert.Equal(SendResult.NotEnoughUnits, w.Send("graveyard", Skeletons(6)));
-        Assert.Equal(SendResult.UnknownUnit, w.Send("graveyard", new ArmyPlan().Set(Sections.Front, "rival_skeleton", 1)));
-        Assert.Equal(SendResult.UnknownArea, w.Send("castle", Skeletons(1)));
-        Assert.Throws<ArgumentException>(() => w.AddUnits("grave_archer", 5));   // enemies cannot join the roster
-        Assert.Equal(5, w.InRoster("skeleton"));
+        Assert.Equal(SendResult.EmptyArmy, w.Send("graveyard"));
+        Assert.True(w.Units.SetSlot(2, "skeleton"));
+        Assert.Equal(SendResult.EmptyArmy, w.Send("graveyard"));      // a new slot starts with no figures
+        Assert.False(w.Units.SetSlot(2, "rival_skeleton"));           // enemies cannot join the army
+        w.Units.DebugFillSquads();
+        Assert.Equal(SendResult.UnknownArea, w.Send("castle"));
+        Assert.Equal(SendResult.Ok, w.Send("graveyard"));
     }
 
     [Fact]
@@ -231,10 +323,10 @@ public class WorldTests
         Assert.True(w.IsReachable("graveyard"));
         Assert.True(w.IsReachable("woods"));
         Assert.False(w.IsReachable("deep"));
-        w.AddUnits("skeleton", 60);
-        Assert.Equal(SendResult.NotReachable, w.Send("deep", Skeletons(1)));
-        w.Send("graveyard", Skeletons(40));
-        for (var i = 0; i < 300 && w.Battle is not null; i++) w.Advance(1);
+        Squads(w.Units, "skeleton", 8);
+        Assert.Equal(SendResult.NotReachable, w.Send("deep"));
+        w.Send("graveyard");
+        Fight(w);
         Assert.True(w.IsReachable("deep"));
     }
 }
@@ -253,39 +345,42 @@ public class WorldSaveTests : IDisposable
         var w = new WorldState(db, stock, units);
         var s = new GameSession(db, new SaveService(_dir.Path, _clock.Get), _clock.Get);
         s.Register(stock.Storage);
-        s.Register(units);   // before the world, as at boot
+        s.Register(units);        // before the army and the world, as at boot
+        s.Register(units.Army);
         s.Register(w);
         return (s, w, stock);
     }
 
     [Fact]
-    public void A_cleared_area_and_the_garrison_survive_reload()
+    public void A_cleared_area_and_the_squads_survive_reload()
     {
         var (s1, a, _) = Session();
         s1.NewGame(1);
-        a.AddUnits("skeleton", 35);
-        a.AddUnits("skeleton_warrior", 4);
-        a.Send("graveyard", new ArmyPlan().Set(Sections.Front, "skeleton", 35));
+        WorldTests.Squads(a.Units, "skeleton", 7);
+        Assert.True(a.Units.SetSlot(6, "skeleton_warrior"));
+        a.Send("graveyard");
         for (var i = 0; i < 300 && a.Battle is not null; i++) a.Advance(1);
         s1.Save();
 
         var (s2, b, stock) = Session();
         s2.LoadSlot(1);
         Assert.Equal(AreaState.Cleared, b.State("graveyard"));
-        Assert.Equal(a.InRoster("skeleton"), b.InRoster("skeleton"));
-        Assert.Equal(4, b.InRoster("skeleton_warrior"));
+        Assert.Equal(a.ArmyFigures, b.ArmyFigures);
+        Assert.Equal("skeleton_warrior", b.Units.GetSlot(6));
+        Assert.Equal(0, b.Units.Figures(6));
         Assert.Equal(300, stock.Get("gold"));
     }
 
     [Fact]
-    public void A_battle_is_not_saved_mid_fight_it_restarts_on_load()
+    public void A_battle_is_not_saved_mid_fight_it_restarts_on_load_with_the_saved_squads()
     {
         var (s1, a, _) = Session();
         s1.NewGame(1);
-        a.AddUnits("skeleton", 40);
-        a.Send("graveyard", new ArmyPlan().Set(Sections.Front, "skeleton", 30));
-        a.Advance(3);                                            // into the fight (data skeletons win fast)
+        WorldTests.Squads(a.Units, "skeleton", 6);
+        a.Send("graveyard");
+        a.Advance(3);                                            // into the fight
         Assert.True(a.Battle!.SideHp(BattleSide.Defender) < a.Battle.SideMaxHp(BattleSide.Defender));
+        var standing = a.ArmyFigures;
         s1.Save();
 
         var (s2, b, _) = Session();
@@ -293,11 +388,10 @@ public class WorldSaveTests : IDisposable
         Assert.Equal(AreaState.InProgress, b.State("graveyard"));
         Assert.Equal(0, b.Battle!.NowMs);                          // restarted from the beginning
         Assert.Equal(b.Battle.SideMaxHp(BattleSide.Defender), b.Battle.SideHp(BattleSide.Defender));
-        Assert.Equal(30, b.Battle.Survivors(BattleSide.Attacker)["skeleton"]);
-        Assert.Equal(10, b.InRoster("skeleton"));                // the 30 sent are out, not doubled
+        Assert.Equal(standing, b.Battle.Survivors(BattleSide.Attacker)["skeleton"]);
         for (var i = 0; i < 300 && b.Battle is not null; i++) b.Advance(1);
         Assert.Equal(AreaState.Cleared, b.State("graveyard"));
-        Assert.Equal(10 + b.LastResult!.Survivors["skeleton"], b.InRoster("skeleton"));
+        Assert.Equal(b.LastResult!.Survivors["skeleton"], b.ArmyFigures);
     }
 }
 

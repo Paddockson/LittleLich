@@ -23,13 +23,15 @@ public enum BattleOutcome
 /// </summary>
 public sealed class BattleGroup
 {
-    internal BattleGroup(BattleSide side, string section, BattleUnit unit, long count, int order)
+    internal BattleGroup(BattleSide side, string section, BattleUnit unit, long count, long capacity, int slot, int order)
     {
         Side = side;
         Section = section;
         Unit = unit;
         StartCount = count;
-        Hp = MaxHp;
+        Capacity = Math.Max(count, capacity);
+        Slot = slot;
+        Hp = count * unit.Hp;
         Order = order;
         NextFireMs = unit.Actions.Select(a => ToMs(a.Cooldown)).ToArray();
     }
@@ -37,13 +39,32 @@ public sealed class BattleGroup
     public BattleSide Side { get; }
     public string Section { get; }
     public BattleUnit Unit { get; }
+    /// <summary>Units at the start of the battle.</summary>
     public long StartCount { get; }
-    public double MaxHp => StartCount * Unit.Hp;
+    /// <summary>Most units the group can hold (a player squad: 5; otherwise the start count). The HP bar is out of this.</summary>
+    public long Capacity { get; }
+    /// <summary>The army formation slot this group fights for (player squads), or -1.</summary>
+    public int Slot { get; }
+    /// <summary>Units added during the battle (the lich's replacements).</summary>
+    public long Reinforced { get; private set; }
+    public double MaxHp => Capacity * Unit.Hp;
+    /// <summary>Healing tops up to the units fielded so far (start + replacements), never beyond.</summary>
+    internal double HealCap => Math.Min(MaxHp, (StartCount + Reinforced) * Unit.Hp);
     public double Hp { get; internal set; }
     public bool IsAlive => Hp > 0;
 
     /// <summary>Units still standing.</summary>
-    public long Alive => Hp <= 0 ? 0 : Math.Min(StartCount, (long)Math.Ceiling(Hp / Unit.Hp - 1e-9));
+    public long Alive => Hp <= 0 ? 0 : Math.Min(Capacity, (long)Math.Ceiling(Hp / Unit.Hp - 1e-9));
+
+    /// <summary>Adds up to <paramref name="count"/> fresh units (full HP each), within <see cref="Capacity"/>. Returns how many.</summary>
+    internal long AddUnits(long count)
+    {
+        var n = Math.Min(count, Capacity - Alive);
+        if (n <= 0) return 0;
+        Hp = Math.Min(MaxHp, Hp + n * Unit.Hp);
+        Reinforced += n;
+        return n;
+    }
 
     /// <summary>Damage reduction for the next incoming attack (0 = none), set by a brace action.</summary>
     public double Brace { get; internal set; }
@@ -55,6 +76,12 @@ public sealed class BattleGroup
 
     internal static long ToMs(double seconds) => (long)Math.Round(seconds * 1000);
 }
+
+/// <summary>
+/// One group to put in a battle: section, unit and how many. A <paramref name="Capacity"/> above the count lets the
+/// group be refilled during the fight (0 = the count); <paramref name="Slot"/> is the army formation slot it fights for.
+/// </summary>
+public sealed record BattleEntry(string Section, BattleUnit Unit, long Count, long Capacity = 0, int Slot = -1);
 
 /// <summary>What happened when an action fired (for the battle log and UI).</summary>
 public sealed record BattleAction(long AtMs, BattleGroup Source, BattleUnitAction Action, BattleGroup? Target, double Amount, bool Braced);
@@ -81,6 +108,12 @@ public sealed class BattleController
         IEnumerable<(string Section, BattleUnit Unit, long Count)> attackers,
         IEnumerable<(string Section, BattleUnit Unit, long Count)> defenders,
         long timeLimitMs = DefaultTimeLimitMs)
+        : this(attackers.Select(a => new BattleEntry(a.Section, a.Unit, a.Count)), defenders.Select(d => new BattleEntry(d.Section, d.Unit, d.Count)), timeLimitMs)
+    {
+    }
+
+    /// <summary>Entries with a capacity above their count (player squads) can be refilled with <see cref="Reinforce"/>.</summary>
+    public BattleController(IEnumerable<BattleEntry> attackers, IEnumerable<BattleEntry> defenders, long timeLimitMs = DefaultTimeLimitMs)
     {
         TimeLimitMs = timeLimitMs;
         Add(BattleSide.Attacker, attackers);
@@ -136,6 +169,16 @@ public sealed class BattleController
         if (!IsOver) End(BattleOutcome.Retreat);
     }
 
+    /// <summary>The attacker group fighting for an army slot, if any.</summary>
+    public BattleGroup? SlotGroup(int slot) => slot < 0 ? null : GroupsOf(BattleSide.Attacker).FirstOrDefault(g => g.Slot == slot);
+
+    /// <summary>The lich's replacements: adds up to <paramref name="count"/> units to a slot's group. Returns how many.</summary>
+    public long Reinforce(int slot, long count) => IsOver || SlotGroup(slot) is not { } g ? 0 : g.AddUnits(count);
+
+    /// <summary>Units that took part per unit id on one side (start count plus replacements).</summary>
+    public Dictionary<string, long> Fielded(BattleSide side) =>
+        GroupsOf(side).GroupBy(g => g.Unit.Id).ToDictionary(g => g.Key, g => g.Sum(x => x.StartCount + x.Reinforced));
+
     /// <summary>Units still standing per unit id on one side.</summary>
     public Dictionary<string, long> Survivors(BattleSide side) =>
         GroupsOf(side).GroupBy(g => g.Unit.Id).ToDictionary(g => g.Key, g => g.Sum(x => x.Alive));
@@ -149,14 +192,14 @@ public sealed class BattleController
 
     // ---- internals ----
 
-    private void Add(BattleSide side, IEnumerable<(string Section, BattleUnit Unit, long Count)> units)
+    private void Add(BattleSide side, IEnumerable<BattleEntry> units)
     {
-        foreach (var (section, unit, count) in units
-                     .Where(u => u.Count > 0)
+        foreach (var e in units
+                     .Where(u => u.Count > 0 || u.Capacity > 0)
                      .OrderBy(u => Sections.All.ToList().IndexOf(u.Section)))
         {
-            if (!Sections.All.Contains(section)) throw new ArgumentException($"'{section}' is not a section.");
-            _groups.Add(new BattleGroup(side, section, unit, count, _groups.Count));
+            if (!Sections.All.Contains(e.Section)) throw new ArgumentException($"'{e.Section}' is not a section.");
+            _groups.Add(new BattleGroup(side, e.Section, e.Unit, Math.Max(0, e.Count), e.Capacity, e.Slot, _groups.Count));
         }
     }
 
@@ -208,7 +251,7 @@ public sealed class BattleController
                 break;
             case "heal" when target is not null:
                 var before = target.Hp;
-                target.Hp = Math.Min(target.MaxHp, target.Hp + a.Value * g.Alive);
+                target.Hp = Math.Max(before, Math.Min(target.HealCap, target.Hp + a.Value * g.Alive));
                 amount = target.Hp - before;
                 break;
         }

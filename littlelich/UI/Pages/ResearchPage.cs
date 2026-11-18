@@ -117,7 +117,7 @@ public partial class ResearchPage : PageBase
         foreach (var b in r.Benches) benches.Body.AddChild(BenchRow(r, b));
         right.AddChild(benches);
         right.AddChild(BenchLevelCard(r));
-        right.AddChild(Ui.Text("Each bench works one node at a time. Necromancers add work every tick. More benches come from research.",
+        right.AddChild(Ui.Text("Each bench works one node at a time. Click a bench to research by hand; assigned necromancers add work every tick. More benches come from research.",
             Tokens.FontLabel, Tokens.TextMuted, wrap: true));
         return right;
     }
@@ -133,6 +133,7 @@ public partial class ResearchPage : PageBase
             else Toast.Show($"Cannot put {name} on bench {b.Index + 1}.", true);
             RebuildSoon();
         });
+        p.Clicked = () => { if (r.Click(b.Index)) MarkDirty(); };
         var col = Ui.Col(7);
         p.AddChild(col);
         var ring = new NodeRing();
@@ -170,9 +171,12 @@ public partial class ResearchPage : PageBase
             cancel.Visible = busy;
             bar.Value = busy ? r.Progress(b) : 0;
             var ticks = r.TicksLeft(b);
-            left.Text = busy ? ticks is { } t ? FormatTime(t * Core.OfflineTime.BaseTickSeconds) : "no work" : "";
-            work.Text = busy ? $"Work {Fmt.Short(r.WorkNeeded(node!.Id))} · {Fmt.Num2(r.WorkPerTick(b))} per tick" : "Drag a node here, or click one";
-            p.TooltipText = $"{Fmt.Exact(r.Staffed(b))} of {Fmt.Exact(r.Slots)} necromancers · {Fmt.Num2(r.WorkPerTick(b))} work per tick";
+            left.Text = busy ? ticks is { } t ? FormatTime(t * Core.OfflineTime.BaseTickSeconds) : r.Staffed(b) > 0 ? "no work" : "by hand" : "";
+            work.Text = !busy ? "Drag a node here, or click one"
+                : r.Staffed(b) > 0 ? $"Work {Fmt.Short(r.WorkNeeded(node!.Id))} · {Fmt.Num2(r.WorkPerTick(b))} per tick"
+                : $"Work {Fmt.Short(r.WorkNeeded(node!.Id))} · click the bench (+{Fmt.Num2(r.ClickWork)})";
+            p.MouseDefaultCursorShape = busy ? CursorShape.PointingHand : CursorShape.Arrow;
+            p.TooltipText = $"Click to research by hand (+{Fmt.Num2(r.ClickWork)} work). {Fmt.Exact(r.Staffed(b))} of {Fmt.Exact(r.Slots)} necromancers · {Fmt.Num2(r.WorkPerTick(b))} work per tick";
         });
         return p;
     }
@@ -584,6 +588,18 @@ public partial class BenchDropTarget : PanelContainer
     {
         Hot = false;
         if (ResearchTree.NodeFromDrag(data) is { } id) _drop(id);
+    }
+
+    /// <summary>Set by the page: a left click on the bench (not on its stepper or buttons) researches by hand.</summary>
+    public Action? Clicked { get; set; }
+
+    public override void _GuiInput(InputEvent e)
+    {
+        if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false } && Clicked is { } c)
+        {
+            c();
+            AcceptEvent();
+        }
     }
 
     public override void _Notification(int what)

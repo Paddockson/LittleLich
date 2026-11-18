@@ -1,5 +1,6 @@
 // Research benches (research revamp). Placeholder formula:
-// work per tick = (base_work + work_per_necromancer x staffed) x level_work_growth ^ (level - 1) x research efficiency.
+// work per tick = (base_work + work_per_necromancer x staffed) x level_work_growth ^ (level - 1) x research efficiency,
+// and 0 with no necromancer staffed (base_work only adds while staffed). A click on a bench adds click_power x the same growth and efficiency.
 // Bench level costs: level_tiers from the old build.json (ResearchBench), cost of level L = base x multiplier ^ (L - min_level),
 // rounded to round_sig_figs significant figures, halves up. Extra benches and room come from research.
 [
@@ -11,6 +12,7 @@
     "base_slots_per_bench": 2,
     "base_work": 1,
     "work_per_necromancer": 0.5,
+    "click_power": 1,
     "level_work_growth": 1.1,
     "round_sig_figs": 2,
     "level_tiers": [

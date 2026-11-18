@@ -64,17 +64,7 @@ public partial class WorldManager : Node
 
     // ---- Commands ----
 
-    public SendResult Send(string areaId, ArmyPlan plan) => State?.Send(areaId, plan) ?? SendResult.UnknownArea;
+    /// <summary>Sends the army formation's squads, as they stand, at an area.</summary>
+    public SendResult Send(string areaId) => State?.Send(areaId) ?? SendResult.UnknownArea;
     public bool Retreat() => State?.Retreat() ?? false;
-    public void DebugAddUnits(string unitId, long count) => State?.AddUnits(unitId, count);
-
-    /// <summary>Dev helper: the whole roster, all in the front section (use a formation for anything better).</summary>
-    public ArmyPlan WholeRoster()
-    {
-        var plan = new ArmyPlan();
-        if (State is null) return plan;
-        foreach (var (unit, n) in State.Units.Roster.Where(g => g.Value > 0))
-            plan.Set(Content.Definitions.Sections.Front, unit, n);
-        return plan;
-    }
 }

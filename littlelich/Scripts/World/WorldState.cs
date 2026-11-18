@@ -20,29 +20,8 @@ public enum SendResult
     AlreadyCleared,
     /// <summary>No path from home through cleared ground.</summary>
     NotReachable,
+    /// <summary>No slot of the formation has a figure standing yet.</summary>
     EmptyArmy,
-    /// <summary>The roster does not have that many of a unit type.</summary>
-    NotEnoughUnits,
-    UnknownUnit,
-}
-
-/// <summary>An army to send: section -> unit type id -> count.</summary>
-public sealed class ArmyPlan
-{
-    public Dictionary<string, Dictionary<string, long>> Sections { get; set; } = new();
-
-    public ArmyPlan Set(string section, string unit, long count)
-    {
-        if (!Sections.TryGetValue(section, out var s)) Sections[section] = s = new Dictionary<string, long>();
-        s[unit] = count;
-        return this;
-    }
-
-    public IEnumerable<(string Section, string Unit, long Count)> Entries =>
-        Sections.SelectMany(s => s.Value.Where(u => u.Value > 0).Select(u => (s.Key, u.Key, u.Value)));
-
-    public Dictionary<string, long> Totals() =>
-        Entries.GroupBy(e => e.Unit).ToDictionary(g => g.Key, g => g.Sum(e => e.Count));
 }
 
 /// <summary>How a battle went, for the log and the UI.</summary>
@@ -54,19 +33,22 @@ public sealed record BattleResult(
     IReadOnlyDictionary<string, long> Survivors,
     IReadOnlyDictionary<string, long> Rewards)
 {
+    /// <summary>Figures that fell (sent includes the lich's replacements during the fight).</summary>
     public long Lost => Sent.Sum(kv => kv.Value) - Survivors.Sum(kv => kv.Value);
 }
 
 /// <summary>
 /// The world map (save section "world"): map nodes and paths, area states and the one active battle
-/// (v0.1: one at a time, no restocking). Battles run on their own clock via <see cref="Advance"/>.
+/// (v0.1: one at a time). Battles run on their own clock via <see cref="Advance"/>.
 ///
-/// Armies come from the Unit Builder's roster (phase 9): sending takes units of each type out of the roster, and
-/// survivors return to it when the battle ends. Each type fights with its gear (<see cref="UnitBuilder.BattleUnit"/>).
-/// A formation turns into an army with <see cref="PlanFor"/>.
+/// The army is the Unit Builder's 3 by 3 formation (adjustment 03): each filled slot fights as one squad of up to
+/// five figures in its column's section (Back, Mid, Front). The lich keeps summoning during the fight
+/// (<see cref="LichSummoner"/>), and each new figure joins its squad's battle group. Losses are written back to the
+/// squads as the battle runs, so survivors are simply the figures still standing. The formation is locked while a
+/// battle runs.
 ///
-/// Save: cleared areas and the army out fighting. A battle is not saved mid-fight: on load it
-/// restarts from the beginning with the same army.
+/// Save: cleared areas and the area being fought. A battle is not saved mid-fight: on load it restarts from the
+/// beginning with the squads as they were saved.
 /// </summary>
 public sealed class WorldState : ISaveable
 {
@@ -80,7 +62,8 @@ public sealed class WorldState : ISaveable
         _content = content;
         _stock = stock;
         _units = units;
-        units.InBattle = InBattle;
+        units.ArmyLocked = () => Battle is not null;
+        units.FiguresSummoned += (slot, n) => Battle?.Reinforce(slot, n);
         Nodes = content.All<MapNodeDefinition>().ToList();
         Areas = content.All<AreaDefinition>().ToList();
     }
@@ -92,7 +75,6 @@ public sealed class WorldState : ISaveable
 
     public BattleController? Battle { get; private set; }
     public string? BattleArea { get; private set; }
-    public ArmyPlan? BattlePlan { get; private set; }
     public BattleResult? LastResult { get; private set; }
 
     public event Action<string>? BattleStarted;
@@ -132,65 +114,42 @@ public sealed class WorldState : ISaveable
         return false;
     }
 
-    // ---- Roster (the Unit Builder's) ----
+    // ---- The army (the Unit Builder's formation) ----
 
     public UnitBuilder Units => _units;
 
-    /// <summary>Units of a type in the roster (not counting any out fighting).</summary>
-    public long InRoster(string typeId) => _units.Count(typeId);
+    /// <summary>Figures standing across every squad.</summary>
+    public long ArmyFigures => Enumerable.Range(0, ArmyFormation.SlotCount).Sum(i => _units.GetSlot(i) is null ? 0 : _units.Figures(i));
 
-    /// <summary>
-    /// Debug: add units without summoning. Accepts a unit type id, or a player base id (uses its gear-less type).
-    /// </summary>
-    public void AddUnits(string typeOrBaseId, long count)
-    {
-        var type = _units.Type(typeOrBaseId) ?? _units.EnsureBare(typeOrBaseId);
-        _units.AddToRoster(type.Id, count);
-    }
+    /// <summary>Total HP of the squads as they stand (figures x unit HP with gear).</summary>
+    public double ArmyHp => Enumerable.Range(0, ArmyFormation.SlotCount)
+        .Sum(i => _units.GetSlot(i) is { } u ? _units.Figures(i) * _units.BattleUnit(u).Hp : 0);
 
-    /// <summary>A formation as an army: each filled slot sends its count of its unit type from its section.</summary>
-    public ArmyPlan PlanFor(Formation formation)
-    {
-        var plan = new ArmyPlan();
-        foreach (var s in formation.Slots.Where(s => s.UnitType is not null && s.Count > 0))
-        {
-            var current = plan.Sections.TryGetValue(s.Section, out var sec) ? sec.GetValueOrDefault(s.UnitType!) : 0;
-            plan.Set(s.Section, s.UnitType!, current + s.Count);
-        }
-        return plan;
-    }
-
-    /// <summary>True while units of this type are out fighting (the Unit Builder will not delete the type).</summary>
-    public bool InBattle(string typeId) => BattlePlan?.Totals().ContainsKey(typeId) ?? false;
+    /// <summary>The formation as battle entries: one squad per filled slot, refillable to five.</summary>
+    private List<BattleEntry> ArmyEntries() => Enumerable.Range(0, ArmyFormation.SlotCount)
+        .Where(i => _units.GetSlot(i) is not null)
+        .Select(i => new BattleEntry(ArmyFormation.SectionOf(i), _units.BattleUnit(_units.GetSlot(i)!), _units.Figures(i), ArmyFormation.SquadSize, i))
+        .ToList();
 
     // ---- Battles ----
 
-    public SendResult Send(string areaId, Formation formation) => Send(areaId, PlanFor(formation));
-
-    public SendResult Send(string areaId, ArmyPlan plan)
+    /// <summary>Sends the formation's squads, as they stand, at an area.</summary>
+    public SendResult Send(string areaId)
     {
         if (Area(areaId) is not { } area) return SendResult.UnknownArea;
         if (Battle is not null) return SendResult.BattleRunning;
         if (_cleared.Contains(areaId)) return SendResult.AlreadyCleared;
         if (!IsReachable(areaId)) return SendResult.NotReachable;
-        var totals = plan.Totals();
-        if (totals.Count == 0) return SendResult.EmptyArmy;
-        if (totals.Keys.Any(t => _units.Type(t) is null)) return SendResult.UnknownUnit;
-        if (plan.Entries.Any(e => !Content.Definitions.Sections.All.Contains(e.Section))) return SendResult.UnknownUnit;
-        if (totals.Any(t => InRoster(t.Key) < t.Value)) return SendResult.NotEnoughUnits;
-
-        foreach (var (unit, n) in totals) _units.TakeFromRoster(unit, n);
-        Start(area, plan);
+        if (ArmyFigures <= 0) return SendResult.EmptyArmy;
+        Start(area);
         return SendResult.Ok;
     }
 
-    private void Start(AreaDefinition area, ArmyPlan plan)
+    private void Start(AreaDefinition area)
     {
-        var attackers = plan.Entries.Select(e => (e.Section, _units.BattleUnit(e.Unit), e.Count));
-        var defenders = area.Defenders.SelectMany(s => s.Value.Select(u => (s.Key, BattleUnit.From(Unit(u.Unit)), u.Count)));
-        Battle = new BattleController(attackers, defenders);
+        var defenders = area.Defenders.SelectMany(s => s.Value.Select(u => new BattleEntry(s.Key, BattleUnit.From(Unit(u.Unit)), u.Count)));
+        Battle = new BattleController(ArmyEntries(), defenders);
         BattleArea = area.Id;
-        BattlePlan = plan;
         BattleStarted?.Invoke(area.Id);
         AreaStateChanged?.Invoke(area.Id);
     }
@@ -200,10 +159,11 @@ public sealed class WorldState : ISaveable
     {
         if (Battle is not { } b) return;
         b.Advance(seconds);
+        SyncFigures(b);
         if (b.IsOver) Resolve();
     }
 
-    /// <summary>Pull the army back now; survivors return to the roster.</summary>
+    /// <summary>Pull the army back now; the squads keep the figures still standing.</summary>
     public bool Retreat()
     {
         if (Battle is not { } b) return false;
@@ -212,23 +172,27 @@ public sealed class WorldState : ISaveable
         return true;
     }
 
+    /// <summary>Battle losses go back to the formation's squads.</summary>
+    private void SyncFigures(BattleController b)
+    {
+        foreach (var g in b.GroupsOf(BattleSide.Attacker))
+            if (g.Slot >= 0) _units.SyncFigures(g.Slot, g.Alive);
+    }
+
     private void Resolve()
     {
         var b = Battle!;
         var area = Area(BattleArea!)!;
-        var survivors = b.Survivors(BattleSide.Attacker);
-        foreach (var (unit, n) in survivors.Where(s => s.Value > 0)) _units.AddToRoster(unit, n);
-
+        SyncFigures(b);
         var rewards = new Dictionary<string, long>();
         if (b.Outcome == BattleOutcome.Victory)
         {
             _cleared.Add(area.Id);
             foreach (var (id, n) in area.Rewards) rewards[id] = _stock.Add(id, n);
         }
-        LastResult = new BattleResult(area.Id, b.Outcome!.Value, b.NowSeconds, BattlePlan!.Totals(), survivors, rewards);
+        LastResult = new BattleResult(area.Id, b.Outcome!.Value, b.NowSeconds, b.Fielded(BattleSide.Attacker), b.Survivors(BattleSide.Attacker), rewards);
         Battle = null;
         BattleArea = null;
-        BattlePlan = null;
         AreaStateChanged?.Invoke(area.Id);
         BattleEnded?.Invoke(LastResult);
     }
@@ -239,41 +203,26 @@ public sealed class WorldState : ISaveable
 
     public SaveData Save() => new SaveData()
         .Set("cleared", _cleared.OrderBy(x => x, StringComparer.Ordinal).ToList())
-        .Set("battle", BattleArea is null ? null : new BattleDto { Area = BattleArea, Army = BattlePlan!.Sections });
+        .Set("battle", BattleArea is null ? null : new BattleDto { Area = BattleArea });
 
     /// <summary>
-    /// Restores cleared areas; an army that was out fighting restarts its battle from the beginning.
-    /// Loads after the Unit Builder. A phase 8 save's "garrison" (unit base ids) moves into the roster as gear-less types.
+    /// Restores cleared areas; a battle that was running restarts from the beginning with the saved squads.
+    /// Loads after the army. Older saves' "garrison" and battle "army" (the roster) are ignored.
     /// </summary>
     public void Load(SaveData data)
     {
         _cleared.Clear();
         Battle = null;
         BattleArea = null;
-        BattlePlan = null;
         foreach (var id in data.Get("cleared", new List<string>()))
             if (Area(id) is not null) _cleared.Add(id);
-        foreach (var (id, n) in data.Get("garrison", new Dictionary<string, long>()))
-            if (n > 0 && _content.TryGet<UnitDefinitionBase>(id, out var u) && u.Side == "player") AddUnits(id, n);
-
-        if (data.Get<BattleDto?>("battle", null) is { Area: { } areaId } dto && Area(areaId) is { } area && !_cleared.Contains(areaId))
-        {
-            var plan = new ArmyPlan();
-            foreach (var (section, units) in dto.Army ?? new())
-                foreach (var (unit, n) in units)
-                {
-                    // Phase 8 saves used base ids: give them their gear-less type.
-                    var type = _units.Type(unit) ?? (_content.TryGet<UnitDefinitionBase>(unit, out var b) && b.Side == "player" ? _units.EnsureBare(unit) : null);
-                    if (n > 0 && type is not null && Content.Definitions.Sections.All.Contains(section)) plan.Set(section, type.Id, n);
-                }
-            if (plan.Totals().Count > 0) Start(area, plan);
-        }
+        if (data.Get<BattleDto?>("battle", null) is { Area: { } areaId } && Area(areaId) is { } area && !_cleared.Contains(areaId) && ArmyFigures > 0)
+            Start(area);
         foreach (var a in Areas) AreaStateChanged?.Invoke(a.Id);
     }
 
     public sealed class BattleDto
     {
         public string? Area { get; set; }
-        public Dictionary<string, Dictionary<string, long>>? Army { get; set; }
     }
 }

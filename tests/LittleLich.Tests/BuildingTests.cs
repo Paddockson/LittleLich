@@ -46,6 +46,15 @@ public class BuildingTests
     }
 
     [Fact]
+    public void Nothing_works_on_the_tick_without_a_necromancer()
+    {
+        var w = Fresh();
+        w.Lich.DebugAddNecromancers(10);                  // free necromancers do not count, only assigned ones
+        Assert.All(w.Buildings, b => Assert.Equal(0, b.WorkPerTick));
+        Assert.Equal(0, w.Research.WorkPerTick(w.Research.Benches[0]));
+    }
+
+    [Fact]
     public void The_opening_research_summoning_then_clicks_raise_the_first_necromancer()
     {
         // A new game (no OpenAll): only the Mana Well is open and there are no necromancers.
@@ -58,13 +67,15 @@ public class BuildingTests
         Assert.Equal(5, w.Lich.Pool.Max);
         Assert.False(circle.IsUnlocked);
 
-        // The free bench works 1 per tick with nobody on it: Summoning (4 work), then Soul Harvesting (7).
+        // With nobody on it the bench does nothing on the tick; each click adds 1: Summoning (4 work), then Soul Harvesting (7).
         Assert.Equal(Crypt.Research.StartResult.Ok, r.Start("summoning"));
-        w.Ticks.RunTicks(4);
+        w.Ticks.RunTicks(20);
+        Assert.False(circle.IsUnlocked);
+        for (var i = 0; i < 4; i++) Assert.True(r.Click(0));
         Assert.True(circle.IsUnlocked);
         Assert.Equal("necromancer", circle.SummonSlots[0].UnitId);
         Assert.Equal(Crypt.Research.StartResult.Ok, r.Start("soul_harvesting"));
-        w.Ticks.RunTicks(7);
+        for (var i = 0; i < 7; i++) Assert.True(r.Click(0));
         w.Ticks.RunTicks(13);                               // 2 souls per tick
         Assert.Equal(26, w.Storage.Get("souls"));
         Assert.Equal(0, w.Storage.Get("mana"));             // nothing makes mana on its own
@@ -258,12 +269,16 @@ public class BuildingTests
     {
         var w = Fresh();
         var m = B<UndeadMarket>(w);
+        w.Ticks.RunTicks(10);
+        Assert.Equal(0, m.WorkPerTick);                // nothing sells with nobody staffed
+        w.Lich.DebugAddNecromancers(1);
+        Assert.Equal(1, m.AddNecromancer(1));
         w.Stock.Add("iron_bar", 20);
         w.Inventory.Add("copper_sword", 2);
         m.SetSell("copper_sword", true, 0);
         m.SetSell("iron_bar", true, 15);
         Assert.Throws<ArgumentException>(() => m.SetSell("mana", true, 0)); // no price
-        w.Ticks.RunTicks(10);                          // 1 sale/tick: 2 swords, then 5 bars, then nothing
+        w.Ticks.RunTicks(10);                          // 2 sales/tick (base 1 + 1 necromancer): 2 swords, then 5 bars, then nothing
         Assert.Equal(0, w.Inventory.Get("copper_sword"));
         Assert.Equal(15, w.Stock.Get("iron_bar"));
         Assert.Equal(2 * 40 + 5 * 12, w.Storage.Get("gold"));
@@ -276,6 +291,8 @@ public class BuildingTests
         var w = Fresh();
         var m = B<UndeadMarket>(w);
         w.Storage.Add("gold", 999_990);
+        w.Lich.DebugAddNecromancers(1);
+        m.AddNecromancer(1);
         w.Stock.Add("iron_bar", 10);
         m.SetSell("iron_bar", true, 0);
         w.Ticks.RunTicks(5);
@@ -355,7 +372,7 @@ public class BuildingSaveTests : IDisposable
         var circle = a.Buildings.OfType<SummoningCircle>().Single();
         circle.DebugSetLevel(4);
         Assert.Equal(3, circle.SummonSlots.Count);          // slots_by_level: 3 from level 3
-        Assert.True(circle.SetUnit(1, "wisp"));            // wisp: from Summoning
+        Assert.True(circle.SetUnit(1, "necromancer"));     // a second necromancer slot
         a.Buildings.OfType<ManaWell>().Single().DebugSetLevel(4);   // holds 6
         a.Buildings.OfType<ManaWell>().Single().AddNecromancer(4);
         a.Buildings.OfType<Transmuter>().Single().Select("bones_to_coal");
@@ -373,7 +390,7 @@ public class BuildingSaveTests : IDisposable
         Assert.Equal(1_500, b.Storage.Cap("mana"));
         Assert.Equal(a.Storage.Get("mana"), b.Storage.Get("mana"));   // above the base cap, kept on load
         Assert.Equal(4, b.Buildings.OfType<ManaWell>().Single().Staffed);
-        Assert.Equal(new[] { "necromancer", "wisp", null }, b.Buildings.OfType<SummoningCircle>().Single().SummonSlots.Select(s => s.UnitId));
+        Assert.Equal(new[] { "necromancer", "necromancer", null }, b.Buildings.OfType<SummoningCircle>().Single().SummonSlots.Select(s => s.UnitId));
         Assert.Equal("bones_to_coal", b.Buildings.OfType<Transmuter>().Single().SelectedRecipe);
         Assert.Equal(new SellEntry("coal", true, 50), b.Buildings.OfType<UndeadMarket>().Single().Entry("coal"));
 

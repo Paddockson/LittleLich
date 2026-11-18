@@ -23,6 +23,13 @@ public static class DisplaySettings
     public static Vector2I Resolution { get; private set; } = Default;
     public static bool Fullscreen { get; private set; }
 
+    /// <summary>
+    /// True when the game runs inside the editor's Game tab ("Embed Game on Next Play"). That window can't go
+    /// fullscreen, be resized or moved, so the choice is only saved and applies when the game runs in its own window.
+    /// </summary>
+    public static bool Embedded { get; private set; } =
+        OS.GetCmdlineArgs().Any(a => a is "--wid" or "--embedded" || a.StartsWith("--wid="));
+
     /// <summary>Loads the saved choice and applies it. Skipped when the command line sets --resolution (screenshots).</summary>
     public static void LoadAndApply()
     {
@@ -32,7 +39,7 @@ public static class DisplaySettings
             Resolution = new Vector2I((int)cfg.GetValue(Section, "width", Default.X), (int)cfg.GetValue(Section, "height", Default.Y));
             Fullscreen = (bool)cfg.GetValue(Section, "fullscreen", false);
         }
-        if (OS.GetCmdlineArgs().Any(a => a.StartsWith("--resolution")) || DisplayServer.GetName() == "headless") return;
+        if (Embedded || OS.GetCmdlineArgs().Any(a => a.StartsWith("--resolution")) || DisplayServer.GetName() == "headless") return;
         Apply();
     }
 
@@ -60,9 +67,12 @@ public static class DisplaySettings
 
     private static void Apply()
     {
+        if (Embedded) return;
         if (Fullscreen)
         {
             DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
+            // An embedded window refuses (and only logs a warning): remember it so the page can say why.
+            if (DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Windowed) Embedded = true;
             return;
         }
         if (DisplayServer.WindowGetMode() != DisplayServer.WindowMode.Windowed)
@@ -73,6 +83,7 @@ public static class DisplaySettings
         var scale = Math.Min(1.0, Math.Min((double)usable.Size.X / Resolution.X, (double)usable.Size.Y / Resolution.Y));
         var size = new Vector2I((int)(Resolution.X * scale), (int)(Resolution.Y * scale));
         DisplayServer.WindowSetSize(size);
+        if (DisplayServer.WindowGetSize() != size) { Embedded = true; return; }
         DisplayServer.WindowSetPosition(usable.Position + (usable.Size - size) / 2);
     }
 

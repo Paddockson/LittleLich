@@ -39,6 +39,7 @@ public partial class GameShell : Control
         ("12-skill-alchemy", "Skill/alchemy"),
         ("13-skill-enchanting", "Skill/enchanting"),
         ("14-settings", "Settings"),
+        ("15-army-builder", "Crypt/Army"),
     };
 
     private PageRouter _router = null!;
@@ -216,17 +217,19 @@ public partial class GameShell : Control
         else if (shot is not null) _ = ScreenshotAndQuit(shot);
     }
 
-    /// <summary>Debug: put 40 skeletons and 20 zombies in the roster and send them at an area (exercises the battle view).</summary>
+    /// <summary>
+    /// Debug: fill the empty slots of the army formation with the first unlocked base unit, top up every squad for
+    /// free and send it at an area (exercises the battle view). Changes the formation of the loaded game.
+    /// </summary>
     private static void DebugBattle(string areaId)
     {
         var wm = WorldManager.Instance;
         if (wm.State is not { } w || CryptManager.Instance.Units is not { } u || w.Battle is not null) return;
-        wm.DebugAddUnits("skeleton", 40);
-        wm.DebugAddUnits("zombie", 20);
-        var f = u.CreateFormation("Debug");
-        u.SetSlot(f.Id, 0, "zombie", 20);
-        u.SetSlot(f.Id, 2, "skeleton", 40);
-        GD.Print($"[GameShell] Debug battle at {areaId}: {w.Send(areaId, f)}");
+        if (u.GetUnlockedUnitIds(custom: false).FirstOrDefault() is { } unit)
+            for (var i = 0; i < Crypt.Units.ArmyFormation.SlotCount; i++)
+                if (u.GetSlot(i) is null && Crypt.Units.ArmyFormation.Column(i) != Crypt.Units.ArmyFormation.BackColumn) u.SetSlot(i, unit);
+        u.DebugFillSquads();
+        GD.Print($"[GameShell] Debug battle at {areaId}: {w.Send(areaId)}");
     }
 
     private async System.Threading.Tasks.Task Capture(string path)

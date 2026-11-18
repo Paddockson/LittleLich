@@ -36,8 +36,12 @@ public partial class CryptManager : Node
     [Signal] public delegate void ResearchNodeCancelledEventHandler(string nodeId, int bench);
     [Signal] public delegate void ResearchBenchesChangedEventHandler();
     [Signal] public delegate void UnitTypesChangedEventHandler();
-    [Signal] public delegate void UnitRosterChangedEventHandler(string unitTypeId, long count);
-    [Signal] public delegate void FormationsChangedEventHandler();
+    /// <summary>The army formation changed (a slot set, cleared, swapped, or a load).</summary>
+    [Signal] public delegate void ArmyFormationChangedEventHandler();
+    /// <summary>The unlocked base or custom unit lists changed.</summary>
+    [Signal] public delegate void UnlockedUnitsChangedEventHandler();
+    /// <summary>Figures in the army squads changed (the lich summoned, or battle losses).</summary>
+    [Signal] public delegate void ArmyFiguresChangedEventHandler();
 
     public Storage Storage { get; private set; } = new(ContentDatabase.Empty);
     public Inventory Inventory { get; private set; } = new(ContentDatabase.Empty);
@@ -54,7 +58,7 @@ public partial class CryptManager : Node
     /// <summary>Research income with no building (soul harvest rate).</summary>
     public Crypt.PassiveIncome? Income { get; private set; }
 
-    /// <summary>Unit types, the roster and formations (null until boot).</summary>
+    /// <summary>Unit types and the army formation (null until boot).</summary>
     public Crypt.Units.UnitBuilder? Units { get; private set; }
 
     /// <summary>The seven buildings in flow order (empty until boot).</summary>
@@ -106,8 +110,9 @@ public partial class CryptManager : Node
 
         Units = new Crypt.Units.UnitBuilder(content, Stockpile, Unlocks) { CostMultiplier = id => Crypt.ResearchStats.CostMultiplier(lich.Stats, id) };
         Units.TypesChanged += () => EmitSignal(SignalName.UnitTypesChanged);
-        Units.RosterChanged += (id, n) => EmitSignal(SignalName.UnitRosterChanged, id, n);
-        Units.FormationsChanged += () => EmitSignal(SignalName.FormationsChanged);
+        Units.FormationChanged += () => EmitSignal(SignalName.ArmyFormationChanged);
+        Units.UnlockedUnitsChanged += () => EmitSignal(SignalName.UnlockedUnitsChanged);
+        Units.FiguresChanged += () => EmitSignal(SignalName.ArmyFiguresChanged);
 
         var ctx = new CryptContext(lich, Stockpile, content, () => tm.Scheduler.ActiveRecap) { Unlocks = Unlocks, Units = Units };
         var order = 0;
@@ -122,7 +127,8 @@ public partial class CryptManager : Node
         }
         // Research loads before the buildings so its level caps and unlocks count when levels are restored;
         // the Unit Builder before the buildings so the Summoning Circle finds its unit type.
-        return new ISaveable[] { Storage, Inventory, Research, Units }.Concat(_buildings).ToList();
+        // The army after the Unit Builder so its saved slots find their unit types.
+        return new ISaveable[] { Storage, Inventory, Research, Units, Units.Army }.Concat(_buildings).ToList();
     }
 
     public override void _Ready()

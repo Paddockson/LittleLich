@@ -34,6 +34,7 @@ internal sealed class World
     public LittleLich.World.WorldState WorldMap { get; }
     public LittleLich.Gear.ItemUser Items { get; }
     public LittleLich.Crypt.PassiveIncome Income { get; }
+    public LittleLich.Crypt.Units.LichSummoner Summoner { get; }
 
     public World(ContentDatabase? content = null)
     {
@@ -64,9 +65,11 @@ internal sealed class World
         foreach (var g in Skills.OfType<GatheringSkill>()) Ticks.Register(g, TickGroup.Skills, TickOrder.Gathering);
         foreach (var c in Skills.OfType<CraftingSkill>()) Ticks.Register(c, TickGroup.Skills, TickOrder.Crafting);
         Ticks.Register(Research, TickGroup.Research);
+        Summoner = new LittleLich.Crypt.Units.LichSummoner(Lich, Units, () => Ticks.ActiveRecap);   // as LichManager does
+        Ticks.Register(Summoner, TickGroup.World, TickOrder.LichSummons);
     }
 
-    public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory, Research, Units }.Concat(Buildings).Concat(Skills).Append(Equipment).Append(WorldMap);
+    public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory, Research, Units, Units.Army }.Concat(Buildings).Concat(Skills).Append(Equipment).Append(WorldMap);
 
     /// <summary>Opens every building, unit and recipe research could unlock, without applying any research effect.</summary>
     public World OpenAll()

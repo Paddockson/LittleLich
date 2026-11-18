@@ -32,4 +32,7 @@ public static class TickOrder
     // Skills: gathering before crafting so crafted inputs gathered this tick are available.
     public const int Gathering = 100;
     public const int Crafting = 200;
+
+    // World: the lich summons army replacements first (adjustment 03), with the stock the buildings made this tick.
+    public const int LichSummons = 100;
 }

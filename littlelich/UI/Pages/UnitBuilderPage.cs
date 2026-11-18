@@ -13,9 +13,9 @@ using static LittleLich.UI.Pages.Kit;
 namespace LittleLich.UI.Pages;
 
 /// <summary>
-/// Unit Builder (image 04): base units on the left; the selected unit's stats, loadout and gear list; its stack,
-/// gear supply and summoning on the right. One loadout per base at a time: equipping builds (or reuses) the unit
-/// type for that base and gear, and the stack panel works on that type.
+/// Unit Builder (image 04): base units on the left; the selected unit's stats, loadout and gear list; its place in
+/// the army and gear supply on the right. One loadout per base at a time: equipping builds (or reuses) the unit
+/// type for that base and gear. Built types appear under Custom on the Army page.
 /// </summary>
 public partial class UnitBuilderPage : PageBase
 {
@@ -24,23 +24,22 @@ public partial class UnitBuilderPage : PageBase
     private readonly Dictionary<string, string> _current = new();
 
     private static UnitBuilder? U => CryptMgr.Units;
-    private static SummoningCircle? Circle => CryptMgr.Building<SummoningCircle>();
 
     public override void Bind()
     {
         base.Bind();
         CryptMgr.UnitTypesChanged += Rebuild;
-        CryptMgr.UnitRosterChanged += (_, _) => MarkDirty();
-        CryptMgr.FormationsChanged += MarkDirty;
+        CryptMgr.ArmyFormationChanged += MarkDirty;
+        CryptMgr.ArmyFiguresChanged += MarkDirty;
         CryptMgr.Unlocks.Unlocked += (_, _) => RebuildSoon();
     }
 
-    /// <summary>The type the page shows for a base: the one picked here, one a circle slot summons, or the biggest stack.</summary>
+    /// <summary>The type the page shows for a base: the one picked here, one in the army formation, or the latest built.</summary>
     private static string? TypeFor(UnitBuilder u, string baseId, Dictionary<string, string> picked)
     {
         if (picked.TryGetValue(baseId, out var t) && u.Type(t) is not null) return t;
-        if (Circle?.SummonSlots.Select(s => s.UnitId).FirstOrDefault(id => id is not null && u.Type(id)?.Base == baseId) is { } c) return c;
-        return u.Types.Where(x => x.Base == baseId).OrderByDescending(x => u.Count(x.Id)).Select(x => x.Id).FirstOrDefault();
+        if (u.Army.Slots.FirstOrDefault(id => id is not null && u.Type(id)?.Base == baseId) is { } a) return a;
+        return u.Types.LastOrDefault(x => x.Base == baseId)?.Id;
     }
 
     protected override void Build()
@@ -78,7 +77,7 @@ public partial class UnitBuilderPage : PageBase
         SupplyCard(right, u, def);
         var re = new Card(8);
         re.Body.AddChild(Ui.Heading("Re-equip the field", 15));
-        re.Body.AddChild(Ui.Muted("Swap the loadout on units already summoned. Comes after v0.1: new gear applies to new summons."));
+        re.Body.AddChild(Ui.Muted("Swap the loadout on figures already summoned. Comes after v0.1: new gear applies to new summons."));
         re.Body.AddChild(new ActionButton("Re-equip", padY: 7) { Disabled = true });
         Ui.SetLocked(re, true);
         right.AddChild(re);
@@ -205,74 +204,36 @@ public partial class UnitBuilderPage : PageBase
         return row;
     }
 
-    // ---- Right: stack and supply ----
+    // ---- Right: army and supply ----
 
-    /// <summary>Circle slots (1-based) that summon this type.</summary>
-    private static List<int> CircleSlotsFor(string? typeId) =>
-        typeId is null || Circle is not { } c ? new List<int>()
-            : c.SummonSlots.Where(s => s.UnitId == typeId).Select(s => s.Index + 1).ToList();
-
+    /// <summary>Where this loadout stands in the army formation, and what one figure costs the lich.</summary>
     private void StackCard(VBoxContainer into, UnitBuilder u, UnitDefinitionBase def)
     {
         var card = new Card(8);
-        card.Body.AddChild(Ui.Heading($"{def.Name} stack", 15));
-        var (r1, host) = KeyValue("In the host");
-        var (r3, slot) = KeyValue("Formation slot");
-        var (r4, by) = KeyValue("Summoned by");
-        foreach (var c in new Control[] { r1, r3, r4 }) card.Body.AddChild(c);
-        card.Body.AddChild(Ui.Section("Summoning Circle"));
-        var toCircle = new ActionButton("Put in a circle slot", padX: 10, padY: 4);
-        toCircle.TooltipText = "Puts this loadout in the first empty Summoning Circle slot";
-        toCircle.Pressed += () =>
-        {
-            if (EnsureType(u, def) is not { } t || Circle is not { } c) return;
-            if (CircleSlotsFor(t).Count > 0) { Toast.Show($"{u.Type(t)!.Name} is already in the circle."); return; }
-            var free = c.SummonSlots.FirstOrDefault(s => s.IsEmpty);
-            if (free is null || !c.SetUnit(free.Index, t))
-            {
-                Toast.Show(free is null ? "Every circle slot is in use. Clear one in the Workshop." : $"The circle cannot summon {u.Type(t)!.Name} yet.", true);
-                return;
-            }
-            Toast.Show($"Circle slot {free.Index + 1} now summons {u.Type(t)!.Name}.");
-            MarkDirty();
-        };
-        var summon = new ActionButton("Summon now", primary: true, padX: 10, padY: 4);
-        summon.Pressed += () =>
-        {
-            var t = EnsureType(u, def);
-            if (t is null) return;
-            var n = Math.Min(StepSelector.Current, u.Affordable(t).Count);
-            if (n <= 0 || !u.TrySummon(t, n)) Toast.Show($"Cannot summon {def.Name}: short of {Name(u.Affordable(t).Limiting)}.", true);
-            else Toast.Show($"Summoned {Fmt.Short(n)} {u.Type(t)!.Name}.");
-        };
-        card.Body.AddChild(Ui.Row(8, toCircle, Ui.Fill(), summon));
-        card.Body.AddChild(new StepSelector());
+        card.Body.AddChild(Ui.Heading($"{def.Name} in the army", 15));
+        var (r1, slots) = KeyValue("Formation slots");
+        var (r2, figures) = KeyValue("Figures standing");
+        var (r3, stock) = KeyValue("Stock");
+        foreach (var c in new Control[] { r1, r2, r3 }) card.Body.AddChild(c);
         var cost = Ui.Text("", Tokens.FontLabel, Tokens.TextMuted, wrap: true);
         card.Body.AddChild(cost);
+        var open = new ActionButton("Open the Army page", primary: true, padX: 10, padY: 4);
+        open.TooltipText = "Drag base units and built loadouts into the 3 by 3 formation";
+        open.Pressed += () => Navigate("Crypt/Army");
+        card.Body.AddChild(Ui.Row(8, Ui.Fill(), open));
         into.AddChild(card);
-        if (u.IsBaseLocked(def.Id)) { Ui.SetLocked(card, true); summon.Disabled = true; toCircle.Disabled = true; }
+        if (u.IsBaseLocked(def.Id)) { Ui.SetLocked(card, true); open.Disabled = true; }
         Update(() =>
         {
-            var t = TypeFor(u, def.Id, _current);
-            var count = t is null ? 0 : u.Count(t);
-            host.Text = Fmt.Short(count);
-            host.TooltipText = Fmt.Exact(count);
-            var fs = t is null ? null : u.Formations.SelectMany(fm => fm.Slots).FirstOrDefault(s => s.UnitType == t);
-            slot.Text = fs is not null ? $"{Cap(fs.Section)} {fs.Index + 1}" : "None";
-            var slots = CircleSlotsFor(t);
-            by.Text = slots.Count > 0 ? $"Circle slot {string.Join(", ", slots)}" : "Nobody";
-            var baseCost = u.BaseCost(def.Id);
-            cost.Text = t is null ? $"{(baseCost.Count > 0 ? Costs(baseCost) : "Nothing")} per summon, plus its gear." : $"Each summon: {Costs(u.CostPerUnit(t))}.";
+            var t = TypeFor(u, def.Id, _current) ?? def.Id;
+            var held = Enumerable.Range(0, ArmyFormation.SlotCount).Where(i => u.GetSlot(i) == t).ToList();
+            slots.Text = held.Count == 0 ? "None" : $"{held.Count} of {ArmyFormation.SlotCount}";
+            figures.Text = $"{Fmt.Short(held.Sum(i => u.Figures(i)))} of {Fmt.Short(held.Count * ArmyFormation.SquadSize)}";
+            var (n, limiting) = u.Affordable(t);
+            stock.Text = n > 0 ? Fmt.Short(n) : $"0 (out of {Name(limiting).ToLowerInvariant()})";
+            stock.AddThemeColorOverride("font_color", n > 0 ? Tokens.TextMain : Tokens.Yellow);
+            cost.Text = $"The lich summons a figure every {Fmt.Num1(LichSummoner.BaseSecondsPerSummon)}s into the squad missing the most. Each costs {Costs(u.CostPerUnit(t))}.";
         });
-    }
-
-    private string? EnsureType(UnitBuilder u, UnitDefinitionBase def)
-    {
-        if (TypeFor(u, def.Id, _current) is { } t) return t;
-        var (res, nt) = u.Build(def.Id);
-        if (nt is null) { Toast.Show($"Cannot build {def.Name}: {res}.", true); return null; }
-        _current[def.Id] = nt.Id;
-        return nt.Id;
     }
 
     private void SupplyCard(VBoxContainer into, UnitBuilder u, UnitDefinitionBase def)
@@ -302,7 +263,7 @@ public partial class UnitBuilderPage : PageBase
                 if (!enough) shortOf ??= Name(gear);
             }
             warn.Text = shortOf is null ? "Each summon uses one weapon and one armour."
-                : $"Out of {shortOf}. A circle slot summoning this waits until more is made.";
+                : $"Out of {shortOf}. The lich skips this unit until more is made.";
             warn.AddThemeColorOverride("font_color", shortOf is null ? Tokens.TextMuted : Tokens.Yellow);
         });
     }

@@ -14,6 +14,8 @@ Phases 5, 6, 7, 8. Final unit JSON is phase 10, so start with a few placeholder 
 - Open question: do summons also cost mana? Decide here.
 
 ## Army Builder (formation)
+> **Superseded by `adjustments/adjust-03-army-builder.md`** (9 slots, 3x3, one unit type per slot, no stacks, planning screen). The notes below are kept for history; follow the adjustment.
+
 - Formation slots: 8 (2 front, 3 mid, 3 back) as planned, or 9. Decide before building the UI.
 - Each slot holds a unit type and a count (stacks), since armies can be large.
 - A formation is a saved loadout the player can reuse: `Formation { Id, Name, Slots[] }`.

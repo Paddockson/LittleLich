@@ -24,6 +24,12 @@ public class ResearchTests
 
     private static T B<T>(World w) where T : BuildingBase => w.Buildings.OfType<T>().Single();
 
+    /// <summary>Research by hand: n clicks on a bench (one click = what an idle bench made per tick before).</summary>
+    private static void Click(ResearchManager r, int bench, int n)
+    {
+        for (var i = 0; i < n; i++) Assert.True(r.Click(bench));
+    }
+
     private static void Done(World w, params string[] ids)
     {
         foreach (var id in ids) Assert.True(w.Research.DebugComplete(id), id);
@@ -68,7 +74,7 @@ public class ResearchTests
     }
 
     [Fact]
-    public void An_unstaffed_bench_works_one_per_tick_and_summoning_opens_the_circle()
+    public void An_unstaffed_bench_waits_for_clicks_and_summoning_opens_the_circle()
     {
         var w = Fresh();
         var r = w.Research;
@@ -79,17 +85,21 @@ public class ResearchTests
         Assert.Equal(StartResult.NotAvailable, r.Start("soul_harvesting"));
         Assert.Equal(StartResult.Ok, r.Start("summoning"));
         Assert.Equal(StartResult.NotAvailable, r.Start("summoning"));         // already on a bench
-        Assert.Equal(1, r.WorkPerTick(r.Benches[0]));                 // (1 + 0.5 x 0) x 1.1^0 x 1
-        w.Ticks.RunTicks(3);
+        Assert.Equal(0, r.WorkPerTick(r.Benches[0]));                 // nobody staffed: nothing on the tick
+        w.Ticks.RunTicks(50);
+        Assert.Equal(0, r.Progress(r.Benches[0]), 9);
+        Assert.Equal(1, r.ClickWork);                                 // click_power 1 x 1.1^0 x 1
+        Assert.False(r.Click(1));                                     // no such bench
+        Click(r, 0, 3);
         Assert.Equal(NodeState.Researching, r.State("summoning"));
         Assert.Equal(0.75, r.Progress(r.Benches[0]), 9);
-        w.Ticks.RunTicks(1);
+        Click(r, 0, 1);
         Assert.Equal(NodeState.Done, r.State("summoning"));
         Assert.True(r.Benches[0].IsFree);
         Assert.True(circle.IsUnlocked);
         Assert.False(w.Unlocks.IsLocked(Unlocks.Unit, "necromancer"));
         Assert.False(w.Units.IsBaseLocked("wisp"));
-        Assert.Equal(new[] { "necromancer", "wisp" }, circle.AvailableUnits().Select(o => o.Id));
+        Assert.Equal(new[] { "necromancer" }, circle.AvailableUnits().Select(o => o.Id));   // wisps go to the army (adjustment 03)
     }
 
     [Fact]
@@ -136,17 +146,17 @@ public class ResearchTests
         var r = w.Research;
         Done(w, "summoning");
         r.Start("necrotic_blast");                                          // 32 work
-        w.Ticks.RunTicks(10);
+        Click(r, 0, 10);
         Assert.True(r.Cancel(0));
         Assert.Equal(10, r.WorkDone("necrotic_blast"), 9);
         Assert.Equal(NodeState.Available, r.State("necrotic_blast"));
         r.Start("soul_harvesting");
-        w.Ticks.RunTicks(7);
+        Click(r, 0, 7);
         Assert.Equal(NodeState.Done, r.State("soul_harvesting"));
         r.Start("necrotic_blast");
-        w.Ticks.RunTicks(21);
+        Click(r, 0, 21);
         Assert.Equal(NodeState.Researching, r.State("necrotic_blast"));
-        w.Ticks.RunTicks(1);
+        Click(r, 0, 1);
         Assert.Equal(NodeState.Done, r.State("necrotic_blast"));
         Assert.Contains("necrotic_blast", w.Unlocks.UnlockedOf(Unlocks.Spell));
     }
@@ -164,19 +174,19 @@ public class ResearchTests
         Assert.Equal(StartResult.Ok, r.Place("necrotic_blast", 1));          // a chosen bench, not the first free one
         Assert.True(r.Benches[0].IsFree);
         Assert.Equal("necrotic_blast", r.Benches[1].NodeId);
-        w.Ticks.RunTicks(10);
+        Click(r, 1, 10);
 
         Assert.Equal(StartResult.Ok, r.Place("soul_harvesting", 1));         // swap: necrotic blast comes off, progress kept
         Assert.Equal("soul_harvesting", r.Benches[1].NodeId);
         Assert.Equal(NodeState.Available, r.State("necrotic_blast"));
         Assert.Equal(10, r.WorkDone("necrotic_blast"), 9);
 
-        w.Ticks.RunTicks(3);
+        Click(r, 1, 3);
         Assert.Equal(StartResult.Ok, r.Place("soul_harvesting", 0));         // move to another bench with its progress
         Assert.True(r.Benches[1].IsFree);
         Assert.Equal(3, r.WorkDone("soul_harvesting"), 9);
         Assert.False(r.CanPlace("soul_harvesting", 0));                      // already there
-        w.Ticks.RunTicks(4);
+        Click(r, 0, 4);
         Assert.Equal(NodeState.Done, r.State("soul_harvesting"));
         Assert.False(r.CanPlace("summoning", 1));                            // done nodes cannot be placed
     }
@@ -187,8 +197,9 @@ public class ResearchTests
         var w = Fresh();
         var r = w.Research;
         Assert.False(r.IsOwned("infusion"));
-        w.WorldMap.AddUnits("skeleton", 40);
-        Assert.Equal(LittleLich.World.SendResult.Ok, w.WorldMap.Send("graveyard", new LittleLich.World.ArmyPlan().Set(Sections.Front, "skeleton", 40)));
+        w.OpenAll();                                                       // skeletons for the army
+        WorldTests.Squads(w.Units, "skeleton", 8);
+        Assert.Equal(LittleLich.World.SendResult.Ok, w.WorldMap.Send("graveyard"));
         for (var i = 0; i < 600 && w.WorldMap.Battle is not null; i++) w.WorldMap.Advance(1);
         Assert.Equal(LittleLich.World.AreaState.Cleared, w.WorldMap.State("graveyard"));
         Assert.True(r.IsOwned("infusion"));
@@ -240,8 +251,8 @@ public class ResearchTests
         Assert.Equal(30, w.Lich.Pool.Max);
 
         Done(w, "animate_bones", "bring_bones");                           // skeletons 1% cheaper per level, rounded up
-        Assert.Equal(new[] { "mana:149", "souls:10", "bones:10" }, circle.Option("skeleton")!.Cost.Select(c => $"{c.Id}:{c.Count}"));
-        Assert.Equal(149, w.Units.BaseCost("skeleton")[0].Count);         // the circle pays what it shows
+        Assert.Equal(new[] { "mana:149", "souls:10", "bones:10" }, w.Units.CostPerUnit("skeleton").Select(c => $"{c.Id}:{c.Count}"));
+        Assert.Equal(149, w.Units.BaseCost("skeleton")[0].Count);         // the lich pays what the army page shows
 
         Assert.Equal(2, circle.SummonSlots.Count);
         Done(w, "summoning_capacity");
@@ -379,10 +390,10 @@ public class ResearchSaveTests : IDisposable
         a.Storage.Add("mana", 320);
         Assert.True(r.TryUpgradeBench());
         r.Start("necrotic_blast");
-        a.Ticks.RunTicks(5);
+        for (var i = 0; i < 5; i++) r.Click(0);
         r.Cancel(0);
         r.Start("dark_expansion_1", 1);
-        a.Ticks.RunTicks(7);
+        for (var i = 0; i < 7; i++) r.Click(1);
         s1.Save();
 
         var (s2, b) = Session();

@@ -19,10 +19,12 @@ Each `html/` file is the same board as a static page. Open it in a browser and r
 | images/11-skill-smithing.png | Crafting skill page (Smithing) | Skill pages 6b |
 | images/12-skill-alchemy.png | Crafting skill page (Alchemy) | Skill pages 6b |
 | images/13-skill-enchanting.png | Crafting skill page (Enchanting) | Skill pages 6b |
+| images/14-army-builder.png | Army Builder (units box, 3x3 formation, details below) | adjustments/adjust-03-army-builder.md |
 
 ## Differences between the images and what to build
 
 - **World map (07):** the image shows six rings, six ring names and many strongholds. v0.1 has no rings. Keep the layout (map card, siege banner, area panel, Host card) but use paths and two areas only, the Graveyard and the Woods.
+- **Army Builder (14):** planning screen only. No presets, no summoning bar. See `adjustments/adjust-03-army-builder.md`.
 - **Mana Well (01):** redrawn like the old game: clickable well, output, necromancer stepper, level card with UPGRADE. See `adjustments/adjust-02-mana-well.md`.
 - **Fonts:** images may show a fallback serif for headings. Cinzel is the intended heading font.
 - **All names, numbers and stats** in the images are placeholders.

@@ -23,6 +23,12 @@ public partial class SettingsPage : PageBase
         TickManager.Instance.SpeedChanged += _ => Rebuild();
     }
 
+    private static void EmbeddedToast()
+    {
+        if (DisplaySettings.Embedded)
+            Toast.Show("Saved. The editor's Game tab can't change the window: run the game in its own window to see it.");
+    }
+
     protected override void Build()
     {
         var row = CardRow();
@@ -36,10 +42,12 @@ public partial class SettingsPage : PageBase
         mode.Pressed += () =>
         {
             DisplaySettings.SetFullscreen(!DisplaySettings.Fullscreen);
+            EmbeddedToast();
             CallDeferred(MethodName.Rebuild);
         };
         var size = DisplayServer.WindowGetSize();
-        display.Body.AddChild(Ui.Row(8, Ui.Text(full ? "Fullscreen" : $"Window {size.X} x {size.Y}", Tokens.FontSmall, Tokens.TextMuted), Ui.Fill(), mode));
+        var status = DisplaySettings.Embedded ? "In the editor's Game tab" : full ? "Fullscreen" : $"Window {size.X} x {size.Y}";
+        display.Body.AddChild(Ui.Row(8, Ui.Text(status, Tokens.FontSmall, Tokens.TextMuted), Ui.Fill(), mode));
         display.Body.AddChild(Ui.Section("Resolution"));
         var grid = new GridContainer { Columns = 3 };
         grid.AddThemeConstantOverride("h_separation", 6);
@@ -55,12 +63,15 @@ public partial class SettingsPage : PageBase
             b.Pressed += () =>
             {
                 DisplaySettings.SetResolution(r);
+                EmbeddedToast();
                 CallDeferred(MethodName.Rebuild);
             };
             grid.AddChild(b);
         }
         display.Body.AddChild(grid);
-        display.Body.AddChild(Ui.Muted("Saved for next time. The UI is laid out at 1280 x 760 and scales to the window."));
+        display.Body.AddChild(Ui.Muted(DisplaySettings.Embedded
+            ? "The editor's embedded Game tab can't go fullscreen or change size. Your choice is saved and applies when the game runs in its own window."
+            : "Saved for next time. The UI is laid out at 1280 x 760 and scales to the window."));
         left.AddChild(display);
 
         var tm = TickManager.Instance;

@@ -109,6 +109,7 @@ public partial class GameManager : Node
         // Load order matters: the lich (pool, modifiers) before skills, so skills read restored assignments.
         Session.Register(LichManager.Instance.State);
         foreach (var s in CryptManager.Instance.Initialize(content, LichManager.Instance.State)) Session.Register(s);
+        LichManager.Instance.InitializeArmy(CryptManager.Instance.Units!);
         foreach (var s in LichManager.Instance.InitializeSkills(content, CryptManager.Instance.Stockpile, CryptManager.Instance.Unlocks)) Session.Register(s);
         // Research pays its tome's skill XP on completion.
         var research = CryptManager.Instance.Research!;

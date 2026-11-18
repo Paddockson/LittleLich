@@ -9,7 +9,8 @@ namespace LittleLich.Crypt.Buildings;
 
 /// <summary>
 /// Something the circle can summon (adjustment 01): a necromancer summon (Data/recipes/summoning.json, joins the
-/// free pool) or a unit (a Unit Builder type or a bare player body, joins the roster). Only unlocked options exist.
+/// free pool). Only unlocked options exist. Since adjustment 03 army units are not summoned here: the lich summons
+/// them straight into the army formation (<see cref="Units.LichSummoner"/>).
 /// </summary>
 public sealed record UnitOption(string Id, string Name, string Description, IReadOnlyList<ItemAmount> Cost, double Required, long Count, bool IsNecromancer);
 
@@ -46,10 +47,10 @@ public sealed class SummonSlot
 /// bars: clicking the circle adds <see cref="ClickPower"/> to the first slot that is not full, and assigned
 /// necromancers add power every tick, split evenly across the non-empty slots. A full bar spends the unit's
 /// summon_cost and summons one; a slot that cannot pay (or whose necromancers have no room in the pool) keeps its bar
-/// full and waits. Summoned necromancers join the free pool; units join the Unit Builder roster.
+/// full and waits. Summoned necromancers join the free pool.
 ///
-/// Only unlocked slots and units exist: slots come from slots_by_level plus research (unlock_summon_slot); units
-/// from summon_level, research locks and the Unit Builder. Each level above 1 also raises max necromancers
+/// Only unlocked slots and summons exist: slots come from slots_by_level plus research (unlock_summon_slot); summons
+/// from summon_level and research locks. Each level above 1 also raises max necromancers
 /// (modifier source "building:summoning_circle").
 /// </summary>
 public sealed class SummoningCircle : BuildingBase
@@ -109,8 +110,8 @@ public sealed class SummoningCircle : BuildingBase
     // ---- What can be summoned ----
 
     /// <summary>
-    /// Unlocked options only, in content order: necromancer summons, then each unlocked player body (bare) followed
-    /// by its Unit Builder loadouts. Unlocked = circle level >= summon_level and not locked by research.
+    /// Unlocked necromancer summons, in content order. Unlocked = circle level >= summon_level and not locked by
+    /// research. Army units are not offered (adjustment 03: the lich summons them into the formation).
     /// </summary>
     public IReadOnlyList<UnitOption> AvailableUnits()
     {
@@ -118,14 +119,6 @@ public sealed class SummoningCircle : BuildingBase
         foreach (var s in Context.Content.All<SummonDefinitionBase>())
             if (s.SummonLevel <= Level && !Context.Unlocks.IsLocked(Unlocks.Unit, s.Id))
                 list.Add(new UnitOption(s.Id, s.Name, s.Description, NecromancerCost(s.SummonCost), s.SummonRequired, s.Count, true));
-        if (Context.Units is not { } u) return list;
-        foreach (var b in u.Bases)
-        {
-            if (b.SummonLevel > Level || u.IsBaseLocked(b.Id) || list.Any(o => o.Id == b.Id)) continue;
-            list.Add(new UnitOption(b.Id, b.Name, b.Description, u.BaseCost(b.Id), b.SummonRequired, 1, false));
-            foreach (var t in u.Types.Where(t => t.Base == b.Id && t.Id != b.Id))
-                list.Add(new UnitOption(t.Id, t.Name, b.Description, u.CostPerUnit(t.Id), b.SummonRequired, 1, false));
-        }
         return list;
     }
 
@@ -257,23 +250,11 @@ public sealed class SummoningCircle : BuildingBase
     private long Summon(SummonSlot slot, UnitOption opt, long count)
     {
         if (count <= 0) return 0;
-        long made;
-        if (opt.IsNecromancer)
-        {
-            foreach (var c in opt.Cost) Context.Stock.TryRemove(c.Id, MulClamp(count, c.Count));
-            var added = Context.Lich.AddToPool(MulClamp(count, opt.Count));
-            Context.Recap()?.AddGained("necromancers", "summoned", added);
-            made = count;
-        }
-        else
-        {
-            if (Context.Units is not { } u) return 0;
-            if (u.Type(opt.Id) is null) u.EnsureBare(opt.Id);
-            made = u.SummonUpTo(opt.Id, count);
-            if (made > 0) Context.Recap()?.AddGained("units", opt.Id, made);
-        }
-        if (made > 0) Summoned?.Invoke(slot, opt.Id, made);
-        return made;
+        foreach (var c in opt.Cost) Context.Stock.TryRemove(c.Id, MulClamp(count, c.Count));
+        var added = Context.Lich.AddToPool(MulClamp(count, opt.Count));
+        Context.Recap()?.AddGained("necromancers", "summoned", added);
+        Summoned?.Invoke(slot, opt.Id, count);
+        return count;
     }
 
     /// <summary>Non-empty slots with their option. A slot whose unit is no longer available is emptied.</summary>
