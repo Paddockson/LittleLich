@@ -1,0 +1,9 @@
+// Runes (Enchanting). trait names the effect; attaching runes to gear comes later. Placeholder numbers.
+{
+  "type": "rune",
+  "entries": [
+    { "id": "rune_of_rot",     "name": "Rune of Rot",     "trait": "rot",   "sell_price": 30, "placeholder": true },
+    { "id": "rune_of_warding", "name": "Rune of Warding", "trait": "ward",  "sell_price": 60, "placeholder": true },
+    { "id": "rune_of_fleet",   "name": "Rune of Fleet",   "trait": "fleet", "sell_price": 70, "placeholder": true }
+  ]
+}

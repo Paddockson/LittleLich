@@ -23,8 +23,24 @@ Each `html/` file is the same board as a static page. Open it in a browser and r
 ## Differences between the images and what to build
 
 - **World map (07):** the image shows six rings, six ring names and many strongholds. v0.1 has no rings. Keep the layout (map card, siege banner, area panel, Host card) but use paths and two areas only, the Graveyard and the Woods.
-- **Mana Well (01):** the slot grid cannot hold billions of necromancers. Use level, necromancer count and the Stepper instead, as written in the spec.
+- **Mana Well (01):** redrawn like the old game: clickable well, output, necromancer stepper, level card with UPGRADE. See `adjustments/adjust-02-mana-well.md`.
 - **Fonts:** images may show a fallback serif for headings. Cinzel is the intended heading font.
 - **All names, numbers and stats** in the images are placeholders.
 - Old boards "Main" (siege battle) and "Formation" are outdated and not included.
 - Where the image and the spec text disagree on layout, follow the image. Where they disagree on game rules, follow the spec and the design doc.
+
+## Old game screenshots (`old-game/`)
+
+Screenshots of the previous build, used to correct the Summoning Circle:
+- `00-current-dev-build-summoning-WRONG.png`: the current dev build. Do not copy this layout.
+- `01-old-game-summoning.png` and `02-old-game-summoning-unit-tooltips.png`: how the old game worked. A graphic of the circle (click it to add click power), `1/4 - +` for assigned units, a list of summon slots each with a unit icon and a progress bar with a percentage, a popup to choose the unit from the icon, cost tooltips, and Lvl 2 > Lvl 3 with an UPGRADE button.
+
+The old game's art, textures and dark wood frames are **not** copied. Only the structure and behaviour are.
+
+`images/02-workshop-summoning-circle.png` is the blocky version of this and replaces the first Summoning Circle mockup.
+
+**No locked icons:** across the UI, locked slots and units are not drawn for the Summoning Circle. They appear when unlocked (eventually through research).
+
+`old-game/03-old-game-mana-well.png`: the old game's Mana Well (structure and behaviour only, not the art). `images/01-workshop-mana-well.png` is the blocky version and replaces the first mockup.
+
+**Research (03)** was redrawn from the real research data: Necromancy tree from `data/refined/research/necromancy.json`, no locked nodes or tomes, square nodes for repeatable upgrades, benches only when unlocked. See `design/research-revamp.md`.

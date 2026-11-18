@@ -1,0 +1,68 @@
+// Research benches (research revamp). Placeholder formula:
+// work per tick = (base_work + work_per_necromancer x staffed) x level_work_growth ^ (level - 1) x research efficiency.
+// Bench level costs: level_tiers from the old build.json (ResearchBench), cost of level L = base x multiplier ^ (L - min_level),
+// rounded to round_sig_figs significant figures, halves up. Extra benches and room come from research.
+[
+  {
+    "type": "research_bench",
+    "id": "research_bench",
+    "name": "Research bench",
+    "base_benches": 1,
+    "base_slots_per_bench": 2,
+    "base_work": 1,
+    "work_per_necromancer": 0.5,
+    "level_work_growth": 1.1,
+    "round_sig_figs": 2,
+    "level_tiers": [
+      {
+        "min_level": 1,
+        "max_level": 5,
+        "base": {
+          "gold": 50,
+          "mana": 150
+        },
+        "multiplier": {
+          "gold": 2.3,
+          "mana": 2.1
+        }
+      },
+      {
+        "min_level": 6,
+        "max_level": 10,
+        "base": {
+          "gold": 2100,
+          "mana": 4150
+        },
+        "multiplier": {
+          "gold": 1.5,
+          "mana": 1.5
+        }
+      },
+      {
+        "min_level": 11,
+        "max_level": 15,
+        "base": {
+          "gold": 14000,
+          "mana": 28000
+        },
+        "multiplier": {
+          "gold": 1.6,
+          "mana": 1.6
+        }
+      },
+      {
+        "min_level": 16,
+        "max_level": 20,
+        "base": {
+          "gold": 110000,
+          "mana": 220000
+        },
+        "multiplier": {
+          "gold": 1.4,
+          "mana": 1.4
+        }
+      }
+    ],
+    "placeholder": true
+  }
+]

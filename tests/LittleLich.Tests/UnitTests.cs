@@ -19,29 +19,38 @@ public class UnitBuilderTests
         foreach (var s in w.Saveables) s.Load(new SaveData());
         if (skeletonsResearched)
         {
-            w.Research.DebugComplete("nec1_grave_lore");
-            w.Research.DebugComplete("nec1_raise_skeletons");
+            w.Research.DebugComplete("summoning");
+            w.Research.DebugComplete("animate_bones");
         }
         return w;
     }
 
     [Fact]
-    public void Build_a_skeleton_with_a_sword_summon_100_put_them_in_front_and_take_the_graveyard()
+    public void Build_a_skeleton_with_a_sword_summon_30_put_them_in_front_and_take_the_graveyard()
     {
         var w = Fresh();
         var (r, type) = w.Units.Build("skeleton", "copper_sword");
         Assert.Equal(BuildResult.Ok, r);
         Assert.Equal("skeleton_copper_sword", type!.Id);
 
-        w.Inventory.Add("copper_sword", 130);
+        w.Inventory.Add("copper_sword", 40);
+        w.Inventory.Add("bones", 400);
         w.Storage.Add("mana", 1_000);
-        Assert.True(w.Units.TrySummon(type.Id, 100));
-        Assert.Equal(30, w.Inventory.Get("copper_sword"));        // exactly 100 swords used
-        Assert.Equal(500, w.Storage.Get("mana"));                 // 5 mana each
-        Assert.Equal(100, w.Units.Count(type.Id));
+        w.Storage.Add("souls", 100);
+        Assert.Equal((6L, (string?)"mana"), w.Units.Affordable(type.Id));   // 150 mana, 10 souls, 10 bones and a sword each
+        w.OpenAll();
+        w.Buildings.OfType<MagicalStorage>().Single().DebugSetLevel(20);   // room for 10,500 mana and 1,050 souls
+        w.Storage.Add("mana", 4_000);
+        w.Storage.Add("souls", 300);
+        Assert.True(w.Units.TrySummon(type.Id, 30));
+        Assert.Equal(10, w.Inventory.Get("copper_sword"));        // exactly 30 swords used
+        Assert.Equal(500, w.Storage.Get("mana"));
+        Assert.Equal(100, w.Storage.Get("souls"));
+        Assert.Equal(100, w.Inventory.Get("bones"));
+        Assert.Equal(30, w.Units.Count(type.Id));
 
         var f = w.Units.CreateFormation("Graveyard push");
-        Assert.True(w.Units.SetSlot(f.Id, 0, type.Id, 100));     // slot 1: front row
+        Assert.True(w.Units.SetSlot(f.Id, 0, type.Id, 30));      // slot 1: front row
         Assert.Equal(Sections.Front, f.Slots[0].Section);
         Assert.Equal(SendResult.Ok, w.WorldMap.Send("graveyard", f));
         Assert.Equal(0, w.Units.Count(type.Id));
@@ -58,7 +67,7 @@ public class UnitBuilderTests
     {
         var w = Fresh(skeletonsResearched: false);
         Assert.Equal(BuildResult.BaseLocked, w.Units.Build("skeleton").Result);
-        w.Research.DebugComplete("nec1_raise_skeletons");
+        w.Research.DebugComplete("animate_bones");
         Assert.Equal(BuildResult.Ok, w.Units.Build("skeleton").Result);
         Assert.Equal(BuildResult.NotAPlayerUnit, w.Units.Build("rival_skeleton").Result);
         Assert.Equal(BuildResult.UnknownBase, w.Units.Build("dragon").Result);
@@ -87,7 +96,7 @@ public class UnitBuilderTests
     {
         var w = Fresh();
         var t = w.Units.Build("skeleton", "bone_spear", "iron_armour", new[] { "rot_bomb", "rot_bomb" }).Type!;
-        Assert.Equal(new[] { "mana:5", "bone_spear:1", "iron_armour:1", "rot_bomb:2" },
+        Assert.Equal(new[] { "mana:150", "souls:10", "bones:10", "bone_spear:1", "iron_armour:1", "rot_bomb:2" },
             w.Units.CostPerUnit(t.Id).Select(c => $"{c.Id}:{c.Count}"));
     }
 
@@ -96,14 +105,16 @@ public class UnitBuilderTests
     {
         var w = Fresh();
         var t = w.Units.Build("skeleton", "copper_sword").Type!;
-        w.Inventory.Add("copper_sword", 10);
+        w.Inventory.Add("copper_sword", 4);
+        w.Inventory.Add("bones", 100);
         w.Storage.Add("mana", 1_000);
-        Assert.Equal((10L, (string?)"copper_sword"), w.Units.Affordable(t.Id));
-        Assert.False(w.Units.TrySummon(t.Id, 11));
-        Assert.Equal(10, w.Inventory.Get("copper_sword"));
+        w.Storage.Add("souls", 100);
+        Assert.Equal((4L, (string?)"copper_sword"), w.Units.Affordable(t.Id));
+        Assert.False(w.Units.TrySummon(t.Id, 5));
+        Assert.Equal(4, w.Inventory.Get("copper_sword"));
         Assert.Equal(1_000, w.Storage.Get("mana"));
         Assert.Equal(0, w.Units.Count(t.Id));
-        Assert.True(w.Units.TrySummon(t.Id, 10));
+        Assert.True(w.Units.TrySummon(t.Id, 4));
         Assert.False(w.Units.TrySummon(t.Id, 0));
         Assert.False(w.Units.TrySummon("nope", 1));
     }
@@ -114,11 +125,10 @@ public class UnitBuilderTests
         var w = Fresh();
         var bare = w.Units.BattleUnit(w.Units.Build("skeleton").Type!.Id);
         var armed = w.Units.BattleUnit(w.Units.Build("skeleton", "copper_sword", "iron_armour").Type!.Id);
-        Assert.Equal(20, bare.Hp);
-        Assert.Equal(20 + 6 * UnitBuilder.HpPerDefence, armed.Hp);
-        Assert.Equal(3, bare.Actions.Single(a => a.Id == "strike").Value);
-        Assert.Equal(7, armed.Actions.Single(a => a.Id == "strike").Value);          // + sword damage 4
-        Assert.Equal(0.1, armed.Actions.Single(a => a.Id == "brace").Value);       // brace unchanged
+        Assert.Equal(100, bare.Hp);                                                      // old game data
+        Assert.Equal(100 + 6 * UnitBuilder.HpPerDefence, armed.Hp);
+        Assert.Equal(10, bare.Actions.Single(a => a.Id == "skeleton_attack").Value);
+        Assert.Equal(14, armed.Actions.Single(a => a.Id == "skeleton_attack").Value);  // + sword damage 4
     }
 
     [Fact]
@@ -167,49 +177,72 @@ public class CircleUnitTests
     {
         var w = new World();
         foreach (var s in w.Saveables) s.Load(new SaveData());
-        w.Research.DebugComplete("nec1_raise_skeletons");
+        w.Research.DebugComplete("summoning");                      // opens the circle
+        w.Research.DebugComplete("animate_bones");
         var t = w.Units.Build("skeleton", "copper_sword").Type!;
         w.Inventory.Add("copper_sword", swords);
         w.Storage.Add("mana", mana);
-        w.Lich.DebugAddNecromancers(3);
+        w.Storage.Add("souls", 100);
+        w.Inventory.Add("bones", 500);
+        w.Lich.DebugAddNecromancers(4);
         var circle = w.Buildings.OfType<SummoningCircle>().Single();
-        circle.AddNecromancer(3);                                   // 0.2 + 3 x 0.2 = 0.8 work/tick; skeleton work 1
-        circle.SetUnitTarget(t.Id, 20);
+        circle.AddNecromancer(3);                                   // 3 x 0.2 = 0.6 power/tick
+        circle.ClearSlot(0);                                        // only the skeleton slot runs
+        Assert.True(circle.SetUnit(1, t.Id));                       // skeleton: 5 power per summon
         // Keep the Mana Well from refilling mana so gear and mana limits are what we set.
         w.Ticks.Unregister(w.Buildings.OfType<ManaWell>().Single());
         return w;
     }
 
     [Fact]
-    public void The_circle_tops_a_stack_up_to_its_target_and_stops()
+    public void A_slot_summons_a_loadout_into_the_roster_paying_mana_and_gear()
     {
         var w = Make(100, 1_000);
         var circle = w.Buildings.OfType<SummoningCircle>().Single();
-        w.Ticks.RunTicks(10);
-        Assert.Equal(8, w.Units.Count("skeleton_copper_sword"));   // 0.8 per tick
-        Assert.Equal(92, w.Inventory.Get("copper_sword"));
-        w.Ticks.RunTicks(100);
-        Assert.Equal(20, w.Units.Count("skeleton_copper_sword"));
-        Assert.Equal(BuildingStatus.PoolFull, circle.Status);
-        Assert.Equal("target", circle.StatusDetail);
-        Assert.Equal(80, w.Inventory.Get("copper_sword"));
-        Assert.Equal(900, w.Storage.Get("mana"));
+        w.Ticks.RunTicks(25);
+        Assert.Equal(3, w.Units.Count("skeleton_copper_sword"));   // 0.6 per tick, 5 per summon
+        Assert.Equal(97, w.Inventory.Get("copper_sword"));
+        Assert.Equal(550, w.Storage.Get("mana"));                   // 150 mana, 10 souls, 10 bones each
+        Assert.Equal(70, w.Storage.Get("souls"));
+        Assert.Equal(470, w.Inventory.Get("bones"));
+        Assert.Equal(BuildingStatus.Running, circle.Status);
     }
 
     [Fact]
-    public void The_circle_pauses_when_gear_runs_out()
+    public void A_slot_waits_with_a_full_bar_when_gear_runs_out()
     {
-        var w = Make(6, 1_000);
+        var w = Make(2, 1_000);
         var circle = w.Buildings.OfType<SummoningCircle>().Single();
         w.Ticks.RunTicks(50);
-        Assert.Equal(6, w.Units.Count("skeleton_copper_sword"));
+        Assert.Equal(2, w.Units.Count("skeleton_copper_sword"));
         Assert.Equal(BuildingStatus.MissingInput, circle.Status);
         Assert.Equal("copper_sword", circle.StatusDetail);
+        Assert.Equal("copper_sword", circle.SummonSlots[1].WaitingFor);
+        Assert.Equal(1, circle.SummonSlots[1].Fraction);
+
+        w.Inventory.Add("copper_sword", 1);                         // stock arrives: the waiting bar summons
+        w.Ticks.RunTicks(1);
+        Assert.Equal(3, w.Units.Count("skeleton_copper_sword"));
+    }
+
+    [Fact]
+    public void Necromancer_power_is_split_across_filled_slots_and_clicks_go_to_the_first_that_is_not_full()
+    {
+        var w = Make(100, 1_000);
+        var circle = w.Buildings.OfType<SummoningCircle>().Single();
+        Assert.True(circle.SetUnit(0, "necromancer"));
+        w.Ticks.RunTicks(1);                                        // 0.3 each
+        Assert.Equal(0.3, circle.SummonSlots[0].Progress, 9);
+        Assert.Equal(0.3, circle.SummonSlots[1].Progress, 9);
+        Assert.True(circle.Click());                                // +1 to slot 1 (necromancer, 5 needed)
+        Assert.Equal(1.3, circle.SummonSlots[0].Progress, 9);
+        Assert.Equal(0.3, circle.SummonSlots[1].Progress, 9);
     }
 
     [Theory]
     [InlineData(9)]
     [InlineData(40)]
+    [InlineData(100)]
     public void Batched_equals_single_ticks(int n)
     {
         var live = Make(15, 1_000);
@@ -237,20 +270,20 @@ public class UnitSaveTests : IDisposable
     }
 
     [Fact]
-    public void Types_roster_formations_and_circle_target_survive_reload()
+    public void Types_roster_formations_and_circle_slots_survive_reload()
     {
         var (s1, a) = Session();
         s1.NewGame(1);
-        a.Research.DebugComplete("nec1_raise_skeletons");
-        a.Research.DebugComplete("nec1_raise_zombies");
+        a.Research.DebugComplete("animate_bones");
+        a.Research.DebugComplete("skeleton_warrior");
         var sk = a.Units.Build("skeleton", "copper_sword").Type!;
-        var zo = a.Units.Build("zombie", null, "iron_armour").Type!;
+        var zo = a.Units.Build("skeleton_warrior", null, "iron_armour").Type!;
         a.WorldMap.AddUnits(sk.Id, 40);
         a.WorldMap.AddUnits(zo.Id, 7);
         var f = a.Units.CreateFormation("Main");
         a.Units.SetSlot(f.Id, 0, sk.Id, 30);
         a.Units.SetSlot(f.Id, 3, zo.Id, 7);
-        a.Buildings.OfType<SummoningCircle>().Single().SetUnitTarget(sk.Id, 60);
+        Assert.True(a.Buildings.OfType<SummoningCircle>().Single().SetUnit(1, sk.Id));
         s1.Save();
 
         var (s2, b) = Session();
@@ -259,8 +292,7 @@ public class UnitSaveTests : IDisposable
         Assert.Equal(40, b.Units.Count(sk.Id));
         Assert.Equal(zo.Id, b.Units.GetFormation(f.Id)!.Slots[3].UnitType);
         var circle = b.Buildings.OfType<SummoningCircle>().Single();
-        Assert.Equal(sk.Id, circle.UnitType);
-        Assert.Equal(60, circle.UnitTarget);
+        Assert.Equal(sk.Id, circle.SummonSlots[1].UnitId);
         Assert.Equal(a.Units.BattleUnit(zo.Id).Hp, b.Units.BattleUnit(zo.Id).Hp);
     }
 
@@ -270,11 +302,11 @@ public class UnitSaveTests : IDisposable
         var w = new World();
         w.Units.Load(new SaveData());
         w.WorldMap.Load(new SaveData(JsonNode.Parse("""
-            { "cleared": [], "garrison": { "skeleton": 21, "zombie": 6, "dragon": 3 },
+            { "cleared": [], "garrison": { "skeleton": 21, "skeleton_warrior": 6, "dragon": 3 },
               "battle": { "area": "woods", "army": { "front": { "skeleton": 5 } } } }
             """)!.AsObject()));
         Assert.Equal(21, w.Units.Count("skeleton"));
-        Assert.Equal(6, w.Units.Count("zombie"));
+        Assert.Equal(6, w.Units.Count("skeleton_warrior"));
         Assert.Equal("Skeleton", w.Units.Type("skeleton")!.Name);
         Assert.Equal(5, w.WorldMap.Battle!.Survivors(BattleSide.Attacker)["skeleton"]);   // the battle restarts with its army
     }

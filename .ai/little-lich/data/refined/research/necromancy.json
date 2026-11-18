@@ -1,0 +1,1146 @@
+{
+  "tome": "necromancy",
+  "nodes": [
+    {
+      "id": "summoning",
+      "tome": "necromancy",
+      "name": "Summoning",
+      "description": "Unlocks the ability to summon simple minions to fight for you.",
+      "requires": [],
+      "icon": "res://Art/Research/Icons/Necromancy/Summoning.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "necromancer"
+        },
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "wisp"
+        },
+        {
+          "type": "unlock",
+          "kind": "feature",
+          "id": "summoning"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        1,
+        0
+      ],
+      "layout": {
+        "x": 0.0,
+        "y": 0
+      },
+      "kind": "unlock",
+      "work": 4,
+      "unlock_text": "Unlocks the ability to summon simple minions to fight for you."
+    },
+    {
+      "id": "soul_harvesting",
+      "tome": "necromancy",
+      "name": "Soul Harvesting",
+      "description": "Gives the player a soul harvest rate of 2.",
+      "requires": [
+        "summoning"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/Soul_Harvesting.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "soul_harvest_rate",
+          "op": "set",
+          "value": 2
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        1
+      ],
+      "layout": {
+        "x": 0.5,
+        "y": 1
+      },
+      "kind": "unlock",
+      "work": 7,
+      "unlock_text": "Gives the player a soul harvest rate of 2."
+    },
+    {
+      "id": "necrotic_blast",
+      "tome": "necromancy",
+      "name": "Necrotic Blast",
+      "description": "Unlocks the ability to cast necrotic blast from the spell book.",
+      "requires": [
+        "summoning"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/Necrotic_Blast.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "spell",
+          "id": "necrotic_blast"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        1
+      ],
+      "layout": {
+        "x": -0.5,
+        "y": 1
+      },
+      "kind": "unlock",
+      "work": 32,
+      "unlock_text": "Unlocks the ability to cast necrotic blast from the spell book."
+    },
+    {
+      "id": "necrotic_harvest",
+      "tome": "necromancy",
+      "name": "Necrotic Harvest",
+      "description": "When Necrotic Blast hits an enemy gain +1 soul.",
+      "requires": [
+        "necrotic_blast"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/Necrotic_Harvest.png",
+      "effects": [
+        {
+          "type": "trigger",
+          "on": "spell_hit",
+          "source": "necrotic_blast",
+          "give": {
+            "souls": 1
+          }
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        2
+      ],
+      "layout": {
+        "x": -1.25,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 63,
+      "unlock_text": "When Necrotic Blast hits an enemy gain +1 soul."
+    },
+    {
+      "id": "dark_recruitment",
+      "tome": "necromancy",
+      "name": "Dark Recruitment",
+      "description": "+10 max necromancers. Necromancers cost 25% less to summon.",
+      "requires": [
+        "soul_harvesting"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/dark_recruitment.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_necromancers",
+          "op": "add",
+          "value": 10
+        },
+        {
+          "type": "modify",
+          "stat": "necromancer_summon_cost",
+          "op": "mul",
+          "value": 0.75
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        1,
+        2
+      ],
+      "layout": {
+        "x": 0.75,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 75,
+      "unlock_text": "+10 max necromancers. Necromancers cost 25% less to summon."
+    },
+    {
+      "id": "dark_expansion_1",
+      "tome": "necromancy",
+      "name": "Dark Expansion 1",
+      "description": "+1 max necromancer per level.",
+      "requires": [
+        "dark_recruitment"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/DarkExpansion1_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/DarkExpansion1_Square.png",
+      "max_level": 100,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_necromancers",
+          "op": "add",
+          "value": 1,
+          "per_level": true
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        2
+      ],
+      "layout": {
+        "x": 1.0,
+        "y": 3
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 300,
+      "unlock_text": "+1 max necromancer per level."
+    },
+    {
+      "id": "animate_bones",
+      "tome": "necromancy",
+      "name": "Animate Bones",
+      "description": "Unlock the ability to summon skeletons.",
+      "requires": [
+        "soul_harvesting"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/Animate_Bones.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "skeleton"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        2
+      ],
+      "layout": {
+        "x": -0.25,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 125,
+      "unlock_text": "Unlock the ability to summon skeletons."
+    },
+    {
+      "id": "necrotic_evolution",
+      "tome": "necromancy",
+      "name": "Necrotic Evolution",
+      "description": "Unlock unit research up to level 5.",
+      "requires": [
+        "animate_bones"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/Necrotic_Evolution.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "unit_level_cap",
+          "op": "set",
+          "value": 5
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        3
+      ],
+      "layout": {
+        "x": -1.0,
+        "y": 3
+      },
+      "kind": "unlock",
+      "work": 625,
+      "unlock_text": "Unlock unit research up to level 5."
+    },
+    {
+      "id": "dark_efficiency",
+      "tome": "necromancy",
+      "name": "Dark Efficiency",
+      "description": "Necromancers cost 50% less to summon and take 5% less time between ticks.",
+      "requires": [
+        "necrotic_evolution"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/Dark Efficiency.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "necromancer_summon_cost",
+          "op": "mul",
+          "value": 0.5
+        },
+        {
+          "type": "modify",
+          "stat": "necromancer_tick_time",
+          "op": "mul",
+          "value": 0.95
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        3
+      ],
+      "layout": {
+        "x": -1.5,
+        "y": 4
+      },
+      "kind": "unlock",
+      "work": 1250,
+      "unlock_text": "Necromancers cost 50% less to summon and take 5% less time between ticks."
+    },
+    {
+      "id": "expanded_minions",
+      "tome": "necromancy",
+      "name": "Expanded Minions",
+      "description": "+20 more necromancers and +20 more units in barracks to all units. Adds a summon slot to the Summoning Circle.",
+      "requires": [
+        "dark_efficiency"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/Expanded_Minons.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_necromancers",
+          "op": "add",
+          "value": 20
+        },
+        {
+          "type": "modify",
+          "stat": "barracks_cap",
+          "op": "add",
+          "value": 20,
+          "target": "all_units"
+        },
+        {
+          "type": "modify",
+          "stat": "summon_slots",
+          "op": "add",
+          "value": 1,
+          "target": "summoning_circle"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        3
+      ],
+      "layout": {
+        "x": -3.79,
+        "y": 5
+      },
+      "kind": "unlock",
+      "work": 3750,
+      "unlock_text": "+20 more necromancers and +20 more units in barracks to all units. Adds a summon slot to the Summoning Circle."
+    },
+    {
+      "id": "dark_empowerment",
+      "tome": "necromancy",
+      "name": "Dark Empowerment",
+      "description": "10% more ATK stat to all units. Doubles necromancer room in every workshop and research bench.",
+      "requires": [
+        "expanded_minions"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/dark_empowerment.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "unit_atk",
+          "op": "mul",
+          "value": 1.1,
+          "target": "all_units"
+        },
+        {
+          "type": "modify",
+          "stat": "workshop_necromancer_room",
+          "op": "mul",
+          "value": 2,
+          "target": "workshops_and_benches"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        3
+      ],
+      "layout": {
+        "x": -3.99,
+        "y": 6
+      },
+      "kind": "unlock",
+      "work": 2500,
+      "unlock_text": "10% more ATK stat to all units. Doubles necromancer room in every workshop and research bench."
+    },
+    {
+      "id": "summon_gear",
+      "tome": "necromancy",
+      "name": "Summon Gear",
+      "description": "Unlock the ability to transmute summoning gear for advanced skeletons.",
+      "requires": [
+        "necrotic_evolution"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/Summon_gear.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "recipes",
+          "id": "summoning_gear"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        3
+      ],
+      "layout": {
+        "x": -0.5,
+        "y": 4
+      },
+      "kind": "unlock",
+      "work": 1500,
+      "unlock_text": "Unlock the ability to transmute summoning gear for advanced skeletons."
+    },
+    {
+      "id": "soul_well",
+      "tome": "necromancy",
+      "name": "Soul Well",
+      "description": "Unlock the soul well",
+      "requires": [
+        "summon_gear"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/soul_well_research .png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "building",
+          "id": "soul_well"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        3
+      ],
+      "layout": {
+        "x": 1.21,
+        "y": 5
+      },
+      "kind": "unlock",
+      "work": 1250,
+      "unlock_text": "Unlock the soul well"
+    },
+    {
+      "id": "undead_market",
+      "tome": "necromancy",
+      "name": "Undead Market",
+      "description": "Unlock the Undead Market",
+      "requires": [
+        "soul_harvesting"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/undead_market_research.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "building",
+          "id": "undead_market"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        3
+      ],
+      "layout": {
+        "x": 1.75,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 75,
+      "unlock_text": "Unlock the Undead Market"
+    },
+    {
+      "id": "skeleton_archer",
+      "tome": "necromancy",
+      "name": "Skeleton Archer",
+      "description": "Unlock the ability to summon skeleton archers.",
+      "requires": [
+        "summon_gear"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/skeleton_archer.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "skeleton_archer"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        4
+      ],
+      "layout": {
+        "x": -1.79,
+        "y": 5
+      },
+      "kind": "unlock",
+      "work": 5000,
+      "unlock_text": "Unlock the ability to summon skeleton archers."
+    },
+    {
+      "id": "skeleton_warrior",
+      "tome": "necromancy",
+      "name": "Skeleton Warrior",
+      "description": "Unlock the ability to summon skeleton warriors.",
+      "requires": [
+        "summon_gear"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/skeleton_warriro.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "skeleton_warrior"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        1,
+        4
+      ],
+      "layout": {
+        "x": 0.21,
+        "y": 5
+      },
+      "kind": "unlock",
+      "work": 5000,
+      "unlock_text": "Unlock the ability to summon skeleton warriors."
+    },
+    {
+      "id": "skeleton_mage",
+      "tome": "necromancy",
+      "name": "Skeleton Mage",
+      "description": "Unlock the ability to summon skeleton mages.",
+      "requires": [
+        "summon_gear"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/skeleton_mage.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "skeleton_mage"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        4
+      ],
+      "layout": {
+        "x": -0.79,
+        "y": 5
+      },
+      "kind": "unlock",
+      "work": 5000,
+      "unlock_text": "Unlock the ability to summon skeleton mages."
+    },
+    {
+      "id": "skeleton_golem",
+      "tome": "necromancy",
+      "name": "Skeleton Golem",
+      "description": "Unlock the ability to summon Skeleton Brutes.",
+      "requires": [
+        "skeleton_mage",
+        "skeleton_archer",
+        "skeleton_warrior"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/Skeleton_golem.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "skeleton_golem"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        1,
+        5
+      ],
+      "layout": {
+        "x": -0.99,
+        "y": 6
+      },
+      "kind": "unlock",
+      "work": 10000,
+      "unlock_text": "Unlock the ability to summon Skeleton Brutes."
+    },
+    {
+      "id": "expanded_army",
+      "tome": "necromancy",
+      "name": "Expanded Army",
+      "description": "+1 Army slot",
+      "requires": [
+        "skeleton_golem"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/expanded_army.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "army_slots",
+          "op": "add",
+          "value": 1
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        1,
+        5
+      ],
+      "layout": {
+        "x": -1.59,
+        "y": 7
+      },
+      "kind": "unlock",
+      "work": 12500,
+      "unlock_text": "+1 Army slot"
+    },
+    {
+      "id": "summoning_power",
+      "tome": "necromancy",
+      "name": "Summoning Power",
+      "description": "+0.05% summoning efficiency per level.",
+      "requires": [
+        "soul_well"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/SummoningPower_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/SummoningPower_Square.png",
+      "max_level": 100,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "summoning_efficiency",
+          "op": "add",
+          "value": 0.0005,
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 1.01,
+        "y": 6
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+0.05% summoning efficiency per level."
+    },
+    {
+      "id": "necro_know_how",
+      "tome": "necromancy",
+      "name": "Necro Know-how",
+      "description": "+0.1% efficacy to all necromancers per level.",
+      "requires": [
+        "dark_empowerment"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/NecroKnowHow_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/NecroKnowHow_Square.png",
+      "max_level": 50,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "necromancer_efficiency",
+          "op": "add",
+          "value": 0.001,
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -4.59,
+        "y": 7
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+0.1% efficacy to all necromancers per level."
+    },
+    {
+      "id": "bring_bones",
+      "tome": "necromancy",
+      "name": "Bring Bones",
+      "description": "Bones and all skeleton units are 1% cheaper per level (skeleton costs rounded up).",
+      "requires": [
+        "animate_bones"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/BringBones_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/BringBones_Square.png",
+      "max_level": 25,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "cost",
+          "op": "mul",
+          "value": 0.99,
+          "target": "bones_and_skeleton_units",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 0.0,
+        "y": 3
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "Bones and all skeleton units are 1% cheaper per level (skeleton costs rounded up)."
+    },
+    {
+      "id": "forge_master",
+      "tome": "necromancy",
+      "name": "Forge Master",
+      "description": "1% chance per level to make an extra sword, staff or bow when transmuting one.",
+      "requires": [
+        "summon_gear"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/ForgeMaster_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/ForgeMaster_Square.png",
+      "max_level": 30,
+      "effects": [
+        {
+          "type": "chance",
+          "on": "transmute",
+          "items": [
+            "sword",
+            "staff",
+            "bow"
+          ],
+          "chance": 0.01,
+          "give": "extra_item",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 2.21,
+        "y": 5
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "1% chance per level to make an extra sword, staff or bow when transmuting one."
+    },
+    {
+      "id": "embodied_mana",
+      "tome": "necromancy",
+      "name": "Embodied Mana",
+      "description": "Mana Well and Infuser efficiency +0.05% per level.",
+      "requires": [
+        "dark_efficiency"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/EmbodiedMana_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/EmbodiedMana_Square.png",
+      "max_level": 999,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "efficiency",
+          "op": "add",
+          "value": 0.0005,
+          "target": "mana_well_and_infuser",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -2.79,
+        "y": 5
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "Mana Well and Infuser efficiency +0.05% per level."
+    },
+    {
+      "id": "marrow_market",
+      "tome": "necromancy",
+      "name": "Marrow Market",
+      "description": "Bones and flesh sell for 0.01% more per level.",
+      "requires": [
+        "undead_market"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/MarrowMarket_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/MarrowMarket_Square.png",
+      "max_level": 50,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "sell_price",
+          "op": "add",
+          "value": 0.0001,
+          "target": "bones_and_flesh",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 2.0,
+        "y": 3
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "Bones and flesh sell for 0.01% more per level."
+    },
+    {
+      "id": "necro_mana",
+      "tome": "necromancy",
+      "name": "Necro Mana",
+      "description": "+1 mana per tick for every necromancer assigned to a Mana Well, per level.",
+      "requires": [
+        "embodied_mana"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/NecroMana_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/NecroMana_Square.png",
+      "max_level": 999,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "mana_per_tick",
+          "op": "add",
+          "value": 1,
+          "target": "per_necromancer_in_mana_well",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -1.99,
+        "y": 6
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+1 mana per tick for every necromancer assigned to a Mana Well, per level."
+    },
+    {
+      "id": "mana_stream",
+      "tome": "necromancy",
+      "name": "Mana Stream",
+      "description": "+0.05% efficiency for every necromancer assigned to a Mana Well or Infuser, per level.",
+      "requires": [
+        "embodied_mana"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/ManaStream_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/ManaStream_Square.png",
+      "max_level": 999,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "efficiency",
+          "op": "add",
+          "value": 0.0005,
+          "target": "per_necromancer_in_mana_well_or_infuser",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -2.99,
+        "y": 6
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+0.05% efficiency for every necromancer assigned to a Mana Well or Infuser, per level."
+    },
+    {
+      "id": "summoning_capacity",
+      "tome": "necromancy",
+      "name": "Summoning Capacity",
+      "description": "+1 summon slot on the Summoning Circle.",
+      "requires": [
+        "summoning_power"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/SummoningCapacity_Square.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/SummoningCapacity_Square.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "summon_slots",
+          "op": "add",
+          "value": 1,
+          "target": "summoning_circle"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 0.41,
+        "y": 7
+      },
+      "kind": "unlock",
+      "work": 250,
+      "unlock_text": "+1 summon slot on the Summoning Circle."
+    },
+    {
+      "id": "necro_capacity",
+      "tome": "necromancy",
+      "name": "Necro Capacity",
+      "description": "+1 max necromancer in every workshop building and research bench, per level.",
+      "requires": [
+        "summoning_power"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/NecroCapacity_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/NecroCapacity_Square.png",
+      "max_level": 999,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_necromancers",
+          "op": "add",
+          "value": 1,
+          "target": "every_workshop_building_and_bench",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 1.41,
+        "y": 7
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+1 max necromancer in every workshop building and research bench, per level."
+    },
+    {
+      "id": "soul_stream",
+      "tome": "necromancy",
+      "name": "Soul Stream",
+      "description": "+0.05% Soul Well efficiency per level.",
+      "requires": [
+        "summoning_power"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/SoulStream_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/SoulStream_Square.png",
+      "max_level": 100,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "efficiency",
+          "op": "add",
+          "value": 0.0005,
+          "target": "soul_well",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 2.41,
+        "y": 7
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+0.05% Soul Well efficiency per level."
+    },
+    {
+      "id": "cheap_bones",
+      "tome": "necromancy",
+      "name": "Cheap Bones",
+      "description": "All skeleton units are 0.5% cheaper per level.",
+      "requires": [
+        "expanded_army"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/CheapBones_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/CheapBones_Square.png",
+      "max_level": 50,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "cost",
+          "op": "mul",
+          "value": 0.995,
+          "target": "skeleton_units",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -2.09,
+        "y": 8
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "All skeleton units are 0.5% cheaper per level."
+    },
+    {
+      "id": "experienced_bones",
+      "tome": "necromancy",
+      "name": "Experienced Bones",
+      "description": "+1 max research level for all skeleton units per level.",
+      "requires": [
+        "expanded_army"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/ExperiencedBones_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/ExperiencedBones_Square.png",
+      "max_level": 95,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "unit_level_cap",
+          "op": "add",
+          "value": 1,
+          "target": "skeleton_units",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -1.09,
+        "y": 8
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+1 max research level for all skeleton units per level."
+    },
+    {
+      "id": "milky_bones",
+      "tome": "necromancy",
+      "name": "Milky Bones",
+      "description": "+0.1% max HP (rounded down) for all skeleton units per level.",
+      "requires": [
+        "experienced_bones"
+      ],
+      "icon": "res://Art/Research/Icons/Necromancy/MilkyBones_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Necromancy/MilkyBones_Square.png",
+      "max_level": 999,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_hp",
+          "op": "add",
+          "value": 0.001,
+          "target": "skeleton_units",
+          "per_level": true,
+          "unit": "pct_round_down"
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -1.09,
+        "y": 9
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+0.1% max HP (rounded down) for all skeleton units per level."
+    }
+  ],
+  "layout_note": "layout.x is a column index (can be fractional, 0 = centre line), layout.y is the layer (0 = root, grows upward). Generated, tweak by hand."
+}

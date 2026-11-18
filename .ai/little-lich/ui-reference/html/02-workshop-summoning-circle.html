@@ -157,66 +157,64 @@ button{font-family:Inter,system-ui,sans-serif}
 <div style="margin-top:6px;font-size:11px;color:#7C8A81;line-height:1.4;padding:0 4px">Green dot: running. Yellow: needs input.</div>
 </div>
 
-<!-- panel A -->
-<div style="width:440px;box-sizing:border-box;border-radius:12px;background:#121815;border:1px solid #2A352F;padding:14px;display:flex;flex-direction:column;gap:12px">
-<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-family:Cinzel,serif;font-size:19px;font-weight:600">Summoning Circles <span style="font-family:Inter;font-size:13px;color:#9FB0A6;font-weight:500">2 / 4</span></div><div style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#12201A;color:#7FE0A8">RUNNING</div></div>
-<div style="font-size:12px;color:#9FB0A6;line-height:1.4">Each circle runs one recipe on repeat. Set a target stock and the circle pauses when it is reached.</div>
-
-<div style="box-sizing:border-box;padding:11px 12px;border-radius:10px;background:#0F1411;border:1px solid #2F6B4D;display:flex;flex-direction:column;gap:7px;opacity:1">
-<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13.5px;font-weight:700">Circle 1 · Skeleton</div><div style="font-size:11.5px;color:#9FB0A6">3.2s per unit</div></div>
-<div style="height:6px;border-radius:3px;background:#252E29"><div style="width:58%;height:6px;border-radius:3px;background:#7FE0A8"></div></div>
-<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9FB0A6"><span>1.3s left</span><span>Target 2,000</span><span style="color:#7FE0A8;font-weight:700">Running</span></div>
+<!-- panel A: the circle -->
+<div style="width:246px;box-sizing:border-box;border-radius:12px;background:#121815;border:1px solid #2A352F;padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-family:Cinzel,serif;font-size:16px;font-weight:600">Summoning Circle</div><div style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#12201A;color:#7FE0A8">RUNNING</div></div>
+<div style="font-size:11.5px;color:#9FB0A6;line-height:1.4">Click the circle to add click power to the unit being summoned. Necromancers add power on their own every tick.</div>
+<div style="height:176px;box-sizing:border-box;border-radius:12px;background:#161230;border:2px solid #7B6BC9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+<div style="width:86px;height:86px;border-radius:43px;border:3px solid #A58BFF;background:#0F1411;display:flex;align-items:center;justify-content:center;font-family:Cinzel,serif;font-size:13px;font-weight:600;color:#C7B8FF">CIRCLE</div>
+<div style="font-size:12px;font-weight:700;color:#C7B8FF">CLICK TO SUMMON</div>
+<div style="font-size:11px;color:#9FB0A6">+1 power per click</div>
 </div>
-
-<div style="box-sizing:border-box;padding:11px 12px;border-radius:10px;background:#0F1411;border:1px solid #2F6B4D;display:flex;flex-direction:column;gap:7px;opacity:1">
-<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13.5px;font-weight:700">Circle 2 · Zombie</div><div style="font-size:11.5px;color:#9FB0A6">5.0s per unit</div></div>
-<div style="height:6px;border-radius:3px;background:#252E29"><div style="width:24%;height:6px;border-radius:3px;background:#7FE0A8"></div></div>
-<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9FB0A6"><span>3.8s left</span><span>Target 500</span><span style="color:#7FE0A8;font-weight:700">Running</span></div>
+<div style="display:flex;align-items:center;gap:8px;justify-content:space-between;padding:8px 10px;border-radius:10px;background:#0F1411;border:1px solid #26302B">
+<div style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:16px;border-radius:8px;background:#7B6BC9"></span><span style="width:20px;text-align:center;border-radius:5px;background:#141A17;border:1px solid #3A4740;font-size:12px">&minus;</span><span style="font-size:14px;font-weight:700">1 / 2</span><span style="width:20px;text-align:center;border-radius:5px;background:#141A17;border:1px solid #3A4740;font-size:12px">+</span></div>
+<div style="font-size:11px;color:#9FB0A6">necromancers</div>
 </div>
-
-<div style="box-sizing:border-box;padding:11px 12px;border-radius:10px;background:#0F1411;border:1px solid #5C4F25;display:flex;flex-direction:column;gap:7px;opacity:1">
-<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13.5px;font-weight:700">Circle 3 · Empty</div><div style="font-size:11.5px;color:#9FB0A6">Pick a recipe</div></div>
-<div style="height:6px;border-radius:3px;background:#252E29"><div style="width:0%;height:6px;border-radius:3px;background:#3A4740"></div></div>
-<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9FB0A6"><span></span><span></span><span style="color:#E3C26B;font-weight:700">Idle</span></div>
+<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#9FB0A6;white-space:nowrap">Assign by <span style="padding:3px 7px;border-radius:6px;background:#1A2B22;border:1px solid #2F6B4D;color:#7FE0A8">1</span><span style="padding:3px 7px;border-radius:6px;background:#141A17;border:1px solid #3A4740">1k</span><span style="padding:3px 7px;border-radius:6px;background:#141A17;border:1px solid #3A4740">1M</span><span style="padding:3px 7px;border-radius:6px;background:#141A17;border:1px solid #3A4740">All</span></div>
+<div style="font-size:11.5px;color:#9FB0A6;line-height:1.5;margin-top:auto">Power per tick <b style="color:#E8E4D6">+0.2 per necromancer</b><br>Click power <b style="color:#E8E4D6">1</b><br>Summoned necromancers join the free pool.</div>
 </div>
-
-<div style="box-sizing:border-box;padding:11px 12px;border-radius:10px;background:#0F1311;border:1px solid #1F2824;display:flex;flex-direction:column;gap:7px;opacity:0.55">
-<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13.5px;font-weight:700">Circle 4 · Locked</div><div style="font-size:11.5px;color:#9FB0A6">Needs a tome</div></div>
-<div style="height:6px;border-radius:3px;background:#252E29"><div style="width:0%;height:6px;border-radius:3px;background:#3A4740"></div></div>
-<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9FB0A6"><span></span><span></span><span style="color:#7C8A81;font-weight:700">Locked</span></div>
+<!-- panel B: summon slots -->
+<div style="position:relative;width:340px;box-sizing:border-box;border-radius:12px;background:#121815;border:1px solid #2A352F;padding:14px;display:flex;flex-direction:column;gap:9px">
+<div style="font-family:Cinzel,serif;font-size:17px;font-weight:600">Summon slots</div>
+<div style="font-size:11.5px;color:#9FB0A6;line-height:1.4">Click a slot's icon to choose the unit it summons. Each slot fills its bar and then summons one unit.</div>
+<div style="display:flex;gap:9px;align-items:center;box-sizing:border-box;padding:8px 10px;border-radius:10px;background:#161230;border:1px solid #7B6BC9">
+<div style="width:44px;height:44px;border-radius:8px;background:#1B1F1D;border:2px solid #A58BFF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#C7B8FF;text-align:center">NECRO</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:12px"><b>Necromancer</b><span style="color:#9FB0A6">50s per unit</span></div><div style="height:16px;border-radius:5px;background:#252E29;position:relative"><div style="width:66%;height:16px;border-radius:5px;background:#7B2FE0"></div><div style="position:absolute;left:0;right:0;top:0;text-align:center;font-size:11px;font-weight:700;line-height:16px">66%</div></div></div>
+<div style="width:20px;height:20px;border-radius:5px;background:#3A1A1A;border:1px solid #8A3A3A;text-align:center;font-size:11px;line-height:20px;color:#E0745F">x</div>
 </div>
-
+<div style="display:flex;gap:9px;align-items:center;box-sizing:border-box;padding:8px 10px;border-radius:10px;background:#0F1411;border:1px solid #E3C26B">
+<div style="width:44px;height:44px;border-radius:8px;background:#1B1F1D;border:2px solid #E3C26B;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#E3C26B;text-align:center">PICK</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:12px"><b>Choose a unit</b><span style="color:#E3C26B">Idle</span></div><div style="height:16px;border-radius:5px;background:#252E29"></div></div>
 </div>
-<!-- panel B -->
-<div style="flex:1;box-sizing:border-box;border-radius:12px;background:#121815;border:1px solid #2A352F;padding:14px;display:flex;flex-direction:column;gap:9px">
-<div style="font-family:Cinzel,serif;font-size:17px;font-weight:600">Recipes</div>
-<div style="display:flex;gap:6px;font-size:11.5px;font-weight:600"><span style="padding:4px 10px;border-radius:999px;background:#1A2B22;border:1px solid #2F6B4D;color:#7FE0A8">Units</span><span style="padding:4px 10px;border-radius:999px;background:#0F1411;border:1px solid #26302B;color:#A8B4AB">Necromancers</span><span style="padding:4px 10px;border-radius:999px;background:#0F1411;border:1px solid #26302B;color:#A8B4AB">Show locked</span></div>
-
-<div style="box-sizing:border-box;padding:9px 11px;border-radius:10px;background:#0F1411;border:1px solid #26302B;opacity:1">
-<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Skeleton</span><span style="font-size:11.5px;font-weight:600;color:#7FE0A8">In circle 1</span></div>
-<div style="font-size:11.5px;color:#9FB0A6;margin-top:4px">40 mana · 12 bones</div>
+<div style="font-size:11px;color:#7C8A81;line-height:1.4;margin-top:auto">New slots appear here as they are unlocked. A slot waits when it cannot pay its cost.</div>
+<!-- unit chooser popup (opened from slot 2) -->
+<div style="position:absolute;left:62px;top:196px;width:236px;box-sizing:border-box;padding:8px;border-radius:10px;background:#0A0D0C;border:1px solid #4A3F7A;box-shadow:0 6px 18px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:6px">
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;color:#7C8A81">CHOOSE UNIT</div>
+<div style="padding:7px 9px;border-radius:8px;background:#121815;border:1px solid #26302B"><div style="font-size:12.5px;font-weight:700">Necromancer</div><div style="font-size:11px;color:#9FB0A6">64 mana · 32 souls</div></div>
+<div style="padding:7px 9px;border-radius:8px;background:#121815;border:1px solid #26302B"><div style="font-size:12.5px;font-weight:700">Wisp</div><div style="font-size:11px;color:#9FB0A6">50 mana</div></div>
+<div style="padding:7px 9px;border-radius:8px;background:#1A2B22;border:1px solid #2F6B4D"><div style="font-size:12.5px;font-weight:700">Skeleton</div><div style="font-size:11px;color:#9FB0A6">150 mana · 10 souls · 10 bones</div></div>
 </div>
-
-<div style="box-sizing:border-box;padding:9px 11px;border-radius:10px;background:#0F1411;border:1px solid #26302B;opacity:1">
-<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Zombie</span><span style="font-size:11.5px;font-weight:600;color:#7FE0A8">In circle 2</span></div>
-<div style="font-size:11.5px;color:#9FB0A6;margin-top:4px">60 mana · 8 flesh · 6 bones</div>
+<!-- hover tooltip for Skeleton -->
+<div style="position:absolute;left:306px;top:318px;width:232px;box-sizing:border-box;padding:9px 10px;border-radius:10px;background:#0A0D0C;border:1px solid #2F6B4D;box-shadow:0 6px 18px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:5px">
+<div style="font-size:13px;font-weight:700">Skeleton</div>
+<div style="font-size:11px;color:#9FB0A6">A boney friend to serve the lich.</div>
+<div style="font-size:11.5px"><span style="color:#E0745F;font-weight:700">0</span> / 150 mana</div>
+<div style="font-size:11.5px"><span style="color:#E0745F;font-weight:700">0</span> / 10 souls</div>
+<div style="font-size:11.5px"><span style="color:#E0745F;font-weight:700">0</span> / 10 bones</div>
 </div>
-
-<div style="box-sizing:border-box;padding:9px 11px;border-radius:10px;background:#0F1411;border:1px solid #26302B;opacity:1">
-<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Wisp</span><span style="font-size:11.5px;font-weight:600;color:#C9D2CB">Assign</span></div>
-<div style="font-size:11.5px;color:#9FB0A6;margin-top:4px">90 mana · 2 souls</div>
 </div>
-
-<div style="box-sizing:border-box;padding:9px 11px;border-radius:10px;background:#0F1411;border:1px solid #26302B;opacity:1">
-<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Necromancer</span><span style="font-size:11.5px;font-weight:600;color:#C9D2CB">Assign</span></div>
-<div style="font-size:11.5px;color:#9FB0A6;margin-top:4px">500 mana · 10 souls · 1 tome page</div>
+<!-- panel C: level -->
+<div style="flex:1;box-sizing:border-box;border-radius:12px;background:#121815;border:1px solid #2A352F;padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="font-family:Cinzel,serif;font-size:17px;font-weight:600">Circle level</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:16px;font-weight:700">Lvl 2 &#9656; Lvl 3</div><div style="font-size:11.5px;font-weight:700;color:#7FE0A8">+0.02% &#9656; +0.03%</div></div>
+<div style="font-size:11.5px;color:#9FB0A6;line-height:1.4">Each level adds output. New slots and units appear as they are unlocked.</div>
+<div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;color:#7C8A81">COST</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between;padding:7px 10px;border-radius:8px;background:#0F1411;border:1px solid #26302B;font-size:12px"><span><span style="color:#7B9CFF">&#9679;</span> Mana</span><b style="color:#7FE0A8">270 / 850</b></div>
+<div style="display:flex;justify-content:space-between;padding:7px 10px;border-radius:8px;background:#0F1411;border:1px solid #26302B;font-size:12px"><span><span style="color:#4FD1C5">&#9679;</span> Infused mana</span><b style="color:#7FE0A8">270 / 850</b></div>
+<div style="display:flex;justify-content:space-between;padding:7px 10px;border-radius:8px;background:#0F1411;border:1px solid #26302B;font-size:12px"><span><span style="color:#E3C26B">&#9679;</span> Coin</span><b style="color:#E0745F">270 / 100</b></div>
 </div>
-
-<div style="box-sizing:border-box;padding:9px 11px;border-radius:10px;background:#0F1411;border:1px solid #26302B;opacity:0.55">
-<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Ghoul</span><span style="font-size:11.5px;font-weight:600;color:#7C8A81">Locked</span></div>
-<div style="font-size:11.5px;color:#9FB0A6;margin-top:4px">Found in the Crypt Tome</div>
-</div>
-
+<div style="margin-top:auto;text-align:center;padding:10px 0;border-radius:8px;background:#1A2B22;border:1px solid #2F6B4D;color:#7FE0A8;font-size:13px;font-weight:700;letter-spacing:0.08em">UPGRADE</div>
 </div>
 </div>
 

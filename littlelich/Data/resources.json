@@ -4,12 +4,12 @@
 {
   "type": "resource",
   "entries": [
-    { "id": "mana",  "name": "Mana",  "icon": "mana",  "base_cap": 1000,    "placeholder": true },
-    { "id": "gold",  "name": "Gold",  "icon": "gold",  "base_cap": 1000000, "placeholder": true },
-    { "id": "souls", "name": "Souls", "icon": "souls", "base_cap": 100, "sell_price": 20, "placeholder": true },
-    { "id": "fire",  "name": "Fire",  "icon": "fire",  "base_cap": 500,     "placeholder": true },
-    { "id": "water", "name": "Water", "icon": "water", "base_cap": 500,     "placeholder": true },
-    { "id": "air",   "name": "Air",   "icon": "air",   "base_cap": 500,     "placeholder": true },
-    { "id": "earth", "name": "Earth", "icon": "earth", "base_cap": 500,     "placeholder": true }
+    { "id": "mana",  "name": "Mana",  "icon": "mana",  "color": "#7B9CFF", "base_cap": 1000,    "placeholder": true },
+    { "id": "gold",  "name": "Gold",  "icon": "gold",  "color": "#E3C26B", "base_cap": 1000000, "placeholder": true },
+    { "id": "souls", "name": "Souls", "icon": "souls", "color": "#A58BFF", "base_cap": 100, "sell_price": 20, "placeholder": true },
+    { "id": "fire",  "name": "Fire",  "icon": "fire",  "color": "#E0745F", "base_cap": 500,     "placeholder": true },
+    { "id": "water", "name": "Water", "icon": "water", "color": "#4FD1C5", "base_cap": 500,     "placeholder": true },
+    { "id": "air",   "name": "Air",   "icon": "air",   "color": "#C9D2CB", "base_cap": 500,     "placeholder": true },
+    { "id": "earth", "name": "Earth", "icon": "earth", "color": "#7FB069", "base_cap": 500,     "placeholder": true }
   ]
 }

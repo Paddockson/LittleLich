@@ -1,52 +1,56 @@
-# Phase 7: ResearchManager (Necromancy 1 only)
+# Phase 7: Research (ResearchManager, benches, UnlockManager)
+
+Superseded design: see `design/research-revamp.md` for the full design, data model, effect catalog and open decisions. Data: `data/refined/research/*.json` (78 nodes, structured effects, generated layout). UI: `ui-reference/images/03-research.png`.
 
 ## Goal
-Research works end to end for one tome, Necromancy 1: a node tree, benches staffed by necromancers, and unlocks that change the game.
+Research works end to end: tomes, a node tree, benches staffed by necromancers, and effects that unlock and change the game.
 
 ## Depends on
-Phases 2 to 5.
+Phases 2 to 5 (LichManager assignments and modifiers, TickManager, CryptManager). The Workshop and Summoning Circle read unlocks from this phase.
 
-## Model
-- `ResearchTome` is one class per tome, owned by the CryptManager. v0.1 has only **Necromancy 1**.
-- Tomes are listed (not tabbed) in the UI, so the manager exposes a list.
-- Nodes are drawn large, Path of Exile 2 style, so each node has a position, links and a big icon.
-- Because the player can run several benches, a tome can research several nodes at once, depending on how necromancers are distributed.
+## v0.1 scope
+- Tomes: **Necromancy (33 nodes) and Infusion (27 nodes)**. Crypt Magic and Spider Sorcery data exists but ships disabled.
+- Unit research (unit level-ups on benches) is an open decision. Build the bench job type so it can be added.
 
-## Node definition (JSON)
-```json
-{
-  "id": "nec1_stronger_skeletons",
-  "tome": "necromancy_1",
-  "name": "Stronger Skeletons",
-  "requires": ["nec1_root"],
-  "position": [2, 1],
-  "cost": { "mana": 100, "souls": 10 },
-  "research_ticks": 60,
-  "effects": [ { "type": "unlock_unit", "id": "skeleton_warrior" },
-               { "type": "stat_mod", "stat": "skeleton_hp", "op": "mul", "value": 1.1 } ]
+## Classes
+```csharp
+public class UnlockManager : ISaveable {          // set of researched node ids and levels
+    public bool IsUnlocked(string kind, string id);   // "unit","building","spell","feature","recipes"
+    public int NodeLevel(string nodeId);
+    public event Action<string> NodeResearched;
 }
+public class ResearchManager : ISaveable, ITickable {  // owned by CryptManager
+    public IReadOnlyList<Tome> Tomes;                  // found tomes only
+    public IReadOnlyList<Bench> Benches;
+    public bool CanStart(string nodeId, out string reason);
+    public bool Start(string nodeId, int benchIndex);
+    public void Cancel(int benchIndex);
+    public bool AssignNecromancers(int benchIndex, long n);   // via LichManager
+    public override void Tick(long ticks);                     // batched
+}
+public class Bench { public string JobId; public double Progress; public long Necromancers; public int Level; }
 ```
-Effects are data too: unlock unit, unlock recipe, unlock building level, stat modifier.
-
-## Rules
-- A node is available when all `requires` are done and the lich meets any level requirement.
-- Researching a node spends its cost up front, then needs `research_ticks` worth of staffed bench progress. Necromancers on a bench speed it up.
-- Progress is processed in tick step 5 (research benches).
-- Bench count may be limited (open question); start with a fixed small number.
+- Effects are applied by an `EffectApplier` that reads the node's `effects` list: `unlock` goes to UnlockManager, `modify` registers a modifier (with `target` and `per_level`), `trigger` and `chance` register event handlers.
+- Work per tick = `(1 + 0.5 x necromancers) x 1.1^(bench level - 1) x research efficiency` (placeholder, in JSON).
+- A node is available when every id in `requires` is researched. Only available and researched nodes are shown (no locked nodes). Upgrade nodes cost `work x growth^level` per level up to `max_level`.
+- Processed in tick step 5. Offline progress batched; completed nodes appear in the away recap.
 
 ## Tasks
-- [ ] `ResearchManager` or per-tome `ResearchTome` classes with a registry.
-- [ ] Node loading from JSON and validation (no cycles, missing ids).
-- [ ] Bench assignment through LichManager.
-- [ ] Progress in the tick, batched for offline.
-- [ ] Effect application (unlock and modifier).
-- [ ] Events: node available, started, completed.
-- [ ] Save/load of progress and completed nodes.
-- [ ] A first Necromancy 1 tree of about 10 nodes that unlocks the first units and recipes.
+- [ ] Load the four tome files into the content database with validation (ids, requires, no cycles, effect shapes).
+- [ ] `UnlockManager` and its events; the Workshop and Summoning Circle read from it.
+- [ ] `ResearchManager`: benches, start, cancel, assign necromancers, batched tick.
+- [ ] `EffectApplier` for `unlock`, `modify`, `trigger`, `chance`, with modifier `target` filters in the LichManager.
+- [ ] Bench level upgrades with costs from `buildings.json` (`research_bench`).
+- [ ] Bench count from research (Research Assistance 1 and 2).
+- [ ] Save/load: researched ids, levels, bench jobs, progress, bench levels.
+- [ ] Research page (see `phases/phase-00-ui-spec.md` section 2 and image 03).
+- [ ] Unit tests: requirement gating, upgrade level costs, batched ticks equal single ticks, effects apply and persist across save.
 
 ## Done when
-- Researching a node unlocks its effect and survives save and reload.
-- Offline time completes research correctly.
+- Researching Summoning, Soul Harvesting and Animate Bones in order unlocks the Summoning Circle units and the Skeleton.
+- Researching Basic Infusion adds the Infuser to the Workshop list; nothing locked appears before that.
+- Upgrade nodes can be researched repeatedly and their per-level effect scales.
+- Offline time completes research correctly and survives save and reload.
 
 ## Out of scope
-Other tomes, Necromancy 2 and beyond, cost balancing.
+Crypt Magic and Spider Sorcery in v0.1, unit-level research (until decided), balancing the work numbers.

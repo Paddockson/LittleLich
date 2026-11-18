@@ -22,17 +22,52 @@ public sealed class StatSheet
 
     public Num GetBase(string statId) => _base.GetValueOrDefault(statId, Num.Zero);
 
-    public Num Get(string statId)
+    public Num Get(string statId) => Combine(GetBase(statId), m => m.StatId == statId);
+
+    /// <summary>
+    /// A stat for one subject (research revamp target filter): <paramref name="baseValue"/> plus the untargeted
+    /// modifiers of <paramref name="statId"/> (when <paramref name="includeUntargeted"/>) and every "stat@target"
+    /// modifier whose target covers <paramref name="subject"/>. Per-necromancer targets are skipped here; read them
+    /// with <see cref="PerNecromancer"/>.
+    /// </summary>
+    public Num GetFor(string statId, string subject, Num baseValue, bool includeUntargeted = true) =>
+        Combine(baseValue, m =>
+        {
+            var (stat, target) = Core.StatTargets.Split(m.StatId);
+            if (stat != statId) return false;
+            if (target is null) return includeUntargeted;
+            return !Core.StatTargets.IsPerNecromancer(target) && Core.StatTargets.Matches(target, subject);
+        });
+
+    /// <summary>Sum of the Add modifiers of "stat@per_necromancer_in_..." targets covering the subject (value per necromancer).</summary>
+    public double PerNecromancer(string statId, string subject)
     {
-        var add = GetBase(statId);
+        double sum = 0;
+        foreach (var m in _modifiers)
+        {
+            var (stat, target) = Core.StatTargets.Split(m.StatId);
+            if (stat == statId && target is not null && Core.StatTargets.IsPerNecromancer(target) && Core.StatTargets.Matches(target, subject) && m.Op == ModifierOp.Add)
+                sum += m.Value.ToDouble();
+        }
+        return sum;
+    }
+
+    private Num Combine(Num baseValue, Func<Modifier, bool> match)
+    {
+        Num? set = null;
+        var add = Num.Zero;
         var mul = Num.One;
         foreach (var m in _modifiers)
         {
-            if (m.StatId != statId) continue;
-            if (m.Op == ModifierOp.Add) add += m.Value;
-            else mul *= m.Value;
+            if (!match(m)) continue;
+            switch (m.Op)
+            {
+                case ModifierOp.Add: add += m.Value; break;
+                case ModifierOp.Mul: mul *= m.Value; break;
+                case ModifierOp.Set: if (set is null || m.Value > set.Value) set = m.Value; break;
+            }
         }
-        return add * mul;
+        return ((set ?? baseValue) + add) * mul;
     }
 
     public void SetBase(string statId, Num value) =>

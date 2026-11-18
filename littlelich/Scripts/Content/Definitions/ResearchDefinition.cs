@@ -1,29 +1,46 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using LittleLich.Core;
 
 namespace LittleLich.Content.Definitions;
 
-/// <summary>Family base for research tomes. v0.1 has one: necromancy_1.</summary>
+/// <summary>
+/// Family base for research tomes (research revamp). A tome is owned from the start (<see cref="StartsOwned"/>) or
+/// found later (<see cref="FoundBy"/>); only owned tomes are shown. Disabled tomes are not loaded into the game.
+/// </summary>
 public abstract class TomeDefinitionBase : Definition
 {
-    /// <summary>Skill that gates how deep the tome goes and earns XP from it (e.g. necromancy).</summary>
+    /// <summary>Short note under the name in the tome list ("Starting tome").</summary>
+    public string Note { get; init; } = "";
+
+    /// <summary>Owned in a new game.</summary>
+    public bool StartsOwned { get; init; }
+
+    /// <summary>How the tome is found when not owned at the start (placeholder rules).</summary>
+    public TomeFoundBy? FoundBy { get; init; }
+
+    /// <summary>Skill that earns XP from this tome's research (optional).</summary>
     public string Skill { get; init; } = "";
 
     public override void Validate(ContentErrors errors)
     {
         base.Validate(errors);
         if (Skill.Length > 0 && !SkillIds.All.Contains(Skill)) errors.Add("skill", $"'{Skill}' is not a skill");
+        if (!StartsOwned && FoundBy is null) errors.Add("found_by", "a tome that is not owned at the start needs found_by");
+        if (FoundBy is { AreaCleared: null or "" }) errors.Add("found_by.area_cleared", "is missing");
     }
 
-    /// <summary>The tome's nodes must exist, have a root, and form no cycles.</summary>
+    /// <summary>The tome's nodes must exist, have exactly one root, and form no cycles.</summary>
     public override void ValidateReferences(ContentDatabase db, ContentErrors errors)
     {
-        var nodes = db.All<ResearchNodeDefinition>().Where(n => n.Tome == Id).ToDictionary(n => n.Id);
+        var nodes = db.All<ResearchNodeDefinitionBase>().Where(n => n.Tome == Id).ToDictionary(n => n.Id);
         if (nodes.Count == 0) { errors.Add(null, "tome has no research nodes"); return; }
-        if (!nodes.Values.Any(n => n.Requires.Count == 0)) errors.Add(null, "tome has no root node (a node with no requires)");
+        var roots = nodes.Values.Count(n => n.Requires.Count == 0);
+        if (roots != 1) errors.Add(null, $"tome must have exactly one root node (has {roots})");
+        if (FoundBy?.AreaCleared is { Length: > 0 } a && !db.Contains<AreaDefinitionBase>(a)) errors.Add("found_by.area_cleared", $"no area '{a}'");
 
-        // Cycle check (depth-first, colour marking).
         var state = new Dictionary<string, int>(); // 1 = visiting, 2 = done
         foreach (var start in nodes.Keys)
         {
@@ -35,7 +52,7 @@ public abstract class TomeDefinitionBase : Definition
         }
     }
 
-    private static List<string>? FindCycle(string id, Dictionary<string, ResearchNodeDefinition> nodes, Dictionary<string, int> state, List<string> path)
+    private static List<string>? FindCycle(string id, Dictionary<string, ResearchNodeDefinitionBase> nodes, Dictionary<string, int> state, List<string> path)
     {
         if (state.GetValueOrDefault(id) == 2 || !nodes.TryGetValue(id, out var node)) return null;
         path.Add(id);
@@ -49,83 +66,141 @@ public abstract class TomeDefinitionBase : Definition
     }
 }
 
+/// <summary>{ "area_cleared": "graveyard" }: the tome is granted the first time that area is cleared.</summary>
+public sealed class TomeFoundBy
+{
+    public string? AreaCleared { get; init; }
+}
+
 /// <summary>JSON type "tome".</summary>
 public sealed class TomeDefinition : TomeDefinitionBase { }
 
 /// <summary>
-/// One research effect (data): unlock_unit / unlock_recipe / unlock_activity { id }, unlock_bench,
-/// building_level { building, levels }, stat_mod { stat, op, value }.
+/// One structured research effect (research revamp). Four types:
+///   unlock  { kind: unit | building | spell | feature | recipes, id }
+///   modify  { stat, op: add | mul | set, value, target?, per_level?, unit? }
+///   trigger { on, source?, give }          (stored; applied by the system that raises the event)
+///   chance  { on, items?, chance, give, per_level? }
 /// </summary>
 public sealed class ResearchEffect
 {
-    public static readonly IReadOnlySet<string> Types = new HashSet<string>
-        { "unlock_unit", "unlock_recipe", "unlock_activity", "unlock_bench", "building_level", "stat_mod" };
+    public static readonly IReadOnlySet<string> Types = new HashSet<string> { "unlock", "modify", "trigger", "chance" };
+    public static readonly IReadOnlySet<string> UnlockKinds = new HashSet<string> { "unit", "building", "spell", "feature", "recipes" };
+    public static readonly IReadOnlySet<string> Ops = new HashSet<string> { "add", "mul", "set" };
 
     public string Type { get; init; } = "";
+    // unlock
+    public string? Kind { get; init; }
     public string? Id { get; init; }
-    public string? Building { get; init; }
-    public int Levels { get; init; }
+    // modify
     public string? Stat { get; init; }
     public string Op { get; init; } = "add";
     public double Value { get; init; }
+    /// <summary>Narrows a modifier to a subject group (<see cref="StatTargets"/>); null = applies everywhere the stat is read.</summary>
+    public string? Target { get; init; }
+    /// <summary>Upgrade nodes: the value applies once per level (add: value x level; mul: value ^ level).</summary>
+    public bool PerLevel { get; init; }
+    /// <summary>Display hint ("tick", "pct_round_down").</summary>
+    public string? Unit { get; init; }
+    // trigger / chance
+    public string? On { get; init; }
+    public string? Source { get; init; }
+    public List<string> Items { get; init; } = new();
+    public double Chance { get; init; }
+    /// <summary>What a trigger or chance gives: { "souls": 1 } or a keyword ("extra_item").</summary>
+    public JsonElement? Give { get; init; }
+
+    /// <summary>The stat key the modifier is stored under: "stat" or "stat@target".</summary>
+    public string StatKey => StatTargets.Key(Stat!, Target);
 
     public override string ToString() => Type switch
     {
-        "unlock_unit" => $"Unlocks unit {Id}",
-        "unlock_recipe" => $"Unlocks recipe {Id}",
-        "unlock_activity" => $"Unlocks activity {Id}",
-        "unlock_bench" => "Adds a research bench",
-        "building_level" => $"+{Levels} max levels for {Building}",
-        "stat_mod" => Op == "mul" ? $"{Stat} x{Value:0.###}" : $"{Stat} {(Value >= 0 ? "+" : "")}{Value:0.###}",
+        "unlock" => $"Unlocks {Kind} {Id}",
+        "modify" => $"{Stat}{(Target is null ? "" : $" ({Target})")} {Op} {Value:0.####}{(PerLevel ? " per level" : "")}",
+        "trigger" => $"On {On} ({Source}): {Give}",
+        "chance" => $"{Chance:P1} on {On}: {Give}",
         _ => Type,
     };
+
+    internal void Validate(ContentErrors errors, string f, bool upgrade)
+    {
+        if (!Types.Contains(Type)) { errors.Add($"{f}.type", $"unknown effect '{Type}' ({string.Join(", ", Types)})"); return; }
+        switch (Type)
+        {
+            case "unlock":
+                if (Kind is null || !UnlockKinds.Contains(Kind)) errors.Add($"{f}.kind", $"must be one of {string.Join(", ", UnlockKinds)}");
+                if (string.IsNullOrWhiteSpace(Id)) errors.Add($"{f}.id", "is missing");
+                break;
+            case "modify":
+                if (string.IsNullOrWhiteSpace(Stat)) errors.Add($"{f}.stat", "is missing");
+                if (!Ops.Contains(Op)) errors.Add($"{f}.op", "must be add, mul or set");
+                if (!double.IsFinite(Value)) errors.Add($"{f}.value", "must be a number");
+                if (Op == "mul" && !(Value > 0)) errors.Add($"{f}.value", "a mul value must be above 0");
+                if (Target is not null && !StatTargets.Known(Target)) errors.Add($"{f}.target", $"unknown target '{Target}' ({string.Join(", ", StatTargets.All)})");
+                break;
+            case "trigger":
+            case "chance":
+                if (string.IsNullOrWhiteSpace(On)) errors.Add($"{f}.on", "is missing");
+                if (Give is null) errors.Add($"{f}.give", "is missing");
+                if (Type == "chance" && !(Chance > 0 && Chance <= 1)) errors.Add($"{f}.chance", "must be above 0 and at most 1");
+                break;
+        }
+        if (PerLevel && !upgrade) errors.Add($"{f}.per_level", "only upgrade nodes have levels");
+    }
 }
 
-/// <summary>Family base for research nodes.</summary>
+/// <summary>A node's place in the tree: x across, y = layer (roots at 0, drawn at the bottom).</summary>
+public sealed class NodeLayout
+{
+    public double X { get; init; }
+    public double Y { get; init; }
+}
+
+/// <summary>
+/// Family base for research nodes (research revamp). Nodes cost research work only (no resources).
+/// "unlock" nodes are researched once; "upgrade" nodes repeat up to <see cref="MaxLevel"/>, each level costing
+/// work x time_multiplier x work_growth_per_level ^ level.
+/// </summary>
 public abstract class ResearchNodeDefinitionBase : Definition
 {
-    public static readonly IReadOnlySet<string> Sizes = new HashSet<string> { "small", "notable", "keystone" };
-
     public string Tome { get; init; } = "";
     public string Description { get; init; } = "";
     public List<string> Requires { get; init; } = new();
-    /// <summary>Grid position for drawing the tree, [x, y].</summary>
-    public List<double> Position { get; init; } = new() { 0, 0 };
-    /// <summary>small, notable or keystone (drawing size).</summary>
-    public string Size { get; init; } = "small";
-    /// <summary>Paid up front when research starts: id -> count (resources or items).</summary>
-    public Dictionary<string, long> Cost { get; init; } = new();
-    /// <summary>Bench work needed (one staffed necromancer does 1 work per tick, before bonuses).</summary>
-    public long ResearchTicks { get; init; } = 1;
-    /// <summary>Tome skill level needed to start (0 = none).</summary>
-    public int SkillLevel { get; init; }
-    /// <summary>XP for the tome's skill on completion.</summary>
-    public double Xp { get; init; }
+    /// <summary>"unlock" (one-off) or "upgrade" (repeatable).</summary>
+    public string Kind { get; init; } = "unlock";
+    /// <summary>Research work needed for the first (or only) level.</summary>
+    public double Work { get; init; } = 1;
+    /// <summary>Upgrade nodes: highest level (before research raises caps). Unlock nodes: 1.</summary>
+    public int MaxLevel { get; init; } = 1;
+    /// <summary>Upgrade nodes: work multiplier per level already researched (placeholder 1.15).</summary>
+    public double WorkGrowthPerLevel { get; init; } = 1;
+    /// <summary>Extra work multiplier from the old data (Mage Hand 1: 2 = double work).</summary>
+    public double TimeMultiplier { get; init; } = 1;
+    public NodeLayout Layout { get; init; } = new();
+    public string? IconLarge { get; init; }
     public List<ResearchEffect> Effects { get; init; } = new();
+
+    public bool IsUpgrade => Kind == "upgrade";
+
+    /// <summary>Work for the next level when <paramref name="levelsDone"/> are done.</summary>
+    public double WorkFor(int levelsDone) => Work * TimeMultiplier * Math.Pow(WorkGrowthPerLevel, Math.Max(0, levelsDone));
 
     public override void Validate(ContentErrors errors)
     {
         base.Validate(errors);
         if (string.IsNullOrWhiteSpace(Tome)) errors.Add("tome", "is missing");
-        if (Position.Count != 2) errors.Add("position", "must be [x, y]");
-        if (!Sizes.Contains(Size)) errors.Add("size", $"must be one of {string.Join(", ", Sizes)}");
-        if (ResearchTicks < 1) errors.Add("research_ticks", "must be 1 or more");
-        if (SkillLevel < 0 || SkillLevel > 999) errors.Add("skill_level", "must be 0 to 999");
-        if (Xp < 0) errors.Add("xp", "must be 0 or more");
+        if (Kind is not ("unlock" or "upgrade")) errors.Add("kind", "must be unlock or upgrade");
+        if (!(Work > 0)) errors.Add("work", "must be above 0");
+        if (MaxLevel < 1) errors.Add("max_level", "must be 1 or more");
+        if (Kind == "unlock" && MaxLevel != 1) errors.Add("max_level", "unlock nodes have max_level 1");
+        if (!(WorkGrowthPerLevel >= 1)) errors.Add("work_growth_per_level", "must be 1 or more");
+        if (!(TimeMultiplier > 0)) errors.Add("time_multiplier", "must be above 0");
         if (Requires.Contains(Id)) errors.Add("requires", "a node cannot require itself");
-        foreach (var (id, n) in Cost) if (n < 1) errors.Add($"cost.{id}", "must be 1 or more");
-        for (var i = 0; i < Effects.Count; i++)
-        {
-            var e = Effects[i];
-            var f = $"effects[{i}]";
-            if (!ResearchEffect.Types.Contains(e.Type)) { errors.Add($"{f}.type", $"unknown effect '{e.Type}' ({string.Join(", ", ResearchEffect.Types)})"); continue; }
-            if (e.Type.StartsWith("unlock_") && e.Type != "unlock_bench" && string.IsNullOrWhiteSpace(e.Id)) errors.Add($"{f}.id", "is missing");
-            if (e.Type == "building_level" && (string.IsNullOrWhiteSpace(e.Building) || e.Levels < 1)) errors.Add(f, "building_level needs building and levels >= 1");
-            if (e.Type == "stat_mod" && (string.IsNullOrWhiteSpace(e.Stat) || e.Op is not ("add" or "mul") || !double.IsFinite(e.Value)))
-                errors.Add(f, "stat_mod needs stat, op add|mul and a value");
-        }
+        if (Requires.Distinct().Count() != Requires.Count) errors.Add("requires", "lists a node twice");
+        for (var i = 0; i < Effects.Count; i++) Effects[i].Validate(errors, $"effects[{i}]", IsUpgrade);
     }
 
+    /// <summary>Requirements exist in the same tome; unit and building unlocks name real content.</summary>
     public override void ValidateReferences(ContentDatabase db, ContentErrors errors)
     {
         if (!db.Contains<TomeDefinitionBase>(Tome)) errors.Add("tome", $"no tome '{Tome}'");
@@ -134,57 +209,100 @@ public abstract class ResearchNodeDefinitionBase : Definition
             if (!db.TryGet<ResearchNodeDefinitionBase>(r, out var req)) errors.Add("requires", $"no research node '{r}'");
             else if (req.Tome != Tome) errors.Add("requires", $"'{r}' is in another tome ({req.Tome})");
         }
-        foreach (var id in Cost.Keys)
-            if (!StockIds.Exists(db, id)) errors.Add($"cost.{id}", $"no resource or item '{id}'");
         for (var i = 0; i < Effects.Count; i++)
         {
             var e = Effects[i];
-            var f = $"effects[{i}]";
-            switch (e.Type)
+            if (e.Type != "unlock") continue;
+            var ok = e.Kind switch
             {
-                case "unlock_recipe" when RecipeKind(db, e.Id!) is null:
-                    errors.Add($"{f}.id", $"no recipe, transmutation or summon '{e.Id}'");
-                    break;
-                case "unlock_activity" when !db.Contains<ActivityDefinitionBase>(e.Id!):
-                    errors.Add($"{f}.id", $"no activity '{e.Id}'");
-                    break;
-                case "building_level" when !db.Contains<BuildingDefinitionBase>(e.Building!):
-                    errors.Add($"{f}.building", $"no building '{e.Building}'");
-                    break;
-                case "unlock_unit" when !(db.TryGet<UnitDefinitionBase>(e.Id!, out var unit) && unit.IsPlayer):
-                    errors.Add($"{f}.id", $"no player unit '{e.Id}'");
-                    break;
-            }
+                "unit" => (db.TryGet<UnitDefinitionBase>(e.Id!, out var u) && u.IsPlayer) || db.Contains<SummonDefinitionBase>(e.Id!),
+                "building" => db.Contains<BuildingDefinitionBase>(e.Id!),
+                "recipes" => db.All<TransmutationDefinitionBase>().Any(t => t.Group == e.Id),
+                _ => true,   // spells and features have no content yet; their unlocks are recorded for later systems
+            };
+            if (!ok) errors.Add($"effects[{i}].id", e.Kind == "unit" ? $"no player unit or summon '{e.Id}'" : $"no {e.Kind} '{e.Id}'");
         }
     }
-
-    /// <summary>Which unlock kind an unlock_recipe id refers to (recipe, transmutation or summon), or null.</summary>
-    public static string? RecipeKind(ContentDatabase db, string id) =>
-        db.Contains<RecipeDefinitionBase>(id) ? Unlocks.Recipe :
-        db.Contains<TransmutationDefinitionBase>(id) ? Unlocks.Transmutation :
-        db.Contains<SummonDefinitionBase>(id) ? Unlocks.Summon : null;
 }
 
 /// <summary>JSON type "research_node".</summary>
 public sealed class ResearchNodeDefinition : ResearchNodeDefinitionBase { }
 
+/// <summary>One bench level tier (from the old build.json): cost of level L = base x multiplier ^ (L - min_level).</summary>
+public sealed class BenchLevelTier
+{
+    public int MinLevel { get; init; }
+    public int MaxLevel { get; init; }
+    public Dictionary<string, double> Base { get; init; } = new();
+    public Dictionary<string, double> Multiplier { get; init; } = new();
+}
+
 /// <summary>
-/// JSON type "research_bench" (exactly one, id "research_bench"): benches at the start, necromancer slots per bench
-/// and work rates. Work per tick on a bench = base_work + staffed x work_per_necromancer.
+/// JSON type "research_bench" (exactly one, id "research_bench"). Placeholder formula:
+/// work per tick = (base_work + work_per_necromancer x staffed) x level_work_growth ^ (bench level - 1) x research efficiency.
+/// Bench level costs come from tiers (rounded to <see cref="RoundSigFigs"/> significant figures, halves up).
 /// </summary>
 public sealed class ResearchBenchDefinition : Definition
 {
     public int BaseBenches { get; init; } = 1;
-    public long SlotsPerBench { get; init; } = 5;
-    public double BaseWork { get; init; }
-    public double WorkPerNecromancer { get; init; } = 1;
+    /// <summary>Necromancers one bench holds before capacity effects.</summary>
+    public long BaseSlotsPerBench { get; init; } = 2;
+    public double BaseWork { get; init; } = 1;
+    public double WorkPerNecromancer { get; init; } = 0.5;
+    public double LevelWorkGrowth { get; init; } = 1.1;
+    public int RoundSigFigs { get; init; } = 2;
+    public List<BenchLevelTier> LevelTiers { get; init; } = new();
+
+    /// <summary>Highest bench level in the tiers (before research raises caps).</summary>
+    public int MaxLevel => LevelTiers.Count == 0 ? 1 : LevelTiers.Max(t => t.MaxLevel);
+
+    /// <summary>
+    /// Cost of reaching <paramref name="level"/> (2 and up). Past the last tier, the last tier keeps growing.
+    /// </summary>
+    public IReadOnlyList<ItemAmount> CostOfLevel(int level)
+    {
+        if (LevelTiers.Count == 0 || level < 2) return Array.Empty<ItemAmount>();
+        var t = LevelTiers.FirstOrDefault(x => level >= x.MinLevel && level <= x.MaxLevel) ?? LevelTiers.OrderBy(x => x.MaxLevel).Last();
+        return t.Base.Select(kv =>
+        {
+            var v = kv.Value * Math.Pow(t.Multiplier.GetValueOrDefault(kv.Key, 1), level - t.MinLevel);
+            return new ItemAmount { Id = kv.Key, Count = RoundSig(v, RoundSigFigs) };
+        }).ToList();
+    }
+
+    /// <summary>Round to <paramref name="figs"/> significant figures, halves up (decimal-correct: 114.999... from 50 x 2.3 counts as 115).</summary>
+    public static long RoundSig(double v, int figs)
+    {
+        if (!(v > 0)) return 0;
+        if (v >= long.MaxValue / 10.0) return long.MaxValue;
+        var clean = double.Parse(v.ToString("G12", System.Globalization.CultureInfo.InvariantCulture), System.Globalization.CultureInfo.InvariantCulture);
+        var digits = (int)Math.Floor(Math.Log10(clean)) + 1;
+        var scale = Math.Pow(10, digits - figs);
+        return (long)(Math.Floor(clean / scale + 0.5 + 1e-9) * scale);
+    }
 
     public override void Validate(ContentErrors errors)
     {
         base.Validate(errors);
         if (Id != "research_bench") errors.Add("id", "must be research_bench");
         if (BaseBenches < 1) errors.Add("base_benches", "must be 1 or more");
-        if (SlotsPerBench < 1) errors.Add("slots_per_bench", "must be 1 or more");
+        if (BaseSlotsPerBench < 0) errors.Add("base_slots_per_bench", "must be 0 or more");
         if (!(BaseWork >= 0) || !(WorkPerNecromancer >= 0)) errors.Add("base_work", "work must be 0 or more");
+        if (!(LevelWorkGrowth >= 1)) errors.Add("level_work_growth", "must be 1 or more");
+        if (RoundSigFigs < 1) errors.Add("round_sig_figs", "must be 1 or more");
+        for (var i = 0; i < LevelTiers.Count; i++)
+        {
+            var t = LevelTiers[i];
+            if (t.MinLevel < 1 || t.MaxLevel < t.MinLevel) errors.Add($"level_tiers[{i}]", "needs 1 <= min_level <= max_level");
+            if (i > 0 && t.MinLevel != LevelTiers[i - 1].MaxLevel + 1) errors.Add($"level_tiers[{i}].min_level", "tiers must follow on from each other");
+            if (t.Base.Count == 0) errors.Add($"level_tiers[{i}].base", "needs at least one cost");
+            if (t.Base.Values.Any(v => !(v > 0)) || t.Multiplier.Values.Any(v => !(v >= 1))) errors.Add($"level_tiers[{i}]", "bases must be above 0 and multipliers 1 or more");
+        }
+    }
+
+    public override void ValidateReferences(ContentDatabase db, ContentErrors errors)
+    {
+        foreach (var id in LevelTiers.SelectMany(t => t.Base.Keys).Distinct().Where(id => !StockIds.Exists(db, id)))
+            errors.Add("level_tiers", $"no resource or item '{id}'");
     }
 }

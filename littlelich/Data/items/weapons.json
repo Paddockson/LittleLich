@@ -1,0 +1,13 @@
+// Weapons. damage is for units (each damage action gets + damage). Lich weapons list the lich "slots" they fit
+// and the "modifiers" they give while worn. Placeholder numbers.
+{
+  "type": "weapon",
+  "entries": [
+    { "id": "copper_sword", "name": "Copper Sword", "damage": 4,  "stack_size": 50, "sell_price": 40,  "placeholder": true },
+    { "id": "bone_spear",   "name": "Bone Spear",   "damage": 5,  "stack_size": 50, "sell_price": 45,  "placeholder": true },
+    { "id": "iron_sword",   "name": "Iron Sword",   "damage": 7,  "stack_size": 50, "sell_price": 90,  "placeholder": true },
+    { "id": "steel_sword",  "name": "Steel Sword",  "damage": 11, "stack_size": 50, "sell_price": 220, "placeholder": true },
+    { "id": "bone_staff",   "name": "Bone Staff",   "slots": [ "staff" ], "damage": 3, "stack_size": 10, "sell_price": 80,
+      "modifiers": [ { "stat": "max_insight", "op": "add", "value": 2 } ], "placeholder": true }
+  ]
+}

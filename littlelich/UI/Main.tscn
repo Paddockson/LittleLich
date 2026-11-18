@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://b0f8hf0uo0umd"]
 
-[ext_resource type="Script" path="res://UI/MainShell.cs" id="1_shell"]
+[ext_resource type="Script" uid="uid://cein66xty3x5f" path="res://UI/Shell/GameShell.cs" id="1_shell"]
 
 [node name="Main" type="Control"]
 layout_mode = 3

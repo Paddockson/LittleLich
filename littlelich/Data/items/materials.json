@@ -1,0 +1,19 @@
+// Materials: everything gathered or crafted that is not gear, a potion, bomb or rune. Inventory items (stacks).
+// Placeholder numbers.
+{
+  "type": "material",
+  "entries": [
+    { "id": "copper_ore",  "name": "Copper Ore",  "stack_size": 1000, "sell_price": 1,  "placeholder": true },
+    { "id": "coal",        "name": "Coal",        "stack_size": 1000, "sell_price": 2,  "placeholder": true },
+    { "id": "iron_ore",    "name": "Iron Ore",    "stack_size": 1000, "sell_price": 3,  "placeholder": true },
+    { "id": "raw_eel",     "name": "Raw Eel",     "stack_size": 1000, "sell_price": 2,  "placeholder": true },
+    { "id": "wolf_hide",   "name": "Wolf Hide",   "stack_size": 1000, "sell_price": 4,  "placeholder": true },
+    { "id": "nightshade",  "name": "Nightshade",  "stack_size": 1000, "sell_price": 2,  "placeholder": true },
+    { "id": "bones",       "name": "Bones",       "stack_size": 1000, "sell_price": 1,  "placeholder": true },
+    { "id": "copper_bar",  "name": "Copper Bar",  "stack_size": 1000, "sell_price": 5,  "placeholder": true },
+    { "id": "iron_bar",    "name": "Iron Bar",    "stack_size": 1000, "sell_price": 12, "placeholder": true },
+    { "id": "steel_bar",   "name": "Steel Bar",   "stack_size": 1000, "sell_price": 30, "placeholder": true },
+    { "id": "eel_oil",     "name": "Eel Oil",     "stack_size": 1000, "sell_price": 8,  "placeholder": true },
+    { "id": "grave_dust",  "name": "Grave Dust",  "stack_size": 1000, "sell_price": 6,  "placeholder": true }
+  ]
+}

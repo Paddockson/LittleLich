@@ -1,0 +1,13 @@
+// Workshop building levels (gold). Level 1 is free; going from level L to L+1 costs cost x cost_growth^(L-1) of
+// each entry. max_level is before research raises it (building_and_node_level_cap, e.g. Upgraded Infusions +10).
+// Research bench levels are in research/bench.json. Placeholder numbers.
+[
+  // The Mana Well's costs come from its level table in buildings.json; only max_level is used here.
+  { "type": "building_upgrade", "id": "mana_well_level",        "name": "Mana Well level",        "building": "mana_well",        "max_level": 10,  "cost": { "gold": 50 },  "cost_growth": 1.5, "placeholder": true },
+  { "type": "building_upgrade", "id": "infuser_level",          "name": "Infuser level",          "building": "infuser",          "max_level": 100, "cost": { "gold": 75 },  "cost_growth": 1.5, "placeholder": true },
+  { "type": "building_upgrade", "id": "soul_well_level",        "name": "Soul Well level",        "building": "soul_well",        "max_level": 100, "cost": { "gold": 100 }, "cost_growth": 1.5, "placeholder": true },
+  { "type": "building_upgrade", "id": "transmuter_level",       "name": "Transmuter level",       "building": "transmuter",       "max_level": 100, "cost": { "gold": 75 },  "cost_growth": 1.5, "placeholder": true },
+  { "type": "building_upgrade", "id": "summoning_circle_level", "name": "Summoning Circle level", "building": "summoning_circle", "max_level": 10,  "cost": { "gold": 100 }, "cost_growth": 1.6, "placeholder": true },
+  { "type": "building_upgrade", "id": "undead_market_level",    "name": "Undead Market level",    "building": "undead_market",    "max_level": 100, "cost": { "gold": 60 },  "cost_growth": 1.5, "placeholder": true },
+  { "type": "building_upgrade", "id": "magical_storage_level",  "name": "Magical Storage level",  "building": "magical_storage",  "max_level": 100, "cost": { "gold": 200 }, "cost_growth": 2,   "placeholder": true }
+]

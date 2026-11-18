@@ -40,7 +40,7 @@ public abstract class BattleActionDefinitionBase : Definition
 /// <summary>JSON type "battle_action".</summary>
 public sealed class BattleActionDefinition : BattleActionDefinitionBase { }
 
-/// <summary>How a player unit base is unlocked: { "research": "nec1_raise_skeletons" }.</summary>
+/// <summary>How a player unit base is unlocked: { "research": "animate_bones" } (the node that unlocks it).</summary>
 public sealed class UnitUnlock
 {
     public string? Research { get; init; }
@@ -63,6 +63,8 @@ public abstract class UnitDefinitionBase : Definition
     /// <summary>Swarm, tank, ranged ... (shown in the Unit Builder).</summary>
     public string Role { get; init; } = "";
     public string Description { get; init; } = "";
+    /// <summary>Families research and spells target ("skeleton", "wisp").</summary>
+    public List<string> Tags { get; init; } = new();
     /// <summary>Battle action ids (Data/units/actions.json), at most three.</summary>
     public List<string> Actions { get; init; } = new();
     /// <summary>Player bases: the research node that unlocks it (none = available from the start).</summary>
@@ -70,9 +72,13 @@ public abstract class UnitDefinitionBase : Definition
     /// <summary>Player bases: slots for a weapon / armour. Empty = this body cannot carry one. v0.1 uses one of each.</summary>
     public List<string> WeaponSlots { get; init; } = new();
     public List<string> ArmourSlots { get; init; } = new();
-    /// <summary>Player bases: mana per summon (phase 9 decision) and Summoning Circle work per summon.</summary>
-    public long ManaCost { get; init; }
-    public double SummonWork { get; init; } = 1;
+    /// <summary>Player bases: paid per summon before gear (resources and items; gear comes from the unit type).</summary>
+    [JsonConverter(typeof(ItemAmountMapConverter))]
+    public List<ItemAmount> SummonCost { get; init; } = new();
+    /// <summary>Player bases: Summoning Circle power needed per summon.</summary>
+    public double SummonRequired { get; init; } = 1;
+    /// <summary>Player bases: circle level needed before the circle can summon it (1 = from the start).</summary>
+    public int SummonLevel { get; init; } = 1;
 
     /// <summary>The actions resolved from <see cref="Actions"/> (filled in when references are validated).</summary>
     [JsonIgnore]
@@ -87,11 +93,12 @@ public abstract class UnitDefinitionBase : Definition
         if (!(Hp > 0)) errors.Add("hp", "must be above 0");
         if (Actions.Count > MaxActions) errors.Add("actions", $"has {Actions.Count} actions; at most {MaxActions}");
         if (Actions.GroupBy(a => a).Any(g => g.Count() > 1)) errors.Add("actions", "lists the same action twice");
-        if (ManaCost < 0) errors.Add("mana_cost", "must be 0 or more");
-        if (!(SummonWork > 0)) errors.Add("summon_work", "must be above 0");
+        if (SummonCost.Any(c => c.Count < 1)) errors.Add("summon_cost", "counts must be 1 or more");
+        if (!(SummonRequired > 0)) errors.Add("summon_required", "must be above 0");
+        if (SummonLevel < 1) errors.Add("summon_level", "must be 1 or more");
         if (WeaponSlots.Count > 1 || ArmourSlots.Count > 1) errors.Add("weapon_slots", "v0.1 supports at most one weapon slot and one armour slot");
-        if (!IsPlayer && (Unlock is not null || ManaCost > 0 || WeaponSlots.Count > 0 || ArmourSlots.Count > 0))
-            errors.Add("side", "unlock, mana_cost and gear slots are for player units only");
+        if (!IsPlayer && (Unlock is not null || SummonCost.Count > 0 || WeaponSlots.Count > 0 || ArmourSlots.Count > 0))
+            errors.Add("side", "unlock, summon_cost and gear slots are for player units only");
         if (Unlock is { Research: null or "" }) errors.Add("unlock.research", "is missing");
     }
 
@@ -104,6 +111,8 @@ public abstract class UnitDefinitionBase : Definition
             else errors.Add("actions", $"unknown action id '{id}'");
         }
         ResolvedActions = resolved;
+        foreach (var c in SummonCost)
+            if (!StockIds.Exists(db, c.Id)) errors.Add("summon_cost", $"no resource or item '{c.Id}'");
         if (Unlock?.Research is { Length: > 0 } r && !db.Contains<ResearchNodeDefinitionBase>(r))
             errors.Add("unlock.research", $"unknown research node '{r}'");
     }

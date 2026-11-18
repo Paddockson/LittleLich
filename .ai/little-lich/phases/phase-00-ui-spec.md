@@ -142,30 +142,46 @@ Each page below: what it contains, in order, left to right. Build them as scenes
 Left: **Buildings list** (w172). `BUILDINGS` label, then seven buttons: Mana Well, Summoning Circle, Infuser, Soul Well, Transmuter, Undead Market, Storage. Each: name (13 px bold) and an 8 px status dot (Green running, Yellow needs input). Selected = SelectedBg style. Footer text: "Green dot: running. Yellow: needs input." (11 px TextDim).
 Right: the selected building's own page. Only Mana Well and Summoning Circle are drawn; the other five show a placeholder Card with the building name, its level, staffed count, output per tick, and a Level up button until their pages are designed.
 
-#### 1a. Mana Well page (two cards)
-Card A (w420):
-- Title `Mana Well` (Cinzel 19) with `RUNNING` pill on the right.
-- Description: "Necromancers stand at the well and channel mana. Each slot adds its own output. Raise the well's level to open more slots."
-- Stats InsetRow: `Lvl. 11`, `3 / 11 necromancers`, `+7,244 /tick` (Blue bold), and a primary ActionButton `Level up · 4.2k coin`.
-- `CHANNELING SLOTS` section label, then a grid of slot tiles (4 per row, 76 px tall, dashed border). Filled: NecroBg/NecroBorder, text `Necro 1 · +2.4k` in NecroText. Empty: BgPanelDark, Border, text `Empty`. Locked: Locked colours at 55% opacity, text `Lvl 12`.
-- Footer: "Unlocks next at level 12: slot 12 and a 5% output bonus."
-- **Scaling note:** necromancers can be billions. Replace the slot grid with: level, necromancer count with the shared Stepper and StepSelector, and output per tick. Keep the grid only as a debug view when staffed count is under 50. Build the stepper version.
+#### 1a. Mana Well page (three cards) - image 01
+Reworked from the old game (`ui-reference/old-game/03-old-game-mana-well.png`). The first mockup (slot grid, overflow chooser, milestones) is removed. Full brief: `adjustments/adjust-02-mana-well.md`.
 
-Card B (w~440): `Stock and overflow` (Cinzel 17).
-- Row: `Mana stored` and `142k / 144k` (bold), a 10 px Blue bar.
-- Text: "When the stock is full, extra mana is lost. Send the overflow somewhere useful instead."
-- `OVERFLOW GOES TO` and three selectable rows: Infuser (note "Active", selected), Summoning Circle, Discard.
-- `WELL MILESTONES` and rows: `Lvl 10 +25% output` (green when reached), `Lvl 15 Unlocks Wellspring spell`, `Lvl 20 +50% output` (muted).
+Card A (w~280): title `Mana Well` with RUNNING pill, description, the **clickable well graphic** (`CLICK TO CHANNEL`, `+1 mana per click`), an OUTPUT box (`+8.00 /tick`), and a `Mana stored 521 / 850` bar.
+Card B (w~276): `Necromancers`. Row with the necromancer block, `4 / 6` and `-` `+` buttons; Assign by selector (1, 1k, 1M, All free); OUTPUT BREAKDOWN rows (per necromancer, necromancers x count, level bonus, click power).
+Card C: `Well level`. `Lvl 4 > Lvl 5`, output change, COST rows as owned / needed (red when short), UPGRADE button (disabled with a reason until affordable).
+Big counts: abbreviate, exact value in a tooltip. No slot grid. Nothing locked is shown.
 
-#### 1b. Summoning Circle page (two cards)
-Card A (w440): `Summoning Circles 2 / 4` with a RUNNING pill. Description: "Each circle runs one recipe on repeat. Set a target stock and the circle pauses when it is reached." Then four circle rows (InsetRow): name (13.5 px bold) and note on the right, a 6 px progress bar, then a row `time left`, `Target 2,000`, state (Running green, Idle yellow, Locked dim). Placeholders: Circle 1 Skeleton 3.2s per unit 58% 1.3s left; Circle 2 Zombie 5.0s 24%; Circle 3 Empty "Pick a recipe" Idle (YellowBorder border); Circle 4 Locked "Needs a tome" (55% opacity).
-Card B: `Recipes` (Cinzel 17) with filter pills `Units`, `Necromancers`, `Show locked` (selected pill: SelectedBg/Border/Green). Recipe rows: name + action on the right (`In circle 1` green, `Assign` soft) and cost text below (`40 mana · 12 bones`). Include a Necromancer recipe: `500 mana · 10 souls · 1 tome page`. Summoned necromancers join the free pool (top bar). Locked recipes show at reduced opacity with what unlocks them.
+#### 1b. Summoning Circle page (three cards) - image 02
+Reworked from the old game (`ui-reference/old-game/01` and `02`). The first mockup (circles with a recipe list on the right) was wrong. A circle is not assigned a recipe from a list. The player **clicks a slot's icon to choose the unit**, and **clicks the circle graphic to add click power**.
 
-### 2. Research
-Three columns.
-- **Tome list** (left, w~200): every tome as a list button (a list, never tabs). Found: name and progress `9 / 24 researched`. Not found: dimmed, shows where it is. v0.1: only **Necromancy 1** is real; the rest are dimmed placeholders.
-- **Node tree** (centre, largest): a pan and zoom canvas (`Control` with a `Camera`-like offset; drag to pan, wheel to zoom). Nodes are large circles (blocky: squares are fine), sizes small, notable, keystone, connected by lines. States: researched = Green; researching = Purple; available = TextMain border; locked = dotted/dim. Hover shows a tooltip card: name, effect, cost, research time. Click starts research on a free bench. Make nodes big (about 56 px small, 80 notable, 104 keystone) so the tree is easy to read.
-- **Benches** (right, w~260): a card per bench: the node being researched, a progress bar with time left, necromancers assigned with the Stepper, and the speed effect. Locked benches show what unlocks them. Below, a `Bench level` card with an upgrade button (coin and mana).
+Card A (w~246): the circle.
+- Title `Summoning Circle` with `RUNNING` pill, one-line description.
+- **The circle graphic** (big clickable block, 176 px tall, NecroBg fill, purple border, label `CLICK TO SUMMON`, `+1 power per click`). Pressing it adds **click power** to the unit currently being summoned (the active slot's bar). Holding or rapid clicking should work. In the real game this is the circle art; blocky version is a labelled square with a circle.
+- **Necromancer stepper** under it: `- 1 / 4 +` with the label `necromancers` (necromancers assigned to this circle; the number after the slash is the most it can hold at the current level). Beneath it the shared `Assign by 1 / 1k / 1M / All` selector.
+- Footer: power per tick (`+0.2 per necromancer`), click power, and "Summoned necromancers join the free pool."
+
+Card B (w~340): `Summon slots`.
+- A list of slot rows, in summoning order. Each row: a **unit icon button on the left** (44 px square), the unit name and time per unit, a progress bar with the percentage in the middle (`66%`), and an `x` button to clear the slot.
+- **Clicking the icon opens the unit chooser** (a popup list under the slot, "CHOOSE UNIT"). Each entry shows name and cost (`Necromancer 64 mana · 32 souls`, `Wisp 50 mana`, `Skeleton 150 mana · 10 souls · 10 bones`). Selecting one fills the slot.
+- **Hovering a unit** in the chooser shows a **tooltip**: name, a one-line description, and cost lines as `owned / needed` (red when not enough, green when met).
+- States: active slot (purple border, filled bar) and empty slot (`PICK`, yellow border, `Idle`). **No locked slots or locked icons are shown.** Slots and units simply appear when unlocked (by circle level now, by research later).
+- The bar fills from click power + necromancer power per tick. When full it summons one unit, spends the cost, and starts over. A slot waits (bar stops) when it cannot pay.
+- Only unlocked units appear in the chooser. Units come from the unit types the player has built (Unit Builder) plus Necromancer and Wisp. Nothing locked is shown.
+- See `adjustments/adjust-01-summoning-circle.md` for the full change brief.
+
+Card C (w~230): `Circle level`.
+- `Lvl 2 > Lvl 3` and the output change (`+0.02% > +0.03%`), one-line note that new slots and units appear as they unlock.
+- `COST` list with owned / needed per resource (green when met, red when not).
+- Big `UPGRADE` button.
+
+Summoned necromancers are added to the free pool through `LichManager.AddToPool` (top bar Free goes up).
+
+### 2. Research - image 03
+Reworked from the real research data. Full design: `design/research-revamp.md`.
+- **Tome list (left, w~164):** only found tomes. Name, researched count (`5/33`) and a note. A small legend (done, researching, available, circle, square) and the line "Nodes appear when everything they need is done. Tomes appear when found."
+- **Node tree (centre):** pan and zoom canvas. Circles for one-off nodes (56 px), rounded squares for upgrade nodes (48 px) with a `0/100` badge. States: done (green, check), researching (purple glow), available (grey ring), hovered (green glow). **No locked or dimmed nodes.** Inner dot colour by type. Lines join each node to the nodes it requires. Node positions come from `layout.x` and `layout.y` in the JSON (x column index, y layer; scale about 100 px by 104 px).
+- **Hover card:** name, time at current bench speed, `ONE-OFF` or `REPEATABLE · level / max`, effect text, work and requirements, "Click to start on a free bench".
+- **Benches (right, w~270):** a card per bench: job, necromancer stepper, progress bar with time left, work and rate. Only unlocked benches appear. Below: `Bench level 2 > 3`, work per tick, costs (coin and mana), UPGRADE.
+- Research costs **work only**, no resources. Time = work / work per tick x tick length.
 
 ### 3. Unit Builder
 - **Unit list** (left, w~180): the base units; unresearched ones dimmed; yellow dot when gear is running short.

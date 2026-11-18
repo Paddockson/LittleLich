@@ -1,0 +1,1982 @@
+{
+  "buildings": [
+    {
+      "id": "research_bench",
+      "source_name": "ResearchBench",
+      "build_cost": {
+        "coin": 50,
+        "mana": 50
+      },
+      "rounding_sig_figs": 2,
+      "upgrade_tiers": [
+        {
+          "min_level": 1,
+          "max_level": 5,
+          "base": {
+            "coin": 50,
+            "mana": 150
+          },
+          "multiplier": {
+            "coin": 2.3,
+            "mana": 2.1
+          }
+        },
+        {
+          "min_level": 6,
+          "max_level": 10,
+          "base": {
+            "coin": 2100,
+            "mana": 4150
+          },
+          "multiplier": {
+            "coin": 1.5,
+            "mana": 1.5
+          }
+        },
+        {
+          "min_level": 11,
+          "max_level": 15,
+          "base": {
+            "coin": 14000,
+            "mana": 28000
+          },
+          "multiplier": {
+            "coin": 1.6,
+            "mana": 1.6
+          }
+        },
+        {
+          "min_level": 16,
+          "max_level": 20,
+          "base": {
+            "coin": 110000,
+            "mana": 220000
+          },
+          "multiplier": {
+            "coin": 1.4,
+            "mana": 1.4
+          }
+        }
+      ],
+      "generated_cost_table": [
+        {
+          "level": 1,
+          "cost": {
+            "coin": 50,
+            "mana": 150
+          }
+        },
+        {
+          "level": 2,
+          "cost": {
+            "coin": 110,
+            "mana": 320
+          }
+        },
+        {
+          "level": 3,
+          "cost": {
+            "coin": 260,
+            "mana": 660
+          }
+        },
+        {
+          "level": 4,
+          "cost": {
+            "coin": 610,
+            "mana": 1400
+          }
+        },
+        {
+          "level": 5,
+          "cost": {
+            "coin": 1400,
+            "mana": 2900
+          }
+        },
+        {
+          "level": 6,
+          "cost": {
+            "coin": 2100,
+            "mana": 4200
+          }
+        },
+        {
+          "level": 7,
+          "cost": {
+            "coin": 3200,
+            "mana": 6200
+          }
+        },
+        {
+          "level": 8,
+          "cost": {
+            "coin": 4700,
+            "mana": 9300
+          }
+        },
+        {
+          "level": 9,
+          "cost": {
+            "coin": 7100,
+            "mana": 14000
+          }
+        },
+        {
+          "level": 10,
+          "cost": {
+            "coin": 11000,
+            "mana": 21000
+          }
+        },
+        {
+          "level": 11,
+          "cost": {
+            "coin": 14000,
+            "mana": 28000
+          }
+        },
+        {
+          "level": 12,
+          "cost": {
+            "coin": 22000,
+            "mana": 45000
+          }
+        },
+        {
+          "level": 13,
+          "cost": {
+            "coin": 36000,
+            "mana": 72000
+          }
+        },
+        {
+          "level": 14,
+          "cost": {
+            "coin": 57000,
+            "mana": 110000
+          }
+        },
+        {
+          "level": 15,
+          "cost": {
+            "coin": 92000,
+            "mana": 180000
+          }
+        },
+        {
+          "level": 16,
+          "cost": {
+            "coin": 110000,
+            "mana": 220000
+          }
+        },
+        {
+          "level": 17,
+          "cost": {
+            "coin": 150000,
+            "mana": 310000
+          }
+        },
+        {
+          "level": 18,
+          "cost": {
+            "coin": 220000,
+            "mana": 430000
+          }
+        },
+        {
+          "level": 19,
+          "cost": {
+            "coin": 300000,
+            "mana": 600000
+          }
+        },
+        {
+          "level": 20,
+          "cost": {
+            "coin": 420000,
+            "mana": 850000
+          }
+        }
+      ]
+    },
+    {
+      "id": "mana_well",
+      "source_name": "ManaWell",
+      "build_cost": {
+        "mana": 50,
+        "earth": 50
+      },
+      "rounding_sig_figs": 2,
+      "upgrade_tiers": [
+        {
+          "min_level": 1,
+          "max_level": 5,
+          "base": {
+            "mana": 50,
+            "water": 25,
+            "earth": 25
+          },
+          "multiplier": {
+            "mana": 2.3,
+            "water": 2.3,
+            "earth": 2.3
+          }
+        },
+        {
+          "min_level": 6,
+          "max_level": 10,
+          "base": {
+            "mana": 2100,
+            "water": 1050,
+            "earth": 1050
+          },
+          "multiplier": {
+            "mana": 1.5,
+            "water": 1.5,
+            "earth": 1.5
+          }
+        },
+        {
+          "min_level": 11,
+          "max_level": 15,
+          "base": {
+            "mana": 14000,
+            "water": 7000,
+            "earth": 7000
+          },
+          "multiplier": {
+            "mana": 1.6,
+            "water": 1.6,
+            "earth": 1.6
+          }
+        },
+        {
+          "min_level": 16,
+          "max_level": 20,
+          "base": {
+            "mana": 110000,
+            "water": 55000,
+            "earth": 55000
+          },
+          "multiplier": {
+            "mana": 1.4,
+            "water": 1.4,
+            "earth": 1.4
+          }
+        }
+      ],
+      "generated_cost_table": [
+        {
+          "level": 1,
+          "cost": {
+            "mana": 50,
+            "water": 25,
+            "earth": 25
+          }
+        },
+        {
+          "level": 2,
+          "cost": {
+            "mana": 110,
+            "water": 57,
+            "earth": 57
+          }
+        },
+        {
+          "level": 3,
+          "cost": {
+            "mana": 260,
+            "water": 130,
+            "earth": 130
+          }
+        },
+        {
+          "level": 4,
+          "cost": {
+            "mana": 610,
+            "water": 300,
+            "earth": 300
+          }
+        },
+        {
+          "level": 5,
+          "cost": {
+            "mana": 1400,
+            "water": 700,
+            "earth": 700
+          }
+        },
+        {
+          "level": 6,
+          "cost": {
+            "mana": 2100,
+            "water": 1000,
+            "earth": 1000
+          }
+        },
+        {
+          "level": 7,
+          "cost": {
+            "mana": 3200,
+            "water": 1600,
+            "earth": 1600
+          }
+        },
+        {
+          "level": 8,
+          "cost": {
+            "mana": 4700,
+            "water": 2400,
+            "earth": 2400
+          }
+        },
+        {
+          "level": 9,
+          "cost": {
+            "mana": 7100,
+            "water": 3500,
+            "earth": 3500
+          }
+        },
+        {
+          "level": 10,
+          "cost": {
+            "mana": 11000,
+            "water": 5300,
+            "earth": 5300
+          }
+        },
+        {
+          "level": 11,
+          "cost": {
+            "mana": 14000,
+            "water": 7000,
+            "earth": 7000
+          }
+        },
+        {
+          "level": 12,
+          "cost": {
+            "mana": 22000,
+            "water": 11000,
+            "earth": 11000
+          }
+        },
+        {
+          "level": 13,
+          "cost": {
+            "mana": 36000,
+            "water": 18000,
+            "earth": 18000
+          }
+        },
+        {
+          "level": 14,
+          "cost": {
+            "mana": 57000,
+            "water": 29000,
+            "earth": 29000
+          }
+        },
+        {
+          "level": 15,
+          "cost": {
+            "mana": 92000,
+            "water": 46000,
+            "earth": 46000
+          }
+        },
+        {
+          "level": 16,
+          "cost": {
+            "mana": 110000,
+            "water": 55000,
+            "earth": 55000
+          }
+        },
+        {
+          "level": 17,
+          "cost": {
+            "mana": 150000,
+            "water": 77000,
+            "earth": 77000
+          }
+        },
+        {
+          "level": 18,
+          "cost": {
+            "mana": 220000,
+            "water": 110000,
+            "earth": 110000
+          }
+        },
+        {
+          "level": 19,
+          "cost": {
+            "mana": 300000,
+            "water": 150000,
+            "earth": 150000
+          }
+        },
+        {
+          "level": 20,
+          "cost": {
+            "mana": 420000,
+            "water": 210000,
+            "earth": 210000
+          }
+        }
+      ]
+    },
+    {
+      "id": "soul_well",
+      "source_name": "SoulWell",
+      "build_cost": {
+        "mana": 300,
+        "fire": 300,
+        "water": 300,
+        "earth": 300,
+        "air": 300
+      },
+      "rounding_sig_figs": 2,
+      "upgrade_tiers": [
+        {
+          "min_level": 1,
+          "max_level": 5,
+          "base": {
+            "mana": 500,
+            "fire": 500,
+            "water": 500,
+            "earth": 500,
+            "air": 500
+          },
+          "multiplier": {
+            "mana": 3.3,
+            "fire": 2.6,
+            "water": 2.6,
+            "earth": 2.6,
+            "air": 2.6
+          }
+        },
+        {
+          "min_level": 6,
+          "max_level": 10,
+          "base": {
+            "mana": 90000,
+            "fire": 36000,
+            "water": 36000,
+            "earth": 36000,
+            "air": 36000
+          },
+          "multiplier": {
+            "mana": 1.5,
+            "fire": 1.5,
+            "water": 1.5,
+            "earth": 1.5,
+            "air": 1.5
+          }
+        },
+        {
+          "min_level": 11,
+          "max_level": 15,
+          "base": {
+            "mana": 600000,
+            "fire": 240000,
+            "water": 240000,
+            "earth": 240000,
+            "air": 240000
+          },
+          "multiplier": {
+            "mana": 1.6,
+            "fire": 1.6,
+            "water": 1.6,
+            "earth": 1.6,
+            "air": 1.6
+          }
+        },
+        {
+          "min_level": 16,
+          "max_level": 20,
+          "base": {
+            "mana": 4800000,
+            "fire": 1920000,
+            "water": 1920000,
+            "earth": 1920000,
+            "air": 1920000
+          },
+          "multiplier": {
+            "mana": 1.4,
+            "fire": 1.4,
+            "water": 1.4,
+            "earth": 1.4,
+            "air": 1.4
+          }
+        }
+      ],
+      "generated_cost_table": [
+        {
+          "level": 1,
+          "cost": {
+            "mana": 500,
+            "fire": 500,
+            "water": 500,
+            "earth": 500,
+            "air": 500
+          }
+        },
+        {
+          "level": 2,
+          "cost": {
+            "mana": 1600,
+            "fire": 1300,
+            "water": 1300,
+            "earth": 1300,
+            "air": 1300
+          }
+        },
+        {
+          "level": 3,
+          "cost": {
+            "mana": 5400,
+            "fire": 3400,
+            "water": 3400,
+            "earth": 3400,
+            "air": 3400
+          }
+        },
+        {
+          "level": 4,
+          "cost": {
+            "mana": 18000,
+            "fire": 8800,
+            "water": 8800,
+            "earth": 8800,
+            "air": 8800
+          }
+        },
+        {
+          "level": 5,
+          "cost": {
+            "mana": 59000,
+            "fire": 23000,
+            "water": 23000,
+            "earth": 23000,
+            "air": 23000
+          }
+        },
+        {
+          "level": 6,
+          "cost": {
+            "mana": 90000,
+            "fire": 36000,
+            "water": 36000,
+            "earth": 36000,
+            "air": 36000
+          }
+        },
+        {
+          "level": 7,
+          "cost": {
+            "mana": 140000,
+            "fire": 54000,
+            "water": 54000,
+            "earth": 54000,
+            "air": 54000
+          }
+        },
+        {
+          "level": 8,
+          "cost": {
+            "mana": 200000,
+            "fire": 81000,
+            "water": 81000,
+            "earth": 81000,
+            "air": 81000
+          }
+        },
+        {
+          "level": 9,
+          "cost": {
+            "mana": 300000,
+            "fire": 120000,
+            "water": 120000,
+            "earth": 120000,
+            "air": 120000
+          }
+        },
+        {
+          "level": 10,
+          "cost": {
+            "mana": 460000,
+            "fire": 180000,
+            "water": 180000,
+            "earth": 180000,
+            "air": 180000
+          }
+        },
+        {
+          "level": 11,
+          "cost": {
+            "mana": 600000,
+            "fire": 240000,
+            "water": 240000,
+            "earth": 240000,
+            "air": 240000
+          }
+        },
+        {
+          "level": 12,
+          "cost": {
+            "mana": 960000,
+            "fire": 380000,
+            "water": 380000,
+            "earth": 380000,
+            "air": 380000
+          }
+        },
+        {
+          "level": 13,
+          "cost": {
+            "mana": 1500000,
+            "fire": 610000,
+            "water": 610000,
+            "earth": 610000,
+            "air": 610000
+          }
+        },
+        {
+          "level": 14,
+          "cost": {
+            "mana": 2500000,
+            "fire": 980000,
+            "water": 980000,
+            "earth": 980000,
+            "air": 980000
+          }
+        },
+        {
+          "level": 15,
+          "cost": {
+            "mana": 3900000,
+            "fire": 1600000,
+            "water": 1600000,
+            "earth": 1600000,
+            "air": 1600000
+          }
+        },
+        {
+          "level": 16,
+          "cost": {
+            "mana": 4800000,
+            "fire": 1900000,
+            "water": 1900000,
+            "earth": 1900000,
+            "air": 1900000
+          }
+        },
+        {
+          "level": 17,
+          "cost": {
+            "mana": 6700000,
+            "fire": 2700000,
+            "water": 2700000,
+            "earth": 2700000,
+            "air": 2700000
+          }
+        },
+        {
+          "level": 18,
+          "cost": {
+            "mana": 9400000,
+            "fire": 3800000,
+            "water": 3800000,
+            "earth": 3800000,
+            "air": 3800000
+          }
+        },
+        {
+          "level": 19,
+          "cost": {
+            "mana": 13000000,
+            "fire": 5300000,
+            "water": 5300000,
+            "earth": 5300000,
+            "air": 5300000
+          }
+        },
+        {
+          "level": 20,
+          "cost": {
+            "mana": 18000000,
+            "fire": 7400000,
+            "water": 7400000,
+            "earth": 7400000,
+            "air": 7400000
+          }
+        }
+      ]
+    },
+    {
+      "id": "infuser",
+      "source_name": "Infuser",
+      "build_cost": {
+        "coin": 10,
+        "mana": 50
+      },
+      "rounding_sig_figs": 2,
+      "upgrade_tiers": [
+        {
+          "min_level": 1,
+          "max_level": 5,
+          "base": {
+            "mana": 250,
+            "fire": 50,
+            "water": 50,
+            "earth": 50,
+            "air": 50
+          },
+          "multiplier": {
+            "mana": 2.1,
+            "fire": 2.3,
+            "water": 2.3,
+            "earth": 2.3,
+            "air": 2.3
+          }
+        },
+        {
+          "min_level": 6,
+          "max_level": 10,
+          "base": {
+            "mana": 7500,
+            "fire": 2250,
+            "water": 2250,
+            "earth": 2250,
+            "air": 2250
+          },
+          "multiplier": {
+            "mana": 1.5,
+            "fire": 1.4,
+            "water": 1.4,
+            "earth": 1.4,
+            "air": 1.4
+          }
+        },
+        {
+          "min_level": 11,
+          "max_level": 15,
+          "base": {
+            "mana": 48000,
+            "fire": 12000,
+            "water": 12000,
+            "earth": 12000,
+            "air": 12000
+          },
+          "multiplier": {
+            "mana": 1.6,
+            "fire": 1.6,
+            "water": 1.6,
+            "earth": 1.6,
+            "air": 1.6
+          }
+        },
+        {
+          "min_level": 16,
+          "max_level": 20,
+          "base": {
+            "mana": 384000,
+            "fire": 96000,
+            "water": 96000,
+            "earth": 96000,
+            "air": 96000
+          },
+          "multiplier": {
+            "mana": 1.4,
+            "fire": 1.4,
+            "water": 1.4,
+            "earth": 1.4,
+            "air": 1.4
+          }
+        }
+      ],
+      "generated_cost_table": [
+        {
+          "level": 1,
+          "cost": {
+            "mana": 250,
+            "fire": 50,
+            "water": 50,
+            "earth": 50,
+            "air": 50
+          }
+        },
+        {
+          "level": 2,
+          "cost": {
+            "mana": 520,
+            "fire": 110,
+            "water": 110,
+            "earth": 110,
+            "air": 110
+          }
+        },
+        {
+          "level": 3,
+          "cost": {
+            "mana": 1100,
+            "fire": 260,
+            "water": 260,
+            "earth": 260,
+            "air": 260
+          }
+        },
+        {
+          "level": 4,
+          "cost": {
+            "mana": 2300,
+            "fire": 610,
+            "water": 610,
+            "earth": 610,
+            "air": 610
+          }
+        },
+        {
+          "level": 5,
+          "cost": {
+            "mana": 4900,
+            "fire": 1400,
+            "water": 1400,
+            "earth": 1400,
+            "air": 1400
+          }
+        },
+        {
+          "level": 6,
+          "cost": {
+            "mana": 7500,
+            "fire": 2200,
+            "water": 2200,
+            "earth": 2200,
+            "air": 2200
+          }
+        },
+        {
+          "level": 7,
+          "cost": {
+            "mana": 11000,
+            "fire": 3200,
+            "water": 3200,
+            "earth": 3200,
+            "air": 3200
+          }
+        },
+        {
+          "level": 8,
+          "cost": {
+            "mana": 17000,
+            "fire": 4400,
+            "water": 4400,
+            "earth": 4400,
+            "air": 4400
+          }
+        },
+        {
+          "level": 9,
+          "cost": {
+            "mana": 25000,
+            "fire": 6200,
+            "water": 6200,
+            "earth": 6200,
+            "air": 6200
+          }
+        },
+        {
+          "level": 10,
+          "cost": {
+            "mana": 38000,
+            "fire": 8600,
+            "water": 8600,
+            "earth": 8600,
+            "air": 8600
+          }
+        },
+        {
+          "level": 11,
+          "cost": {
+            "mana": 48000,
+            "fire": 12000,
+            "water": 12000,
+            "earth": 12000,
+            "air": 12000
+          }
+        },
+        {
+          "level": 12,
+          "cost": {
+            "mana": 77000,
+            "fire": 19000,
+            "water": 19000,
+            "earth": 19000,
+            "air": 19000
+          }
+        },
+        {
+          "level": 13,
+          "cost": {
+            "mana": 120000,
+            "fire": 31000,
+            "water": 31000,
+            "earth": 31000,
+            "air": 31000
+          }
+        },
+        {
+          "level": 14,
+          "cost": {
+            "mana": 200000,
+            "fire": 49000,
+            "water": 49000,
+            "earth": 49000,
+            "air": 49000
+          }
+        },
+        {
+          "level": 15,
+          "cost": {
+            "mana": 310000,
+            "fire": 79000,
+            "water": 79000,
+            "earth": 79000,
+            "air": 79000
+          }
+        },
+        {
+          "level": 16,
+          "cost": {
+            "mana": 380000,
+            "fire": 96000,
+            "water": 96000,
+            "earth": 96000,
+            "air": 96000
+          }
+        },
+        {
+          "level": 17,
+          "cost": {
+            "mana": 540000,
+            "fire": 130000,
+            "water": 130000,
+            "earth": 130000,
+            "air": 130000
+          }
+        },
+        {
+          "level": 18,
+          "cost": {
+            "mana": 750000,
+            "fire": 190000,
+            "water": 190000,
+            "earth": 190000,
+            "air": 190000
+          }
+        },
+        {
+          "level": 19,
+          "cost": {
+            "mana": 1100000,
+            "fire": 260000,
+            "water": 260000,
+            "earth": 260000,
+            "air": 260000
+          }
+        },
+        {
+          "level": 20,
+          "cost": {
+            "mana": 1500000,
+            "fire": 370000,
+            "water": 370000,
+            "earth": 370000,
+            "air": 370000
+          }
+        }
+      ]
+    },
+    {
+      "id": "transmuter",
+      "source_name": "Transmuter",
+      "build_cost": {
+        "coin": 100,
+        "mana": 200
+      },
+      "rounding_sig_figs": 2,
+      "upgrade_tiers": [
+        {
+          "min_level": 1,
+          "max_level": 5,
+          "base": {
+            "coin": 100,
+            "mana": 100,
+            "fire": 150,
+            "water": 150,
+            "earth": 150,
+            "air": 150
+          },
+          "multiplier": {
+            "coin": 2.3,
+            "mana": 2.3,
+            "fire": 2.5,
+            "water": 2.5,
+            "earth": 2.5,
+            "air": 2.5
+          }
+        },
+        {
+          "min_level": 6,
+          "max_level": 10,
+          "base": {
+            "coin": 4150,
+            "mana": 4150,
+            "fire": 8500,
+            "water": 8500,
+            "earth": 8500,
+            "air": 8500
+          },
+          "multiplier": {
+            "coin": 1.5,
+            "mana": 1.5,
+            "fire": 1.5,
+            "water": 1.5,
+            "earth": 1.5,
+            "air": 1.5
+          }
+        },
+        {
+          "min_level": 11,
+          "max_level": 15,
+          "base": {
+            "coin": 28000,
+            "mana": 28000,
+            "fire": 55000,
+            "water": 55000,
+            "earth": 55000,
+            "air": 55000
+          },
+          "multiplier": {
+            "coin": 1.6,
+            "mana": 1.6,
+            "fire": 1.6,
+            "water": 1.6,
+            "earth": 1.6,
+            "air": 1.6
+          }
+        },
+        {
+          "min_level": 16,
+          "max_level": 20,
+          "base": {
+            "coin": 220000,
+            "mana": 220000,
+            "fire": 445000,
+            "water": 445000,
+            "earth": 445000,
+            "air": 445000
+          },
+          "multiplier": {
+            "coin": 1.4,
+            "mana": 1.4,
+            "fire": 1.4,
+            "water": 1.4,
+            "earth": 1.4,
+            "air": 1.4
+          }
+        }
+      ],
+      "generated_cost_table": [
+        {
+          "level": 1,
+          "cost": {
+            "coin": 100,
+            "mana": 100,
+            "fire": 150,
+            "water": 150,
+            "earth": 150,
+            "air": 150
+          }
+        },
+        {
+          "level": 2,
+          "cost": {
+            "coin": 230,
+            "mana": 230,
+            "fire": 380,
+            "water": 380,
+            "earth": 380,
+            "air": 380
+          }
+        },
+        {
+          "level": 3,
+          "cost": {
+            "coin": 530,
+            "mana": 530,
+            "fire": 940,
+            "water": 940,
+            "earth": 940,
+            "air": 940
+          }
+        },
+        {
+          "level": 4,
+          "cost": {
+            "coin": 1200,
+            "mana": 1200,
+            "fire": 2300,
+            "water": 2300,
+            "earth": 2300,
+            "air": 2300
+          }
+        },
+        {
+          "level": 5,
+          "cost": {
+            "coin": 2800,
+            "mana": 2800,
+            "fire": 5900,
+            "water": 5900,
+            "earth": 5900,
+            "air": 5900
+          }
+        },
+        {
+          "level": 6,
+          "cost": {
+            "coin": 4200,
+            "mana": 4200,
+            "fire": 8500,
+            "water": 8500,
+            "earth": 8500,
+            "air": 8500
+          }
+        },
+        {
+          "level": 7,
+          "cost": {
+            "coin": 6200,
+            "mana": 6200,
+            "fire": 13000,
+            "water": 13000,
+            "earth": 13000,
+            "air": 13000
+          }
+        },
+        {
+          "level": 8,
+          "cost": {
+            "coin": 9300,
+            "mana": 9300,
+            "fire": 19000,
+            "water": 19000,
+            "earth": 19000,
+            "air": 19000
+          }
+        },
+        {
+          "level": 9,
+          "cost": {
+            "coin": 14000,
+            "mana": 14000,
+            "fire": 29000,
+            "water": 29000,
+            "earth": 29000,
+            "air": 29000
+          }
+        },
+        {
+          "level": 10,
+          "cost": {
+            "coin": 21000,
+            "mana": 21000,
+            "fire": 43000,
+            "water": 43000,
+            "earth": 43000,
+            "air": 43000
+          }
+        },
+        {
+          "level": 11,
+          "cost": {
+            "coin": 28000,
+            "mana": 28000,
+            "fire": 55000,
+            "water": 55000,
+            "earth": 55000,
+            "air": 55000
+          }
+        },
+        {
+          "level": 12,
+          "cost": {
+            "coin": 45000,
+            "mana": 45000,
+            "fire": 88000,
+            "water": 88000,
+            "earth": 88000,
+            "air": 88000
+          }
+        },
+        {
+          "level": 13,
+          "cost": {
+            "coin": 72000,
+            "mana": 72000,
+            "fire": 140000,
+            "water": 140000,
+            "earth": 140000,
+            "air": 140000
+          }
+        },
+        {
+          "level": 14,
+          "cost": {
+            "coin": 110000,
+            "mana": 110000,
+            "fire": 230000,
+            "water": 230000,
+            "earth": 230000,
+            "air": 230000
+          }
+        },
+        {
+          "level": 15,
+          "cost": {
+            "coin": 180000,
+            "mana": 180000,
+            "fire": 360000,
+            "water": 360000,
+            "earth": 360000,
+            "air": 360000
+          }
+        },
+        {
+          "level": 16,
+          "cost": {
+            "coin": 220000,
+            "mana": 220000,
+            "fire": 440000,
+            "water": 440000,
+            "earth": 440000,
+            "air": 440000
+          }
+        },
+        {
+          "level": 17,
+          "cost": {
+            "coin": 310000,
+            "mana": 310000,
+            "fire": 620000,
+            "water": 620000,
+            "earth": 620000,
+            "air": 620000
+          }
+        },
+        {
+          "level": 18,
+          "cost": {
+            "coin": 430000,
+            "mana": 430000,
+            "fire": 870000,
+            "water": 870000,
+            "earth": 870000,
+            "air": 870000
+          }
+        },
+        {
+          "level": 19,
+          "cost": {
+            "coin": 600000,
+            "mana": 600000,
+            "fire": 1200000,
+            "water": 1200000,
+            "earth": 1200000,
+            "air": 1200000
+          }
+        },
+        {
+          "level": 20,
+          "cost": {
+            "coin": 850000,
+            "mana": 850000,
+            "fire": 1700000,
+            "water": 1700000,
+            "earth": 1700000,
+            "air": 1700000
+          }
+        }
+      ]
+    },
+    {
+      "id": "summoning_circle",
+      "source_name": "SummoningStation",
+      "build_cost": {
+        "mana": 50,
+        "fire": 50,
+        "earth": 50
+      },
+      "rounding_sig_figs": 2,
+      "upgrade_tiers": [
+        {
+          "min_level": 1,
+          "max_level": 5,
+          "base": {
+            "mana": 100,
+            "water": 100,
+            "air": 100
+          },
+          "multiplier": {
+            "mana": 2.7,
+            "water": 2.7,
+            "air": 2.7
+          }
+        },
+        {
+          "min_level": 6,
+          "max_level": 10,
+          "base": {
+            "mana": 7500,
+            "water": 7500,
+            "air": 7500
+          },
+          "multiplier": {
+            "mana": 1.5,
+            "water": 1.5,
+            "air": 1.5
+          }
+        },
+        {
+          "min_level": 11,
+          "max_level": 15,
+          "base": {
+            "mana": 50000,
+            "water": 50000,
+            "air": 50000
+          },
+          "multiplier": {
+            "mana": 1.6,
+            "water": 1.6,
+            "air": 1.6
+          }
+        },
+        {
+          "min_level": 16,
+          "max_level": 20,
+          "base": {
+            "mana": 400000,
+            "water": 400000,
+            "air": 400000
+          },
+          "multiplier": {
+            "mana": 1.4,
+            "water": 1.4,
+            "air": 1.4
+          }
+        }
+      ],
+      "generated_cost_table": [
+        {
+          "level": 1,
+          "cost": {
+            "mana": 100,
+            "water": 100,
+            "air": 100
+          }
+        },
+        {
+          "level": 2,
+          "cost": {
+            "mana": 270,
+            "water": 270,
+            "air": 270
+          }
+        },
+        {
+          "level": 3,
+          "cost": {
+            "mana": 730,
+            "water": 730,
+            "air": 730
+          }
+        },
+        {
+          "level": 4,
+          "cost": {
+            "mana": 2000,
+            "water": 2000,
+            "air": 2000
+          }
+        },
+        {
+          "level": 5,
+          "cost": {
+            "mana": 5300,
+            "water": 5300,
+            "air": 5300
+          }
+        },
+        {
+          "level": 6,
+          "cost": {
+            "mana": 7500,
+            "water": 7500,
+            "air": 7500
+          }
+        },
+        {
+          "level": 7,
+          "cost": {
+            "mana": 11000,
+            "water": 11000,
+            "air": 11000
+          }
+        },
+        {
+          "level": 8,
+          "cost": {
+            "mana": 17000,
+            "water": 17000,
+            "air": 17000
+          }
+        },
+        {
+          "level": 9,
+          "cost": {
+            "mana": 25000,
+            "water": 25000,
+            "air": 25000
+          }
+        },
+        {
+          "level": 10,
+          "cost": {
+            "mana": 38000,
+            "water": 38000,
+            "air": 38000
+          }
+        },
+        {
+          "level": 11,
+          "cost": {
+            "mana": 50000,
+            "water": 50000,
+            "air": 50000
+          }
+        },
+        {
+          "level": 12,
+          "cost": {
+            "mana": 80000,
+            "water": 80000,
+            "air": 80000
+          }
+        },
+        {
+          "level": 13,
+          "cost": {
+            "mana": 130000,
+            "water": 130000,
+            "air": 130000
+          }
+        },
+        {
+          "level": 14,
+          "cost": {
+            "mana": 200000,
+            "water": 200000,
+            "air": 200000
+          }
+        },
+        {
+          "level": 15,
+          "cost": {
+            "mana": 330000,
+            "water": 330000,
+            "air": 330000
+          }
+        },
+        {
+          "level": 16,
+          "cost": {
+            "mana": 400000,
+            "water": 400000,
+            "air": 400000
+          }
+        },
+        {
+          "level": 17,
+          "cost": {
+            "mana": 560000,
+            "water": 560000,
+            "air": 560000
+          }
+        },
+        {
+          "level": 18,
+          "cost": {
+            "mana": 780000,
+            "water": 780000,
+            "air": 780000
+          }
+        },
+        {
+          "level": 19,
+          "cost": {
+            "mana": 1100000,
+            "water": 1100000,
+            "air": 1100000
+          }
+        },
+        {
+          "level": 20,
+          "cost": {
+            "mana": 1500000,
+            "water": 1500000,
+            "air": 1500000
+          }
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "source_name": "MagicStorage",
+      "build_cost": {
+        "mana": 250,
+        "fire": 100,
+        "earth": 100
+      },
+      "rounding_sig_figs": 2,
+      "upgrade_tiers": [
+        {
+          "min_level": 1,
+          "max_level": 5,
+          "base": {
+            "mana": 250,
+            "fire": 100,
+            "earth": 100
+          },
+          "multiplier": {
+            "mana": 1.5,
+            "fire": 2,
+            "earth": 2
+          }
+        },
+        {
+          "min_level": 6,
+          "max_level": 10,
+          "base": {
+            "mana": 5000,
+            "fire": 400,
+            "earth": 400
+          },
+          "multiplier": {
+            "mana": 1.5,
+            "fire": 1.5,
+            "earth": 1.5
+          }
+        },
+        {
+          "min_level": 11,
+          "max_level": 15,
+          "base": {
+            "mana": 55000,
+            "fire": 22000,
+            "earth": 22000
+          },
+          "multiplier": {
+            "mana": 1.6,
+            "fire": 1.6,
+            "earth": 1.6
+          }
+        },
+        {
+          "min_level": 16,
+          "max_level": 20,
+          "base": {
+            "mana": 445000,
+            "fire": 180000,
+            "earth": 180000
+          },
+          "multiplier": {
+            "mana": 1.4,
+            "fire": 1.4,
+            "earth": 1.4
+          }
+        }
+      ],
+      "generated_cost_table": [
+        {
+          "level": 1,
+          "cost": {
+            "mana": 250,
+            "fire": 100,
+            "earth": 100
+          }
+        },
+        {
+          "level": 2,
+          "cost": {
+            "mana": 380,
+            "fire": 200,
+            "earth": 200
+          }
+        },
+        {
+          "level": 3,
+          "cost": {
+            "mana": 560,
+            "fire": 400,
+            "earth": 400
+          }
+        },
+        {
+          "level": 4,
+          "cost": {
+            "mana": 840,
+            "fire": 800,
+            "earth": 800
+          }
+        },
+        {
+          "level": 5,
+          "cost": {
+            "mana": 1300,
+            "fire": 1600,
+            "earth": 1600
+          }
+        },
+        {
+          "level": 6,
+          "cost": {
+            "mana": 5000,
+            "fire": 400,
+            "earth": 400
+          }
+        },
+        {
+          "level": 7,
+          "cost": {
+            "mana": 7500,
+            "fire": 600,
+            "earth": 600
+          }
+        },
+        {
+          "level": 8,
+          "cost": {
+            "mana": 11000,
+            "fire": 900,
+            "earth": 900
+          }
+        },
+        {
+          "level": 9,
+          "cost": {
+            "mana": 17000,
+            "fire": 1400,
+            "earth": 1400
+          }
+        },
+        {
+          "level": 10,
+          "cost": {
+            "mana": 25000,
+            "fire": 2000,
+            "earth": 2000
+          }
+        },
+        {
+          "level": 11,
+          "cost": {
+            "mana": 55000,
+            "fire": 22000,
+            "earth": 22000
+          }
+        },
+        {
+          "level": 12,
+          "cost": {
+            "mana": 88000,
+            "fire": 35000,
+            "earth": 35000
+          }
+        },
+        {
+          "level": 13,
+          "cost": {
+            "mana": 140000,
+            "fire": 56000,
+            "earth": 56000
+          }
+        },
+        {
+          "level": 14,
+          "cost": {
+            "mana": 230000,
+            "fire": 90000,
+            "earth": 90000
+          }
+        },
+        {
+          "level": 15,
+          "cost": {
+            "mana": 360000,
+            "fire": 140000,
+            "earth": 140000
+          }
+        },
+        {
+          "level": 16,
+          "cost": {
+            "mana": 440000,
+            "fire": 180000,
+            "earth": 180000
+          }
+        },
+        {
+          "level": 17,
+          "cost": {
+            "mana": 620000,
+            "fire": 250000,
+            "earth": 250000
+          }
+        },
+        {
+          "level": 18,
+          "cost": {
+            "mana": 870000,
+            "fire": 350000,
+            "earth": 350000
+          }
+        },
+        {
+          "level": 19,
+          "cost": {
+            "mana": 1200000,
+            "fire": 490000,
+            "earth": 490000
+          }
+        },
+        {
+          "level": 20,
+          "cost": {
+            "mana": 1700000,
+            "fire": 690000,
+            "earth": 690000
+          }
+        }
+      ]
+    },
+    {
+      "id": "undead_market",
+      "source_name": "UndeadMarket",
+      "build_cost": {
+        "coin": 50,
+        "mana": 300
+      },
+      "rounding_sig_figs": 2,
+      "upgrade_tiers": [
+        {
+          "min_level": 1,
+          "max_level": 5,
+          "base": {
+            "coin": 50,
+            "mana": 300
+          },
+          "multiplier": {
+            "coin": 2.4,
+            "mana": 2.2
+          }
+        },
+        {
+          "min_level": 6,
+          "max_level": 10,
+          "base": {
+            "coin": 2500,
+            "mana": 10000
+          },
+          "multiplier": {
+            "coin": 1.5,
+            "mana": 1.5
+          }
+        },
+        {
+          "min_level": 11,
+          "max_level": 15,
+          "base": {
+            "coin": 16500,
+            "mana": 65000
+          },
+          "multiplier": {
+            "coin": 1.6,
+            "mana": 1.6
+          }
+        },
+        {
+          "min_level": 16,
+          "max_level": 20,
+          "base": {
+            "coin": 135000,
+            "mana": 550000
+          },
+          "multiplier": {
+            "coin": 1.4,
+            "mana": 1.4
+          }
+        }
+      ],
+      "generated_cost_table": [
+        {
+          "level": 1,
+          "cost": {
+            "coin": 50,
+            "mana": 300
+          }
+        },
+        {
+          "level": 2,
+          "cost": {
+            "coin": 120,
+            "mana": 660
+          }
+        },
+        {
+          "level": 3,
+          "cost": {
+            "coin": 290,
+            "mana": 1500
+          }
+        },
+        {
+          "level": 4,
+          "cost": {
+            "coin": 690,
+            "mana": 3200
+          }
+        },
+        {
+          "level": 5,
+          "cost": {
+            "coin": 1700,
+            "mana": 7000
+          }
+        },
+        {
+          "level": 6,
+          "cost": {
+            "coin": 2500,
+            "mana": 10000
+          }
+        },
+        {
+          "level": 7,
+          "cost": {
+            "coin": 3800,
+            "mana": 15000
+          }
+        },
+        {
+          "level": 8,
+          "cost": {
+            "coin": 5600,
+            "mana": 22000
+          }
+        },
+        {
+          "level": 9,
+          "cost": {
+            "coin": 8400,
+            "mana": 34000
+          }
+        },
+        {
+          "level": 10,
+          "cost": {
+            "coin": 13000,
+            "mana": 51000
+          }
+        },
+        {
+          "level": 11,
+          "cost": {
+            "coin": 16000,
+            "mana": 65000
+          }
+        },
+        {
+          "level": 12,
+          "cost": {
+            "coin": 26000,
+            "mana": 100000
+          }
+        },
+        {
+          "level": 13,
+          "cost": {
+            "coin": 42000,
+            "mana": 170000
+          }
+        },
+        {
+          "level": 14,
+          "cost": {
+            "coin": 68000,
+            "mana": 270000
+          }
+        },
+        {
+          "level": 15,
+          "cost": {
+            "coin": 110000,
+            "mana": 430000
+          }
+        },
+        {
+          "level": 16,
+          "cost": {
+            "coin": 140000,
+            "mana": 550000
+          }
+        },
+        {
+          "level": 17,
+          "cost": {
+            "coin": 190000,
+            "mana": 770000
+          }
+        },
+        {
+          "level": 18,
+          "cost": {
+            "coin": 260000,
+            "mana": 1100000
+          }
+        },
+        {
+          "level": 19,
+          "cost": {
+            "coin": 370000,
+            "mana": 1500000
+          }
+        },
+        {
+          "level": 20,
+          "cost": {
+            "coin": 520000,
+            "mana": 2100000
+          }
+        }
+      ]
+    }
+  ],
+  "note": "generated_cost_table is computed from tiers: cost = base x multiplier^(level - min_level), rounded to 2 significant figures. Verify against the game before trusting."
+}

@@ -1,0 +1,10 @@
+// Summoning gear (research revamp): the sword, bow and staff that skeleton warriors, archers and mages use up when
+// summoned (old game data). Made by the Transmuter once Summon Gear is researched. Placeholders.
+{
+  "type": "material",
+  "entries": [
+    { "id": "sword", "name": "Sword", "stack_size": 1000, "sell_price": 4, "placeholder": true },
+    { "id": "bow",   "name": "Bow",   "stack_size": 1000, "sell_price": 4, "placeholder": true },
+    { "id": "staff", "name": "Staff", "stack_size": 1000, "sell_price": 4, "placeholder": true }
+  ]
+}

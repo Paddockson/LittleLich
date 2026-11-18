@@ -45,7 +45,33 @@ public partial class GameManager : Node
 
     public override void _Ready()
     {
+        if (OS.GetCmdlineUserArgs().Contains("--validate-content"))
+        {
+            ValidateContentAndQuit();
+            return;
+        }
         Boot();
+    }
+
+    /// <summary>
+    /// Content check for builds/CI: <c>godot --headless --path littlelich -- --validate-content</c>.
+    /// Loads every JSON file with full validation (fields and cross references), prints every error as
+    /// "file [id] .field: message", and quits with exit code 0 (clean) or 1 (errors). No game is started, nothing is saved.
+    /// </summary>
+    private void ValidateContentAndQuit()
+    {
+        BootError = "Validating content only (--validate-content).";
+        try
+        {
+            var db = ContentLoader.CreateDefault().Load(ReadContentSources(ContentRoot));
+            GD.Print($"[validate-content] OK: {db.Count} definitions.");
+            GetTree().Quit(0);
+        }
+        catch (ContentLoadException e)
+        {
+            GD.PrintErr("[validate-content] FAILED\n" + e.Message);
+            GetTree().Quit(1);
+        }
     }
 
     private void Boot()
@@ -84,9 +110,8 @@ public partial class GameManager : Node
         Session.Register(LichManager.Instance.State);
         foreach (var s in CryptManager.Instance.Initialize(content, LichManager.Instance.State)) Session.Register(s);
         foreach (var s in LichManager.Instance.InitializeSkills(content, CryptManager.Instance.Stockpile, CryptManager.Instance.Unlocks)) Session.Register(s);
-        // Research reads skill levels (deeper nodes) and pays skill XP on completion.
+        // Research pays its tome's skill XP on completion.
         var research = CryptManager.Instance.Research!;
-        research.SkillLevel = id => LichManager.Instance.Skill(id)?.Level ?? 1;
         research.SkillXpEarned += (id, xp) => LichManager.Instance.Skill(id)?.GrantXp(xp);
         Session.Register(LichManager.Instance.InitializeGear(content, CryptManager.Instance.Inventory));
         if (WorldManager.Instance is null)
@@ -94,7 +119,10 @@ public partial class GameManager : Node
             Fail("WorldManager autoload is missing (check project.godot [autoload]).");
             return;
         }
-        Session.Register(WorldManager.Instance.Initialize(content, CryptManager.Instance.Stockpile, CryptManager.Instance.Units!));
+        var world = WorldManager.Instance.Initialize(content, CryptManager.Instance.Stockpile, CryptManager.Instance.Units!);
+        Session.Register(world);
+        // Tomes found in the world (Infusion: the first Graveyard clear, placeholder).
+        world.AreaStateChanged += id => { if (world.State(id) == World.AreaState.Cleared) research.OnAreaCleared(id); };
 
         try
         {
@@ -124,6 +152,8 @@ public partial class GameManager : Node
     ///   --add-necromancers=N            add N necromancers to the pool (raises Max if needed)
     ///   --assign=owner:activity:N       assign N necromancers
     ///   --unassign=owner:activity:N     unassign N necromancers
+    ///   --research=id,id,...            research one level of each node now (finds its tome)
+    ///   --start-research=id             start a node on the first free bench
     /// Prints the lich pool afterwards. Used for headless save/reload checks.
     /// </summary>
     private static void RunDebugArgs()
@@ -143,6 +173,15 @@ public partial class GameManager : Node
                 case "--add-necromancers" when long.TryParse(value, out var n):
                     used = true;
                     lich.DebugAddNecromancers(n);
+                    break;
+                case "--research" when CryptManager.Instance.Research is { } research:
+                    used = true;
+                    foreach (var id in value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        GD.Print($"[GameManager] research {id}: {(research.DebugComplete(id) ? "done" : "unknown or at max")}");
+                    break;
+                case "--start-research" when CryptManager.Instance.Research is { } research:
+                    used = true;
+                    GD.Print($"[GameManager] start research {value}: {research.Start(value)}");
                     break;
                 case "--assign" or "--unassign":
                     var parts = value.Split(':');

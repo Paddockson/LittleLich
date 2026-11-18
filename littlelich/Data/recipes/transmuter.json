@@ -1,0 +1,13 @@
+// Transmuter recipes (Workshop): resources and materials only. work = Transmuter work per conversion. Placeholders.
+{
+  "type": "transmutation",
+  "entries": [
+    { "id": "bones_to_coal",  "name": "Bones to Coal",  "inputs": { "bones": 3 },      "output": { "coal": 1 },     "work": 2, "placeholder": true },
+    { "id": "copper_to_iron", "name": "Copper to Iron", "inputs": { "copper_ore": 4 }, "output": { "iron_ore": 1 }, "work": 3, "placeholder": true },
+    { "id": "hide_to_bones",  "name": "Hide to Bones",  "inputs": { "wolf_hide": 1 },  "output": { "bones": 2 },    "work": 2, "placeholder": true },
+    // Summoning gear (research Summon Gear unlocks the whole group). Inputs are placeholders: the old data has none.
+    { "id": "forge_sword", "name": "Forge Sword", "group": "summoning_gear", "inputs": { "iron_bar": 2, "bones": 5 }, "output": { "sword": 1 }, "work": 4, "placeholder": true },
+    { "id": "string_bow",  "name": "String Bow",  "group": "summoning_gear", "inputs": { "wolf_hide": 1, "bones": 5 }, "output": { "bow": 1 },   "work": 4, "placeholder": true },
+    { "id": "carve_staff", "name": "Carve Staff", "group": "summoning_gear", "inputs": { "grave_dust": 2, "bones": 5 }, "output": { "staff": 1 }, "work": 4, "placeholder": true }
+  ]
+}

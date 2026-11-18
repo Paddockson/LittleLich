@@ -1,0 +1,9 @@
+// Research tomes (research revamp, v0.1). Crypt Magic and Spider Sorcery are not loaded yet (placeholder decision).
+// Necromancy is owned at the start; Infusion is found the first time the Graveyard is cleared (placeholder).
+{
+  "type": "tome",
+  "entries": [
+    {"id":"necromancy","name":"Necromancy","note":"Starting tome","starts_owned":true,"skill":"necromancy","placeholder":true},
+    {"id":"infusion","name":"Infusion","note":"Found at the Graveyard","found_by":{"area_cleared":"graveyard"},"skill":"magic","placeholder":true}
+  ]
+}

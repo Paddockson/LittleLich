@@ -62,6 +62,7 @@ public sealed class ContentLoader
         loader.Register<MagicalStorageDefinition>("magical_storage");
         loader.Register<TransmutationDefinition>("transmutation");
         loader.Register<SummonDefinition>("summon");
+        loader.Register<BuildingUpgradeDefinition>("building_upgrade");
         loader.Register<TomeDefinition>("tome");
         loader.Register<ResearchNodeDefinition>("research_node");
         loader.Register<ResearchBenchDefinition>("research_bench");

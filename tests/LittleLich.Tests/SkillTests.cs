@@ -33,6 +33,7 @@ internal sealed class World
     public LittleLich.Crypt.Units.UnitBuilder Units { get; }
     public LittleLich.World.WorldState WorldMap { get; }
     public LittleLich.Gear.ItemUser Items { get; }
+    public LittleLich.Crypt.PassiveIncome Income { get; }
 
     public World(ContentDatabase? content = null)
     {
@@ -41,18 +42,23 @@ internal sealed class World
         Inventory = new Inventory(content);
         Stock = new Stockpile(Storage, Inventory);
         Research = new LittleLich.Crypt.Research.ResearchManager(Lich, Stock, content, Unlocks, () => Ticks.ActiveRecap);
-        Units = new LittleLich.Crypt.Units.UnitBuilder(content, Stock, Unlocks);
+        Units = new LittleLich.Crypt.Units.UnitBuilder(content, Stock, Unlocks) { CostMultiplier = id => LittleLich.Crypt.ResearchStats.CostMultiplier(Lich.Stats, id) };
+        var db = content;   // as CryptManager does
+        StatTargets.IsUnit = id => db.TryGet<UnitDefinitionBase>(id, out var u) && u.IsPlayer;
+        StatTargets.UnitTags = id => db.TryGet<UnitDefinitionBase>(id, out var u) ? u.Tags : System.Array.Empty<string>();
+        Income = new LittleLich.Crypt.PassiveIncome(Lich, Stock, () => Ticks.ActiveRecap);
         Buildings = LittleLich.Crypt.Buildings.BuildingFactory.CreateAll(
             new LittleLich.Crypt.Buildings.CryptContext(Lich, Stock, content, () => Ticks.ActiveRecap) { Unlocks = Unlocks, Units = Units });
         WorldMap = new LittleLich.World.WorldState(content, Stock, Units);
+        WorldMap.AreaStateChanged += id => { if (WorldMap.State(id) == LittleLich.World.AreaState.Cleared) Research.OnAreaCleared(id); };   // as GameManager wires it
         Skills = SkillFactory.CreateAll(new SkillContext(Lich, Stock, content, () => Ticks.ActiveRecap) { Unlocks = Unlocks });
-        Research.SkillLevel = id => Skills.First(s => s.Id == id).Level;     // as GameManager wires it
         Research.SkillXpEarned += (id, xp) => Skills.First(s => s.Id == id).GrantXp(xp);
         Equipment = new LittleLich.Gear.Equipment(Lich, Inventory, content);
         Items = new LittleLich.Gear.ItemUser(Lich, Inventory, content);
         Ticks.TickStarted += (_, _) => Storage.BeginBatch();   // as CryptManager does
         Ticks.TickEnded += (_, n) => Storage.EndBatch(n);
         Ticks.Register(Lich, TickGroup.Lich);
+        Ticks.Register(Income, TickGroup.Buildings, 50);
         var order = 0;
         foreach (var b in Buildings) { order += 100; if (b.Ticks) Ticks.Register(b, TickGroup.Buildings, order); }   // as CryptManager does
         foreach (var g in Skills.OfType<GatheringSkill>()) Ticks.Register(g, TickGroup.Skills, TickOrder.Gathering);
@@ -61,6 +67,13 @@ internal sealed class World
     }
 
     public IEnumerable<ISaveable> Saveables => new ISaveable[] { Lich, Storage, Inventory, Research, Units }.Concat(Buildings).Concat(Skills).Append(Equipment).Append(WorldMap);
+
+    /// <summary>Opens every building, unit and recipe research could unlock, without applying any research effect.</summary>
+    public World OpenAll()
+    {
+        Unlocks.UnlockAll();
+        return this;
+    }
 
     public T Skill<T>() where T : SkillBase => Skills.OfType<T>().Single();
     public MiningManager Mining => Skill<MiningManager>();
@@ -482,19 +495,19 @@ public class SkillContentTests
     [Fact]
     public void Recipes_must_reference_real_stock_and_a_crafting_skill()
     {
-        var e = Fails("""[{ "type": "recipe", "id": "bad", "name": "Bad", "skill": "mining", "inputs": [ { "id": "coal", "count": 1 } ], "output": { "id": "coal" }, "ticks": 1 }]""");
+        var e = Fails("""[{ "type": "recipe", "id": "bad", "name": "Bad", "skill": "mining", "inputs": { "coal": 1 }, "output": { "coal": 1 }, "ticks": 1 }]""");
         Assert.Contains(e.Errors, x => x.Field == "skill");
-        e = Fails("""[{ "type": "recipe", "id": "bad", "name": "Bad", "skill": "smithing", "inputs": [ { "id": "mithril", "count": 1 } ], "output": { "id": "coal" }, "ticks": 1 }]""");
-        Assert.Contains(e.Errors, x => x.Field == "inputs[0].id" && x.Message.Contains("mithril"));
+        e = Fails("""[{ "type": "recipe", "id": "bad", "name": "Bad", "skill": "smithing", "inputs": { "mithril": 1 }, "output": { "coal": 1 }, "ticks": 1 }]""");
+        Assert.Contains(e.Errors, x => x.Field == "inputs.mithril" && x.Message.Contains("mithril"));
     }
 
     [Fact]
     public void Activities_need_a_gathering_skill_a_positive_rate_and_real_output()
     {
-        var e = Fails("""[{ "type": "gathering_activity", "id": "bad", "name": "Bad", "skill": "smithing", "rate": 0, "xp": 1, "output": "coal" }]""");
+        var e = Fails("""[{ "type": "gathering_activity", "id": "bad", "name": "Bad", "skill": "smithing", "rate_per_tick": 0, "xp_per_unit": 1, "output": "coal" }]""");
         Assert.Contains(e.Errors, x => x.Field == "skill");
-        Assert.Contains(e.Errors, x => x.Field == "rate");
-        e = Fails("""[{ "type": "gathering_activity", "id": "bad", "name": "Bad", "skill": "mining", "rate": 1, "xp": 1, "output": "silver" }]""");
+        Assert.Contains(e.Errors, x => x.Field == "rate_per_tick");
+        e = Fails("""[{ "type": "gathering_activity", "id": "bad", "name": "Bad", "skill": "mining", "rate_per_tick": 1, "xp_per_unit": 1, "output": "silver" }]""");
         Assert.Contains(e.Errors, x => x.Field == "output");
     }
 }

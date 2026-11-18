@@ -1,0 +1,7 @@
+// Herbalism. Placeholder numbers.
+{
+  "type": "gathering_activity",
+  "entries": [
+    { "id": "nightshade", "name": "Nightshade Patch", "skill": "herbalism", "level": 1, "rate_per_tick": 0.5, "xp_per_unit": 4, "output": "nightshade", "placeholder": true }
+  ]
+}

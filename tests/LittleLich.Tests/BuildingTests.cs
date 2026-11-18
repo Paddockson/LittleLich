@@ -30,6 +30,7 @@ public class BuildingTests
         var w = new World();
         w.Lich.Load(new SaveData());            // new-game defaults
         foreach (var b in w.Buildings) b.Load(new SaveData());
+        w.OpenAll();                            // research gates buildings; these tests are about the buildings themselves
         return w;
     }
 
@@ -41,61 +42,71 @@ public class BuildingTests
         var w = Fresh();
         Assert.Equal(BuildingIds.All, w.Buildings.Select(b => b.Id));
         Assert.Equal(new[] { "mana_well", "infuser", "soul_well", "transmuter", "summoning_circle", "undead_market" },
-            w.Ticks.Registered.Where(r => r.Group == Core.Ticks.TickGroup.Buildings).Select(r => ((BuildingBase)r.Feature).Id));
+            w.Ticks.Registered.Where(r => r.Group == Core.Ticks.TickGroup.Buildings).Where(r => r.Feature is BuildingBase).Select(r => ((BuildingBase)r.Feature).Id));
     }
 
     [Fact]
-    public void Mana_well_makes_mana_and_the_circle_turns_it_into_necromancers_in_the_free_pool()
+    public void The_opening_research_summoning_then_clicks_raise_the_first_necromancer()
     {
-        var w = Fresh();
+        // A new game (no OpenAll): only the Mana Well is open and there are no necromancers.
+        var w = new World();
+        foreach (var x in w.Saveables) x.Load(new SaveData());
+        var r = w.Research;
         var well = B<ManaWell>(w);
         var circle = B<SummoningCircle>(w);
         Assert.Equal(0, w.Lich.Pool.Total);
+        Assert.Equal(5, w.Lich.Pool.Max);
+        Assert.False(circle.IsUnlocked);
 
-        // No necromancers at all: base work alone bootstraps the game. The well makes 1 mana/tick; the circle
-        // (0.2 work/tick, 5 work per summon) only builds progress once it can pay the 25 mana, so the first
-        // necromancer arrives at tick 49 (25 ticks to afford it + 25 ticks of work, the first overlapping).
-        w.Ticks.RunTicks(10);
-        Assert.Equal(10, w.Storage.Get("mana"));
-        Assert.Equal(0, w.Lich.Pool.Free);
-        for (var i = 0; i < 38; i++) w.Ticks.RunTicks(1);
-        Assert.Equal(0, w.Lich.Pool.Free);
-        w.Ticks.RunTicks(1);
-        Assert.Equal(1, w.Lich.Pool.Free);       // first necromancer, free and ready
-        Assert.Equal(24, w.Storage.Get("mana")); // 49 made, 25 spent
+        // The free bench works 1 per tick with nobody on it: Summoning (4 work), then Soul Harvesting (7).
+        Assert.Equal(Crypt.Research.StartResult.Ok, r.Start("summoning"));
+        w.Ticks.RunTicks(4);
+        Assert.True(circle.IsUnlocked);
+        Assert.Equal("necromancer", circle.SummonSlots[0].UnitId);
+        Assert.Equal(Crypt.Research.StartResult.Ok, r.Start("soul_harvesting"));
+        w.Ticks.RunTicks(7);
+        w.Ticks.RunTicks(13);                               // 2 souls per tick
+        Assert.Equal(26, w.Storage.Get("souls"));
+        Assert.Equal(0, w.Storage.Get("mana"));             // nothing makes mana on its own
 
-        // Staff the well with that necromancer: 1.5 mana/tick.
+        // Click the well for 50 mana, then the circle 5 times (5 power, 50 mana and 25 souls per necromancer).
+        for (var i = 0; i < 50; i++) Assert.Equal(1, well.Click());
+        for (var i = 0; i < 4; i++) Assert.True(circle.Click());
+        Assert.Equal(0.8, circle.SummonSlots[0].Fraction, 9);
+        Assert.True(circle.Click());                        // the bar fills and summons at once
+        Assert.Equal(1, w.Lich.Pool.Free);                  // first necromancer, free and ready
+        Assert.Equal(0, w.Storage.Get("mana"));
+        Assert.Equal(1, w.Storage.Get("souls"));
+
+        // Staff the well with it (2 mana per tick) and the circle with another (0.2 power: one every 25 ticks).
         Assert.Equal(1, well.AddNecromancer(1));
-        Assert.Equal(0, w.Lich.Pool.Free);
         Assert.Equal(1, w.Lich.Pool.GetAssigned("mana_well", "main"));
-        var free = w.Lich.Pool.Free;
+        w.Lich.DebugAddNecromancers(1);
+        Assert.Equal(1, circle.AddNecromancer(1));
         w.Ticks.RunTicks(100);
-        Assert.True(w.Lich.Pool.Free > free);
+        Assert.Equal(3, w.Lich.Pool.Free);                  // the pool is full at 5
         Assert.Equal(BuildingStatus.Running, well.Status);
-        Assert.Equal(BuildingStatus.Running, circle.Status);
+        Assert.Equal(BuildingStatus.PoolFull, circle.Status);
     }
 
     [Fact]
-    public void Summoning_stops_at_the_pool_max_and_at_the_target()
+    public void Summoning_waits_with_a_full_bar_at_the_pool_max()
     {
         var w = Fresh();
         var circle = B<SummoningCircle>(w);
         w.Storage.Add("mana", 1_000);
-        circle.DebugSetLevel(1);
+        w.Storage.Add("souls", 100);
         w.Lich.DebugAddNecromancers(3);
-        circle.AddNecromancer(3);                   // work 0.2 + 3 x 0.2 = 0.8/tick
-        circle.Target = 6;
+        circle.AddNecromancer(3);                   // 3 x 0.2 = 0.6 power/tick
         w.Ticks.RunTicks(1_000);
-        Assert.Equal(6, w.Lich.Pool.Total);
+        Assert.Equal(w.Lich.Pool.Max, w.Lich.Pool.Total);  // 5
         Assert.Equal(BuildingStatus.PoolFull, circle.Status);
-        Assert.Equal("target", circle.StatusDetail);
-        var mana = w.Storage.Get("mana");
-
-        circle.Target = 0;
-        w.Ticks.RunTicks(1_000);
-        Assert.Equal(w.Lich.Pool.Max, w.Lich.Pool.Total);  // 10
         Assert.Equal("max", circle.StatusDetail);
-        Assert.True(w.Storage.Get("mana") < mana);
+        Assert.Equal(1, circle.SummonSlots[0].Fraction);
+        Assert.Equal(SummoningCircle.PoolFull, circle.SummonSlots[0].WaitingFor);
+        Assert.Equal(1_000 - 2 * 50, w.Storage.Get("mana"));   // 2 summoned (50 mana, 25 souls), nothing spent while waiting
+        Assert.Equal(100 - 2 * 25, w.Storage.Get("souls"));
+        Assert.False(circle.Click());                       // the only slot is full: the click goes nowhere
     }
 
     [Fact]
@@ -103,9 +114,9 @@ public class BuildingTests
     {
         var w = Fresh();
         var circle = B<SummoningCircle>(w);
-        Assert.Equal(10, w.Lich.Pool.Max);
+        Assert.Equal(5, w.Lich.Pool.Max);
         circle.DebugSetLevel(3);
-        Assert.Equal(30, w.Lich.Pool.Max);
+        Assert.Equal(25, w.Lich.Pool.Max);
         Assert.Single(w.Lich.Stats.Modifiers, m => m.Source == SummoningCircle.Source);
     }
 
@@ -115,9 +126,10 @@ public class BuildingTests
         var w = Fresh();
         var well = B<ManaWell>(w);
         var circle = B<SummoningCircle>(w);
-        circle.Target = 1; // keep the circle from eating the mana
+        circle.ClearSlot(0); // keep the circle from eating the mana
+        well.DebugSetLevel(5);                          // holds 9
         w.Lich.DebugAddNecromancers(5);
-        Assert.Equal(5, well.AddNecromancer(5));        // 1 + 5 x 0.5 = 3.5 mana/tick
+        Assert.Equal(5, well.AddNecromancer(5));        // 5 x 2 x 1.0004 = 10.002 mana/tick
         w.Storage.Add("mana", 990);
         w.Ticks.RunTicks(10);
         Assert.Equal(1_000, w.Storage.Get("mana"));
@@ -135,30 +147,30 @@ public class BuildingTests
     public void Staff_is_limited_by_slots()
     {
         var w = Fresh();
-        var well = B<ManaWell>(w);
+        var well = B<Infuser>(w);                       // formula places: 3 + 1 per level
         w.Lich.DebugAddNecromancers(100);
-        Assert.Equal(5, well.Slots);
-        Assert.Equal(5, well.AddNecromancer(100));
+        Assert.Equal(3, well.Slots);
+        Assert.Equal(3, well.AddNecromancer(100));
         Assert.Equal(0, well.AddNecromancer(1));
         well.DebugSetLevel(3);
-        Assert.Equal(9, well.Slots);
-        Assert.Equal(4, well.AddNecromancer(100));
-        Assert.Equal(91, w.Lich.Pool.Free);
-        Assert.Equal(9, well.RemoveNecromancer(50));
+        Assert.Equal(5, well.Slots);
+        Assert.Equal(2, well.AddNecromancer(100));
+        Assert.Equal(95, w.Lich.Pool.Free);
+        Assert.Equal(5, well.RemoveNecromancer(50));
     }
 
     [Fact]
     public void Upgrades_cost_coins_and_grow()
     {
         var w = Fresh();
-        var well = B<ManaWell>(w);
-        Assert.Equal(50, well.UpgradeCost);
+        var well = B<SoulWell>(w);                      // formula costs: 100 gold x 1.5 per level
+        Assert.Equal(100, well.UpgradeCost);
         Assert.False(well.TryUpgrade());                // no coins
         w.Storage.Add("gold", 1_000);
         Assert.True(well.TryUpgrade());
         Assert.Equal(2, well.Level);
-        Assert.Equal(950, w.Storage.Get("gold"));
-        Assert.Equal(75, well.UpgradeCost);
+        Assert.Equal(900, w.Storage.Get("gold"));
+        Assert.Equal(150, well.UpgradeCost);
         Assert.Equal(1.1, well.LevelMultiplier, 9);
     }
 
@@ -178,7 +190,7 @@ public class BuildingTests
     public void Infuser_and_soul_well_chain_mana_into_souls()
     {
         var w = Fresh();
-        B<SummoningCircle>(w).Target = 1;
+        B<SummoningCircle>(w).ClearSlot(0);
         w.Lich.DebugAddNecromancers(10);
         var infuser = B<Infuser>(w);
         infuser.AddNecromancer(2);                     // 1 infusion/tick, 2 mana each
@@ -337,10 +349,14 @@ public class BuildingSaveTests : IDisposable
     {
         var (s1, a) = Session();
         s1.NewGame(1);
+        // Research opens what this test uses (and is saved with it): the circle and wisps, Storage, Transmuter, Market.
+        foreach (var n in new[] { "summoning", "basic_infusion", "mana_storage", "transmute", "undead_market" }) Assert.True(a.Research.DebugComplete(n));
         a.Lich.DebugAddNecromancers(20);
         var circle = a.Buildings.OfType<SummoningCircle>().Single();
         circle.DebugSetLevel(4);
-        circle.Target = 25;
+        Assert.Equal(3, circle.SummonSlots.Count);          // slots_by_level: 3 from level 3
+        Assert.True(circle.SetUnit(1, "wisp"));            // wisp: from Summoning
+        a.Buildings.OfType<ManaWell>().Single().DebugSetLevel(4);   // holds 6
         a.Buildings.OfType<ManaWell>().Single().AddNecromancer(4);
         a.Buildings.OfType<Transmuter>().Single().Select("bones_to_coal");
         a.Buildings.OfType<UndeadMarket>().Single().SetSell("coal", true, 50);
@@ -357,7 +373,7 @@ public class BuildingSaveTests : IDisposable
         Assert.Equal(1_500, b.Storage.Cap("mana"));
         Assert.Equal(a.Storage.Get("mana"), b.Storage.Get("mana"));   // above the base cap, kept on load
         Assert.Equal(4, b.Buildings.OfType<ManaWell>().Single().Staffed);
-        Assert.Equal(25, b.Buildings.OfType<SummoningCircle>().Single().Target);
+        Assert.Equal(new[] { "necromancer", "wisp", null }, b.Buildings.OfType<SummoningCircle>().Single().SummonSlots.Select(s => s.UnitId));
         Assert.Equal("bones_to_coal", b.Buildings.OfType<Transmuter>().Single().SelectedRecipe);
         Assert.Equal(new SellEntry("coal", true, 50), b.Buildings.OfType<UndeadMarket>().Single().Entry("coal"));
 
@@ -376,13 +392,13 @@ public class BuildingContentTests
 
     [Fact]
     public void Transmutations_are_resources_only() =>
-        Assert.Contains(Fails("""[{ "type": "transmutation", "id": "x", "name": "X", "inputs": [ { "id": "coal", "count": 1 } ], "output": { "id": "rot_bomb", "count": 1 }, "work": 1 }]""").Errors,
+        Assert.Contains(Fails("""[{ "type": "transmutation", "id": "x", "name": "X", "inputs": { "coal": 1 }, "output": { "rot_bomb": 1 }, "work": 1 }]""").Errors,
             e => e.Message.Contains("resources and materials only"));
 
     [Fact]
     public void Unknown_building_ids_and_summons_are_rejected()
     {
         Assert.Contains(Fails("""[{ "type": "mana_well", "id": "mana_tower", "name": "X" }]""").Errors, e => e.Field == "id");
-        Assert.Contains(Fails("""[{ "type": "summon", "id": "skeleton", "name": "S", "summons": "skeleton", "costs": [], "work": 1 }]""").Errors, e => e.Field == "summons");
+        Assert.Contains(Fails("""[{ "type": "summon", "id": "skeleton", "name": "S", "summons": "skeleton", "summon_cost": {}, "summon_required": 1 }]""").Errors, e => e.Field == "summons");
     }
 }

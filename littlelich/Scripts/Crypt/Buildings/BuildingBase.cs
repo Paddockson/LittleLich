@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using LittleLich.Content;
 using LittleLich.Content.Definitions;
 using LittleLich.Core;
@@ -75,15 +77,37 @@ public abstract class BuildingBase : ITickable, ISaveable
     /// <summary>(building, change in staff).</summary>
     public event Action<BuildingBase, long>? StaffChanged;
 
+    // ---- Research gate (research revamp) ----
+
+    /// <summary>
+    /// What research opens this building: (feature, "summoning") for the Summoning Circle, (building, id) for the
+    /// others. Buildings no research unlocks (the Mana Well) are open from the start.
+    /// </summary>
+    public virtual (string Kind, string Id) UnlockKey => (Unlocks.Building, Id);
+
+    /// <summary>False while research has not opened it: the Workshop does not draw it, it takes no staff and does not tick.</summary>
+    public bool IsUnlocked => Context.Unlocks.IsUnlocked(UnlockKey.Kind, UnlockKey.Id);
+
     // ---- Staff ----
 
-    public long Slots => Definition.BaseSlots + Definition.SlotsPerLevel * (Level - 1);
+    /// <summary>
+    /// The most necromancers the building holds at its level (the level table's max_necromancers, if it has one),
+    /// raised by capacity research (Necro Capacity +1 each, Magical Efficiency x2 for the Mana Well, Dark Empowerment x2).
+    /// </summary>
+    public long Slots => SlotsAt(Level);
+
+    public long SlotsAt(int level) => ResearchStats.Room(Context.Lich.Stats, Id, BaseSlotsAt(level));
+
+    /// <summary>Places at a level before research.</summary>
+    public long BaseSlotsAt(int level) => Definition.Row(level) is { } r ? r.MaxNecromancers
+        : Definition.BaseSlots + Definition.SlotsPerLevel * (level - 1);
     public long Staffed => Context.Lich.Pool.GetAssigned(Id, StaffActivity);
     public long FreeSlots => Math.Max(0, Slots - Staffed);
 
     /// <summary>Staffs up to <paramref name="count"/> necromancers, limited by free slots and the free pool. Returns how many.</summary>
     public long AddNecromancer(long count)
     {
+        if (!IsUnlocked) return 0;
         var n = Context.Lich.TryAssign(Id, StaffActivity, Math.Min(count, FreeSlots));
         if (n > 0) StaffChanged?.Invoke(this, n);
         return n;
@@ -98,36 +122,72 @@ public abstract class BuildingBase : ITickable, ISaveable
 
     // ---- Work ----
 
-    public double LevelMultiplier => 1 + Definition.LevelBonus * (Level - 1);
+    public double LevelMultiplier => 1 + LevelBonusAt(Level);
+
+    /// <summary>Output bonus at a level: the table's output_bonus, or level_bonus x (level - 1). 0.1 = +10%.</summary>
+    public double LevelBonusAt(int level) => Definition.Row(level) is { } r ? r.OutputBonus : Definition.LevelBonus * (level - 1);
 
     /// <summary>Work per tick right now (staff beyond the slot count, e.g. after a load with fewer slots, still counts only up to Slots).</summary>
     public double WorkPerTick =>
-        (Definition.BaseWork + Math.Min(Staffed, Slots) * Definition.WorkPerNecromancer) * LevelMultiplier;
+        (Definition.BaseWork + Math.Min(Staffed, Slots) * WorkPerNecromancer) * LevelMultiplier * OutputModifier;
+
+    /// <summary>Work each necromancer adds per tick before bonuses (the definition's, plus research for some buildings).</summary>
+    public virtual double WorkPerNecromancer => Definition.WorkPerNecromancer;
+
+    /// <summary>Research multipliers on work (efficiency, output, necromancer efficiency for this building). 1 with none.</summary>
+    public virtual double OutputModifier => ResearchStats.Efficiency(Context.Lich.Stats, Id, Math.Min(Staffed, Slots));
 
     protected long WorkMicroPerTick => FixedPoint.ToMicro(WorkPerTick);
 
     // ---- Upgrades ----
 
-    /// <summary>Definition max level plus any extra levels research has unlocked.</summary>
-    public int MaxLevel => Definition.MaxLevel + Context.Unlocks.BuildingLevelBonus(Id);
+    /// <summary>This building's level upgrade (Data/upgrades.json; content validation guarantees there is one).</summary>
+    public BuildingUpgradeDefinition Upgrade =>
+        _upgrade ??= Context.Content.All<BuildingUpgradeDefinition>().FirstOrDefault(u => u.Building == Id)
+                     ?? throw new InvalidOperationException($"No building_upgrade for '{Id}'.");
+    private BuildingUpgradeDefinition? _upgrade;
 
-    public bool IsMaxLevel => Level >= MaxLevel;
-
-    /// <summary>Gold for the next level.</summary>
-    public long UpgradeCost
+    /// <summary>Upgrade max level plus building_and_node_level_cap from research (never past the level table's last row).</summary>
+    public int MaxLevel
     {
         get
         {
-            var c = Definition.UpgradeCost * Math.Pow(Definition.UpgradeGrowth, Level - 1);
-            return c >= long.MaxValue ? long.MaxValue : (long)Math.Round(c);
+            var max = Upgrade.MaxLevel + ResearchStats.LevelCapBonus(Context.Lich.Stats);
+            return Definition.HasLevelTable ? Math.Min(max, Definition.Levels.Count) : max;
         }
     }
 
-    /// <summary>Spends gold and raises the level. False if at max level or short of gold.</summary>
+    public bool IsMaxLevel => Level >= MaxLevel;
+
+    /// <summary>What the next level costs: the next level table row's cost, or the upgrade's cost formula.</summary>
+    public IReadOnlyList<ItemAmount> UpgradeCosts =>
+        Definition.HasLevelTable
+            ? Definition.Row(Level + 1)!.Cost.Select(c => new ItemAmount { Id = c.Key, Count = c.Value }).ToList()
+            : Upgrade.CostAt(Level);
+
+    /// <summary>
+    /// True when <see cref="TryUpgrade"/> would succeed; otherwise a short reason for the UI
+    /// ("Highest level reached", "Not enough mana yet").
+    /// </summary>
+    public bool CanUpgrade(out string reason)
+    {
+        if (!IsUnlocked) { reason = "Not researched yet"; return false; }
+        if (IsMaxLevel) { reason = "Highest level reached"; return false; }
+        var shortOf = UpgradeCosts.FirstOrDefault(c => Context.Stock.Get(c.Id) < c.Count);
+        reason = shortOf is null ? "" : $"Not enough {StockIds.NameOf(Context.Content, shortOf.Id).ToLowerInvariant()} yet";
+        return shortOf is null;
+    }
+
+    /// <summary>The gold part of the next level's cost (0 if it costs no gold).</summary>
+    public long UpgradeCost => UpgradeCosts.FirstOrDefault(c => c.Id == Gold)?.Count ?? 0;
+
+    public bool CanAffordUpgrade => UpgradeCosts.All(c => Context.Stock.Get(c.Id) >= c.Count);
+
+    /// <summary>Pays every cost and raises the level, or does nothing. False if at max level or short of anything.</summary>
     public bool TryUpgrade()
     {
-        if (IsMaxLevel) return false;
-        if (!Context.Storage.TrySpend(Gold, UpgradeCost)) return false;
+        if (!IsUnlocked || IsMaxLevel || !CanAffordUpgrade) return false;
+        foreach (var c in UpgradeCosts) Context.Stock.TryRemove(c.Id, c.Count);
         SetLevel(Level + 1);
         return true;
     }
@@ -157,7 +217,14 @@ public abstract class BuildingBase : ITickable, ISaveable
         StatusChanged?.Invoke(this);
     }
 
-    public abstract void Tick(long ticks);
+    /// <summary>Locked buildings do nothing (and stay Idle); open ones run <see cref="TickUnlocked"/>.</summary>
+    public void Tick(long ticks)
+    {
+        if (!IsUnlocked) { SetStatus(Ticks ? BuildingStatus.Idle : BuildingStatus.Passive); return; }
+        TickUnlocked(ticks);
+    }
+
+    protected abstract void TickUnlocked(long ticks);
 
     // ---- Save ----
 

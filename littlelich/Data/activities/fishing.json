@@ -1,0 +1,7 @@
+// Fishing. Placeholder numbers.
+{
+  "type": "gathering_activity",
+  "entries": [
+    { "id": "eel_pool", "name": "Eel Pool", "skill": "fishing", "level": 1, "rate_per_tick": 0.4, "xp_per_unit": 5, "output": "raw_eel", "placeholder": true }
+  ]
+}

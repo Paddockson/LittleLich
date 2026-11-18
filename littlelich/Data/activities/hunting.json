@@ -1,0 +1,8 @@
+// Hunting. The Boneyard is locked behind the Ossuary research node. Placeholder numbers.
+{
+  "type": "gathering_activity",
+  "entries": [
+    { "id": "wolf_den", "name": "Wolf Den", "skill": "hunting", "level": 1, "rate_per_tick": 0.3, "xp_per_unit": 6, "output": "wolf_hide", "placeholder": true },
+    { "id": "boneyard", "name": "Boneyard", "skill": "hunting", "level": 1, "rate_per_tick": 0.3, "xp_per_unit": 4, "output": "bones",     "placeholder": true }
+  ]
+}

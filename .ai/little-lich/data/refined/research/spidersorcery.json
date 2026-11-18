@@ -1,0 +1,269 @@
+{
+  "tome": "spidersorcery",
+  "nodes": [
+    {
+      "id": "web_slinger",
+      "tome": "spidersorcery",
+      "name": "Web Slinger",
+      "description": "Unlock the spell Web Slinger. Every 10s webs all enemies, slowing them for 3s.",
+      "requires": [],
+      "icon": "res://Art/Research/Icons/SpiderSorcery/web_slinger.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "spell",
+          "id": "web_slinger"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 0.0,
+        "y": 0
+      },
+      "kind": "unlock",
+      "work": 625,
+      "unlock_text": "Unlock the spell Web Slinger. Every 10s webs all enemies, slowing them for 3s."
+    },
+    {
+      "id": "spider_eyes",
+      "tome": "spidersorcery",
+      "name": "Spider Eyes",
+      "description": "+3 Focus.",
+      "requires": [
+        "web_slinger"
+      ],
+      "icon": "res://Art/Research/Icons/SpiderSorcery/spider_eyes.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "insight",
+          "op": "add",
+          "value": 3
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 0.5,
+        "y": 1
+      },
+      "kind": "unlock",
+      "work": 1500,
+      "unlock_text": "+3 Focus."
+    },
+    {
+      "id": "summon_warrior",
+      "tome": "spidersorcery",
+      "name": "Summon Warrior",
+      "description": "Unlock the ability to summon Warrior Crypt Spiders.",
+      "requires": [
+        "web_slinger"
+      ],
+      "icon": "res://Art/Research/Icons/SpiderSorcery/summon_warrior_spider.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "warrior_crypt_spider"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 1.5,
+        "y": 1
+      },
+      "kind": "unlock",
+      "work": 1500,
+      "unlock_text": "Unlock the ability to summon Warrior Crypt Spiders."
+    },
+    {
+      "id": "silk_beds",
+      "tome": "spidersorcery",
+      "name": "Silk Beds",
+      "description": "+20 max necromancers.",
+      "requires": [
+        "web_slinger"
+      ],
+      "icon": "res://Art/Research/Icons/SpiderSorcery/silk_beds.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_necromancers",
+          "op": "add",
+          "value": 20
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -0.5,
+        "y": 1
+      },
+      "kind": "unlock",
+      "work": 1500,
+      "unlock_text": "+20 max necromancers."
+    },
+    {
+      "id": "poison_spray",
+      "tome": "spidersorcery",
+      "name": "Poison Spray",
+      "description": "Unlock the spell Poison Spray. Every 10s poisons all enemies for 2s.",
+      "requires": [
+        "web_slinger"
+      ],
+      "icon": "res://Art/Research/Icons/SpiderSorcery/poison_spray.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "spell",
+          "id": "poison_spray"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -1.5,
+        "y": 1
+      },
+      "kind": "unlock",
+      "work": 1500,
+      "unlock_text": "Unlock the spell Poison Spray. Every 10s poisons all enemies for 2s."
+    },
+    {
+      "id": "summon_shield",
+      "tome": "spidersorcery",
+      "name": "Summon Shield",
+      "description": "Unlock the ability to summon Spider Shields.",
+      "requires": [
+        "summon_warrior"
+      ],
+      "icon": "res://Art/Research/Icons/SpiderSorcery/summon_shield_spider.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "spider_shield"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 1.5,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 3125,
+      "unlock_text": "Unlock the ability to summon Spider Shields."
+    },
+    {
+      "id": "chitin_armour",
+      "tome": "spidersorcery",
+      "name": "Chitin Armour",
+      "description": "Unlock the spell Chitin Armour. Every 20s all allies gain armour equal to 5% of their max HP for 20s.",
+      "requires": [
+        "silk_beds"
+      ],
+      "icon": "res://Art/Research/Icons/SpiderSorcery/chitin_armour.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "spell",
+          "id": "chitin_armour"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -0.5,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 3125,
+      "unlock_text": "Unlock the spell Chitin Armour. Every 20s all allies gain armour equal to 5% of their max HP for 20s."
+    },
+    {
+      "id": "spider_blood_coating",
+      "tome": "spidersorcery",
+      "name": "Spider Blood Coating",
+      "description": "All allies have a 5% chance on hit to inflict 5s of Poison.",
+      "requires": [
+        "poison_spray"
+      ],
+      "icon": "res://Art/Research/Icons/SpiderSorcery/spider_blood_coating.png",
+      "effects": [
+        {
+          "type": "trigger",
+          "on": "ally_hit",
+          "chance": 0.05,
+          "status": "poison",
+          "duration": 5
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -1.5,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 3125,
+      "unlock_text": "All allies have a 5% chance on hit to inflict 5s of Poison."
+    },
+    {
+      "id": "summon_cannon",
+      "tome": "spidersorcery",
+      "name": "Summon Cannon",
+      "description": "Unlock the ability to summon Cannon Spiders.",
+      "requires": [
+        "summon_shield"
+      ],
+      "icon": "res://Art/Research/Icons/SpiderSorcery/summon_cannon_spider.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "cannon_spider"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 1.5,
+        "y": 3
+      },
+      "kind": "unlock",
+      "work": 5000,
+      "unlock_text": "Unlock the ability to summon Cannon Spiders."
+    }
+  ],
+  "layout_note": "layout.x is a column index (can be fractional, 0 = centre line), layout.y is the layer (0 = root, grows upward). Generated, tweak by hand."
+}

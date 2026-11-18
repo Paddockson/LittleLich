@@ -25,10 +25,11 @@ public class UnitContentTests
         Assert.IsType<WildUnitDefinition>(db.Get<UnitDefinitionBase>("wild_brute"));
         Assert.IsType<StructureUnitDefinition>(db.Get<UnitDefinitionBase>("graveyard_gate"));
         Assert.Equal("units/bases.json", db.Get<UnitDefinitionBase>("skeleton").SourceFile);
-        Assert.Equal(new[] { "strike", "brace" }, db.Get<UnitDefinitionBase>("skeleton").ResolvedActions.Select(a => a.Id));
+        Assert.Equal(new[] { "skeleton_attack" }, db.Get<UnitDefinitionBase>("skeleton").ResolvedActions.Select(a => a.Id));
         var players = db.All<UnitDefinitionBase>().Where(u => u.IsPlayer).Select(u => u.Id).ToList();
-        Assert.InRange(players.Count, 3, 4);
-        Assert.Contains("bone_archer", players);
+        Assert.Equal(10, players.Count);                       // the bodies research unlocks (old game data)
+        Assert.Contains("skeleton_archer", players);
+        // Every body names the research node that unlocks it.
         Assert.All(db.All<UnitDefinitionBase>().Where(u => u.IsPlayer), u => Assert.NotNull(u.Unlock?.Research));
     }
 
@@ -38,7 +39,7 @@ public class UnitContentTests
         var db = ContentWith("""
             [ { "type": "battle_action", "id": "claw", "name": "Claw", "cooldown_seconds": 1.5, "effect": "damage", "value": 4, "target": "front", "range": "melee" },
               { "type": "undead", "id": "ghoul", "name": "Ghoul", "side": "player", "role": "flanker", "hp": 30,
-                "actions": [ "claw", "brace" ], "weapon_slots": [ "weapon" ], "armour_slots": [], "mana_cost": 9 },
+                "actions": [ "claw", "brace" ], "weapon_slots": [ "weapon" ], "armour_slots": [], "summon_cost": { "mana": 9 } },
               { "type": "boss", "id": "bone_king", "name": "Bone King", "side": "enemy", "hp": 400, "actions": [ "smash", "hex" ] } ]
             """);
         var stock = new LittleLich.Crypt.Stockpile(new LittleLich.Crypt.Storage(db), new LittleLich.Crypt.Inventory(db));
@@ -73,15 +74,15 @@ public class UnitContentTests
     {
         var e = Fails("""[ { "type": "undead", "id": "ghoul", "name": "Ghoul", "side": "player", "hp": 30, "unlock": { "research": "nec2_ghouls" } } ]""");
         Assert.Contains(e.Errors, x => x.Field == "unlock.research" && x.Message.Contains("nec2_ghouls"));
-        e = Fails("""[ { "type": "undead", "id": "ghoul", "name": "Ghoul", "side": "player", "hp": -3, "mana_cost": -1, "summon_work": 0 } ]""");
+        e = Fails("""[ { "type": "undead", "id": "ghoul", "name": "Ghoul", "side": "player", "hp": -3, "summon_cost": { "mana": -1 }, "summon_required": 0 } ]""");
         Assert.Contains(e.Errors, x => x.Field == "hp");
-        Assert.Contains(e.Errors, x => x.Field == "mana_cost");
-        Assert.Contains(e.Errors, x => x.Field == "summon_work");
-        e = Fails("""[ { "type": "wild", "id": "bandit", "name": "Bandit", "side": "enemy", "hp": 10, "mana_cost": 5, "weapon_slots": [ "weapon" ] } ]""");
+        Assert.Contains(e.Errors, x => x.Field == "summon_cost");
+        Assert.Contains(e.Errors, x => x.Field == "summon_required");
+        e = Fails("""[ { "type": "wild", "id": "bandit", "name": "Bandit", "side": "enemy", "hp": 10, "summon_cost": { "mana": 5 }, "weapon_slots": [ "weapon" ] } ]""");
         Assert.Contains(e.Errors, x => x.Field == "side");
         e = Fails("""[ { "type": "structure", "id": "wall", "name": "Wall", "side": "enemy", "hp": 10, "actions": [ "strike" ] } ]""");
         Assert.Contains(e.Errors, x => x.Field == "actions" && x.Message.Contains("no actions"));
-        e = Fails("""[ { "type": "research_node", "tome": "necromancy_1", "id": "x", "name": "X", "requires": [ "nec1_grave_lore" ], "effects": [ { "type": "unlock_unit", "id": "wild_brute" } ] } ]""");
+        e = Fails("""[ { "type": "research_node", "tome": "necromancy", "id": "x", "name": "X", "requires": [ "summoning" ], "effects": [ { "type": "unlock", "kind": "unit", "id": "wild_brute" } ] } ]""");
         Assert.Contains(e.Errors, x => x.Field == "effects[0].id" && x.Message.Contains("no player unit"));
     }
 
@@ -90,13 +91,13 @@ public class UnitContentTests
     {
         var w = new World();
         foreach (var s in w.Saveables) s.Load(new LittleLich.Core.SaveData());
-        Assert.True(w.Units.IsBaseLocked("bone_archer"));
-        w.Research.DebugComplete("nec1_grave_lore");
-        w.Research.DebugComplete("nec1_raise_skeletons");
+        Assert.True(w.Units.IsBaseLocked("skeleton_archer"));
+        w.Research.DebugComplete("summoning");
+        w.Research.DebugComplete("animate_bones");
         Assert.False(w.Units.IsBaseLocked("skeleton"));
-        Assert.True(w.Units.IsBaseLocked("bone_archer"));
-        w.Research.DebugComplete("nec1_bone_archers");
-        Assert.False(w.Units.IsBaseLocked("bone_archer"));
-        Assert.Equal(BuildResult.Ok, w.Units.Build("bone_archer").Result);
+        Assert.True(w.Units.IsBaseLocked("skeleton_archer"));
+        w.Research.DebugComplete("skeleton_archer");
+        Assert.False(w.Units.IsBaseLocked("skeleton_archer"));
+        Assert.Equal(BuildResult.Ok, w.Units.Build("skeleton_archer").Result);
     }
 }

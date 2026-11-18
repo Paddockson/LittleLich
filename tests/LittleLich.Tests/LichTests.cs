@@ -240,7 +240,7 @@ public class LichStateTests : IDisposable
     public void Max_necromancers_stat_drives_the_pool_max()
     {
         var lich = new LichState();
-        lich.AddModifier(new Modifier(LichStats.MaxNecromancers, ModifierOp.Add, 90, "research"));
+        lich.AddModifier(new Modifier(LichStats.MaxNecromancers, ModifierOp.Add, 95, "research"));   // base 5
         Assert.Equal(100, lich.Pool.Max);
         lich.AddModifier(new Modifier(LichStats.MaxNecromancers, ModifierOp.Mul, 1e12, "silly"));
         Assert.Equal(NecromancerPool.HardCap, lich.Pool.Max);

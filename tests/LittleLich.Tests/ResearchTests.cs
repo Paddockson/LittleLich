@@ -4,215 +4,346 @@ using System.Linq;
 using LittleLich.Content;
 using LittleLich.Content.Definitions;
 using LittleLich.Core;
+using LittleLich.Core.Lich;
 using LittleLich.Core.Saves;
 using LittleLich.Crypt.Buildings;
 using LittleLich.Crypt.Research;
-using LittleLich.Skills;
 using Xunit;
 
 namespace LittleLich.Tests;
 
+/// <summary>Research revamp: tomes, visibility, benches, upgrade nodes, effects, batching.</summary>
 public class ResearchTests
 {
     private static World Fresh()
     {
         var w = new World();
-        foreach (var s in w.Saveables) s.Load(new SaveData());   // new-game state
+        foreach (var s in w.Saveables) s.Load(new SaveData());
         return w;
     }
 
-    /// <summary>Starts a node on bench 0 with 1 necromancer, paying with debug stock. Returns ticks until it completes.</summary>
-    private static void Staff(World w, int bench = 0, long n = 1)
+    private static T B<T>(World w) where T : BuildingBase => w.Buildings.OfType<T>().Single();
+
+    private static void Done(World w, params string[] ids)
     {
-        w.Lich.DebugAddNecromancers(n);
-        Assert.Equal(n, w.Research.AddNecromancer(bench, n));
+        foreach (var id in ids) Assert.True(w.Research.DebugComplete(id), id);
     }
 
     [Fact]
-    public void Necromancy_1_has_about_ten_nodes_and_one_root()
+    public void Two_tomes_load_with_one_root_each_and_only_necromancy_is_owned()
     {
-        var t = World.SampleContent.All<ResearchNodeDefinition>().Where(n => n.Tome == "necromancy_1").ToList();
-        Assert.InRange(t.Count, 8, 14);
-        Assert.Single(t, n => n.Requires.Count == 0);
-        var w = Fresh();
-        Assert.Equal(NodeState.Available, w.Research.State("nec1_grave_lore"));
-        Assert.Equal(NodeState.Locked, w.Research.State("nec1_raise_skeletons"));
-        Assert.Single(w.Research.Benches);
+        var r = Fresh().Research;
+        Assert.Equal(new[] { "necromancy", "infusion" }, r.AllTomes.Select(t => t.Id));
+        Assert.Equal(33, r.AllTomes[0].Nodes.Count);
+        Assert.Equal(27, r.AllTomes[1].Nodes.Count);
+        Assert.IsType<NecromancyTome>(r.AllTomes[0]);
+        Assert.IsType<InfusionTome>(r.AllTomes[1]);
+        Assert.Equal(new[] { "necromancy" }, r.Tomes.Select(t => t.Id));
+        Assert.Equal(21, r.AllTomes.SelectMany(t => t.Nodes).Count(n => n.IsUpgrade));   // the two Research Assistance nodes are one-off
+        Assert.Equal(2, r.Node("mage_hand_1")!.TimeMultiplier);
     }
 
     [Fact]
-    public void Researching_a_node_spends_its_cost_and_completes_after_its_work()
+    public void Every_node_of_a_found_tome_is_shown_and_locked_ones_wait_for_their_requirements()
     {
-        var w = Fresh();
-        Staff(w);
-        Assert.Equal(StartResult.CannotAfford, w.Research.Start("nec1_grave_lore"));
-        w.Storage.Add("mana", 50);
-        Assert.Equal(StartResult.Ok, w.Research.Start("nec1_grave_lore"));
-        Assert.Equal(30, w.Storage.Get("mana"));   // 20 spent up front
-        Assert.Equal(NodeState.Researching, w.Research.State("nec1_grave_lore"));
-        Assert.Equal(StartResult.NotAvailable, w.Research.Start("nec1_grave_lore"));
+        var r = Fresh().Research;
+        var necromancy = r.AllTomes[0].Nodes.Select(n => n.Id).ToList();
+        Assert.All(necromancy, id => Assert.True(r.IsVisible(id), id));            // plan ahead: the whole tree
+        Assert.Equal(NodeState.Available, r.State("summoning"));
+        Assert.Equal(NodeState.Locked, r.State("dark_recruitment"));
+        Assert.Equal(new[] { "soul_harvesting" }, r.MissingRequirements("dark_recruitment"));
+        Assert.Equal(StartResult.NotAvailable, r.Start("dark_recruitment"));
+        Assert.Equal(NodeState.Hidden, r.State("basic_infusion"));                 // Infusion not found yet
+        Assert.False(r.IsVisible("basic_infusion"));
 
-        var completed = new System.Collections.Generic.List<string>();
-        var available = new System.Collections.Generic.List<string>();
-        w.Research.NodeCompleted += completed.Add;
-        w.Research.NodeAvailable += available.Add;
-        for (var i = 0; i < 9; i++) w.Research.Tick(1);
-        Assert.Empty(completed);
-        Assert.Equal(0.9, w.Research.Progress(w.Research.Benches[0]), 9);
-        w.Research.Tick(1);                                           // 10 ticks of 1 necromancer
-        Assert.Equal(new[] { "nec1_grave_lore" }, completed);
-        Assert.Equal(NodeState.Done, w.Research.State("nec1_grave_lore"));
-        Assert.Null(w.Research.Benches[0].NodeId);
-        Assert.Contains("nec1_raise_skeletons", available);
-        Assert.Contains("nec1_second_bench", available);
+        var w = Fresh();
+        Done(w, "summoning");
+        Assert.Equal(NodeState.Done, w.Research.State("summoning"));
+        Assert.Equal(NodeState.Available, w.Research.State("soul_harvesting"));
+        Assert.Equal(NodeState.Available, w.Research.State("necrotic_blast"));
+        Assert.Equal(NodeState.Locked, w.Research.State("dark_recruitment"));
+        w.Research.Reveal = RevealMode.AvailableOnly;                               // the old reveal rule, still available
+        Assert.False(w.Research.IsVisible("dark_recruitment"));
+        Assert.True(w.Research.IsVisible("soul_harvesting"));
     }
 
     [Fact]
-    public void Completing_a_node_applies_its_effects()
+    public void An_unstaffed_bench_works_one_per_tick_and_summoning_opens_the_circle()
     {
         var w = Fresh();
-        Assert.Equal(10, w.Lich.Pool.Max);
-        w.Research.DebugComplete("nec1_grave_lore");
-        Assert.Equal(15, w.Lich.Pool.Max);                            // stat_mod
-        Assert.Equal(new Num(20), w.Skill<NecromancySkill>().Xp);     // tome skill XP
-
-        Assert.True(w.Unlocks.IsLocked(Unlocks.Unit, "skeleton"));
-        w.Research.DebugComplete("nec1_raise_skeletons");
-        Assert.False(w.Unlocks.IsLocked(Unlocks.Unit, "skeleton"));   // recorded for phase 9
-
-        w.Research.DebugComplete("nec1_second_bench");
-        Assert.Equal(2, w.Research.Benches.Count);                    // unlock_bench
-
-        var well = w.Buildings.OfType<ManaWell>().Single();
-        Assert.Equal(10, well.MaxLevel);
-        w.Research.DebugComplete("nec1_deep_channels");
-        Assert.Equal(20, well.MaxLevel);                              // building_level
+        var r = w.Research;
+        var circle = B<SummoningCircle>(w);
+        Assert.Single(r.Benches);
+        Assert.Equal(2, r.Slots);
+        Assert.False(circle.IsUnlocked);
+        Assert.Equal(StartResult.NotAvailable, r.Start("soul_harvesting"));
+        Assert.Equal(StartResult.Ok, r.Start("summoning"));
+        Assert.Equal(StartResult.NotAvailable, r.Start("summoning"));         // already on a bench
+        Assert.Equal(1, r.WorkPerTick(r.Benches[0]));                 // (1 + 0.5 x 0) x 1.1^0 x 1
+        w.Ticks.RunTicks(3);
+        Assert.Equal(NodeState.Researching, r.State("summoning"));
+        Assert.Equal(0.75, r.Progress(r.Benches[0]), 9);
+        w.Ticks.RunTicks(1);
+        Assert.Equal(NodeState.Done, r.State("summoning"));
+        Assert.True(r.Benches[0].IsFree);
+        Assert.True(circle.IsUnlocked);
+        Assert.False(w.Unlocks.IsLocked(Unlocks.Unit, "necromancer"));
+        Assert.False(w.Units.IsBaseLocked("wisp"));
+        Assert.Equal(new[] { "necromancer", "wisp" }, circle.AvailableUnits().Select(o => o.Id));
     }
 
     [Fact]
-    public void Unlocked_content_is_locked_until_researched()
+    public void Necromancers_speed_up_a_bench_up_to_its_room()
     {
         var w = Fresh();
-        var hunting = w.Skill<HuntingManager>();
-        var boneyard = hunting.Activity("boneyard");
+        var r = w.Research;
         w.Lich.DebugAddNecromancers(5);
-        Assert.False(hunting.IsUnlocked(boneyard));
-        Assert.Equal(0, hunting.AddNecromancer("boneyard", 1));
-        Assert.Equal(0, w.Smithing.AddNecromancer("bone_spear", 1));
-        var transmuter = w.Buildings.OfType<Transmuter>().Single();
-        Assert.Throws<ArgumentException>(() => transmuter.Select("hide_to_bones"));
-
-        w.Research.DebugComplete("nec1_ossuary");
-        Assert.Equal(1, hunting.AddNecromancer("boneyard", 1));
-        transmuter.Select("hide_to_bones");
-        w.Smithing.DebugSetLevel(5);
-        Assert.Equal(0, w.Smithing.AddNecromancer("bone_spear", 1));  // needs Bone Weapons
-        w.Research.DebugComplete("nec1_bone_weapons");
-        Assert.Equal(1, w.Smithing.AddNecromancer("bone_spear", 1));
+        Assert.Equal(2, r.AddNecromancer(0, 5));                          // a bench holds 2
+        Assert.Equal(2.0, r.WorkPerTick(r.Benches[0]), 9);                // 1 + 0.5 x 2
+        Done(w, "necro_capacity");                                         // +1 room per level
+        Assert.Equal(3, r.Slots);
+        Done(w, "dark_empowerment");                                       // doubles room in workshops and benches
+        Assert.Equal(6, r.Slots);
     }
 
     [Fact]
-    public void Deeper_nodes_need_the_tome_skill_level()
+    public void Upgrade_nodes_level_up_on_the_same_bench_with_growing_work()
     {
         var w = Fresh();
-        foreach (var id in new[] { "nec1_grave_lore", "nec1_raise_zombies", "nec1_deep_channels" }) w.Research.DebugComplete(id);
-        var necro = w.Skill<NecromancySkill>();
-        if (necro.Level < 5)
-        {
-            Assert.Equal(NodeState.Locked, w.Research.State("nec1_hunger_of_the_grave"));
-            Assert.Equal("needs necromancy level 5", w.Research.WhyLocked("nec1_hunger_of_the_grave"));
-        }
-        necro.DebugSetLevel(5);
-        Assert.Equal(NodeState.Available, w.Research.State("nec1_hunger_of_the_grave"));
-        Assert.StartsWith("needs ", w.Research.WhyLocked("nec1_lord_of_the_grave"));
+        var r = w.Research;
+        Done(w, "summoning", "soul_harvesting", "dark_recruitment");
+        Assert.Equal(15, w.Lich.Pool.Max);                                 // 5 + 10
+        w.Lich.DebugAddNecromancers(2);
+        r.AddNecromancer(0, 2);                                            // 2 work per tick
+        Assert.Equal(StartResult.Ok, r.Start("dark_expansion_1"));
+        Assert.Equal(300, r.WorkNeeded("dark_expansion_1"));
+        w.Ticks.RunTicks(150);
+        Assert.Equal(1, r.Level("dark_expansion_1"));
+        Assert.Equal(345, r.WorkNeeded("dark_expansion_1"), 6);           // 300 x 1.15
+        Assert.Equal(NodeState.Researching, r.State("dark_expansion_1"));  // keeps going
+        Assert.Equal(16, w.Lich.Pool.Max);                                 // +1 per level
+        w.Ticks.RunTicks(173);
+        Assert.Equal(2, r.Level("dark_expansion_1"));
+        Assert.Equal(new Modifier("max_necromancers", ModifierOp.Add, 2, "research:dark_expansion_1"),
+            w.Lich.Stats.Modifiers.Single(m => m.Source == "research:dark_expansion_1"));
+        Assert.Equal(100, r.MaxLevel("dark_expansion_1"));
     }
 
     [Fact]
-    public void Necromancers_speed_up_a_bench_up_to_its_slots()
+    public void Cancelling_keeps_progress_for_later()
     {
         var w = Fresh();
-        w.Lich.DebugAddNecromancers(20);
-        Assert.Equal(5, w.Research.AddNecromancer(0, 20));
-        w.Storage.Add("mana", 20);
-        w.Research.Start("nec1_grave_lore");
-        Assert.Equal(5, w.Research.WorkPerTick(w.Research.Benches[0]));
-        w.Research.Tick(2);
-        Assert.Equal(NodeState.Done, w.Research.State("nec1_grave_lore"));
+        var r = w.Research;
+        Done(w, "summoning");
+        r.Start("necrotic_blast");                                          // 32 work
+        w.Ticks.RunTicks(10);
+        Assert.True(r.Cancel(0));
+        Assert.Equal(10, r.WorkDone("necrotic_blast"), 9);
+        Assert.Equal(NodeState.Available, r.State("necrotic_blast"));
+        r.Start("soul_harvesting");
+        w.Ticks.RunTicks(7);
+        Assert.Equal(NodeState.Done, r.State("soul_harvesting"));
+        r.Start("necrotic_blast");
+        w.Ticks.RunTicks(21);
+        Assert.Equal(NodeState.Researching, r.State("necrotic_blast"));
+        w.Ticks.RunTicks(1);
+        Assert.Equal(NodeState.Done, r.State("necrotic_blast"));
+        Assert.Contains("necrotic_blast", w.Unlocks.UnlockedOf(Unlocks.Spell));
     }
 
     [Fact]
-    public void An_unstaffed_bench_makes_no_progress()
+    public void Dropping_a_node_on_a_bench_starts_swaps_or_moves_it_and_keeps_progress()
     {
         var w = Fresh();
-        w.Storage.Add("mana", 20);
-        w.Research.Start("nec1_grave_lore");
-        w.Research.Tick(1_000);
-        Assert.Equal(NodeState.Researching, w.Research.State("nec1_grave_lore"));
-        Assert.Null(w.Research.TicksLeft(w.Research.Benches[0]));
+        var r = w.Research;
+        Done(w, "summoning", "research_assistance_1");                       // two benches
+        Assert.Equal(2, r.Benches.Count);
+        Assert.False(r.CanPlace("dark_recruitment", 0));                     // locked: needs Soul Harvesting
+        Assert.Equal(StartResult.NotAvailable, r.Place("dark_recruitment", 0));
+
+        Assert.Equal(StartResult.Ok, r.Place("necrotic_blast", 1));          // a chosen bench, not the first free one
+        Assert.True(r.Benches[0].IsFree);
+        Assert.Equal("necrotic_blast", r.Benches[1].NodeId);
+        w.Ticks.RunTicks(10);
+
+        Assert.Equal(StartResult.Ok, r.Place("soul_harvesting", 1));         // swap: necrotic blast comes off, progress kept
+        Assert.Equal("soul_harvesting", r.Benches[1].NodeId);
+        Assert.Equal(NodeState.Available, r.State("necrotic_blast"));
+        Assert.Equal(10, r.WorkDone("necrotic_blast"), 9);
+
+        w.Ticks.RunTicks(3);
+        Assert.Equal(StartResult.Ok, r.Place("soul_harvesting", 0));         // move to another bench with its progress
+        Assert.True(r.Benches[1].IsFree);
+        Assert.Equal(3, r.WorkDone("soul_harvesting"), 9);
+        Assert.False(r.CanPlace("soul_harvesting", 0));                      // already there
+        w.Ticks.RunTicks(4);
+        Assert.Equal(NodeState.Done, r.State("soul_harvesting"));
+        Assert.False(r.CanPlace("summoning", 1));                            // done nodes cannot be placed
     }
 
     [Fact]
-    public void Two_benches_research_two_nodes_at_once_and_cancel_refunds()
+    public void Infusion_is_found_by_clearing_the_graveyard()
     {
         var w = Fresh();
-        w.Research.DebugComplete("nec1_grave_lore");
-        w.Research.DebugComplete("nec1_second_bench");
-        w.Storage.Add("mana", 1_000);
-        w.Stock.Add("raw_eel", 10);
-        Assert.Equal(StartResult.Ok, w.Research.Start("nec1_raise_skeletons"));
-        Assert.Equal(StartResult.Ok, w.Research.Start("nec1_raise_zombies"));
-        Assert.Equal(StartResult.NoFreeBench, w.Research.Start("nec1_deep_channels"));
-        Assert.Equal(1, w.Research.Benches[1].Index);
-        Assert.Equal("nec1_raise_zombies", w.Research.Benches[1].NodeId);
-        Assert.Equal(860, w.Storage.Get("mana"));
-        Assert.True(w.Research.Cancel(1));
-        Assert.Equal(940, w.Storage.Get("mana"));
-        Assert.Equal(10, w.Stock.Get("raw_eel"));
-        Assert.Equal(NodeState.Available, w.Research.State("nec1_raise_zombies"));
-        Assert.False(w.Research.Cancel(1));
+        var r = w.Research;
+        Assert.False(r.IsOwned("infusion"));
+        w.WorldMap.AddUnits("skeleton", 40);
+        Assert.Equal(LittleLich.World.SendResult.Ok, w.WorldMap.Send("graveyard", new LittleLich.World.ArmyPlan().Set(Sections.Front, "skeleton", 40)));
+        for (var i = 0; i < 600 && w.WorldMap.Battle is not null; i++) w.WorldMap.Advance(1);
+        Assert.Equal(LittleLich.World.AreaState.Cleared, w.WorldMap.State("graveyard"));
+        Assert.True(r.IsOwned("infusion"));
+        Assert.Equal(new[] { "necromancy", "infusion" }, r.Tomes.Select(t => t.Id));
+        Assert.Equal(NodeState.Available, r.State("basic_infusion"));
+    }
+
+    [Fact]
+    public void Research_opens_workshop_buildings_units_and_recipes()
+    {
+        var w = Fresh();
+        Assert.True(B<ManaWell>(w).IsUnlocked);                          // open from the start
+        Assert.False(B<Infuser>(w).IsUnlocked);
+        Assert.Equal(0, B<Infuser>(w).AddNecromancer(1));
+        Done(w, "basic_infusion");
+        Assert.True(B<Infuser>(w).IsUnlocked);
+        Assert.False(B<MagicalStorage>(w).IsUnlocked);
+        Done(w, "mana_storage");
+        Assert.True(B<MagicalStorage>(w).IsUnlocked);
+        Done(w, "transmute", "soul_well", "undead_market");
+        Assert.True(w.Buildings.All(b => b.IsUnlocked || b is SummoningCircle));
+
+        var t = B<Transmuter>(w);
+        Assert.True(t.IsLocked("forge_sword"));
+        Assert.False(t.IsLocked("bones_to_coal"));                        // not gated by research
+        Done(w, "summon_gear");
+        Assert.False(t.IsLocked("forge_sword"));
+        Assert.False(t.IsLocked("carve_staff"));
+
+        Assert.True(w.Units.IsBaseLocked("skeleton"));
+        Done(w, "animate_bones");
+        Assert.False(w.Units.IsBaseLocked("skeleton"));
+        Assert.True(w.Units.IsBaseLocked("skeleton_golem"));
+    }
+
+    [Fact]
+    public void Capacity_and_cost_research_changes_the_numbers_the_game_uses()
+    {
+        var w = Fresh();
+        var circle = B<SummoningCircle>(w);
+        Done(w, "summoning");
+        Assert.Equal(new[] { "mana:50", "souls:25" }, circle.Option("necromancer")!.Cost.Select(c => $"{c.Id}:{c.Count}"));
+        Done(w, "dark_recruitment");                                       // +10 max, x0.75 cost (rounded up)
+        Assert.Equal(15, w.Lich.Pool.Max);
+        Assert.Equal(new[] { "mana:38", "souls:19" }, circle.Option("necromancer")!.Cost.Select(c => $"{c.Id}:{c.Count}"));
+        Done(w, "dark_efficiency");                                        // x0.5 more: 50 x 0.375 = 18.75
+        Assert.Equal(new[] { "mana:19", "souls:10" }, circle.Option("necromancer")!.Cost.Select(c => $"{c.Id}:{c.Count}"));
+        Done(w, "dark_legion");                                            // doubles max necromancers
+        Assert.Equal(30, w.Lich.Pool.Max);
+
+        Done(w, "animate_bones", "bring_bones");                           // skeletons 1% cheaper per level, rounded up
+        Assert.Equal(new[] { "mana:149", "souls:10", "bones:10" }, circle.Option("skeleton")!.Cost.Select(c => $"{c.Id}:{c.Count}"));
+        Assert.Equal(149, w.Units.BaseCost("skeleton")[0].Count);         // the circle pays what it shows
+
+        Assert.Equal(2, circle.SummonSlots.Count);
+        Done(w, "summoning_capacity");
+        Assert.Equal(3, circle.SummonSlots.Count);
+    }
+
+    [Fact]
+    public void Output_research_reaches_the_mana_well_infuser_and_souls()
+    {
+        var w = Fresh();
+        var well = B<ManaWell>(w);
+        w.Lich.DebugAddNecromancers(1);
+        well.AddNecromancer(1);
+        Assert.Equal(2.0, well.OutputPerTick(), 9);
+        Done(w, "embodied_mana");                                          // +0.05% per level
+        Assert.Equal(2 * 1.0005, well.OutputPerTick(), 9);
+        Done(w, "necro_mana");                                             // +1 mana per necromancer per level
+        Assert.Equal(3 * 1.0005, well.OutputPerTick(), 9);
+        Done(w, "mana_proficiency");                                       // output x1.1
+        Assert.Equal(3 * 1.0005 * 1.1, well.OutputPerTick(), 9);
+        Done(w, "mana_stream");                                            // +0.05% efficiency per necromancer per level
+        Assert.Equal(3 * (1.0005 + 0.0005) * 1.1, well.OutputPerTick(), 9);
+
+        Assert.Equal(1, well.ClickPower);
+        Done(w, "mage_hand_1");
+        Assert.Equal(2, well.ClickPower);
+        Assert.Equal(2, well.MaxNecromancers);
+        Done(w, "magical_efficiency");                                     // doubles the well's room
+        Assert.Equal(4, well.MaxNecromancers);
+
+        Assert.Equal(1, B<Infuser>(w).ElementsPerOp);
+        Done(w, "elemental_proficiency");
+        Assert.Equal(2, B<Infuser>(w).ElementsPerOp);
+
+        Done(w, "soul_harvesting");                                        // 2 souls per tick
+        w.Ticks.RunTicks(10);
+        Assert.Equal(20, w.Storage.Get("souls"));
+    }
+
+    [Fact]
+    public void Level_caps_and_benches_come_from_research()
+    {
+        var w = Fresh();
+        var r = w.Research;
+        Assert.Equal(10, B<ManaWell>(w).MaxLevel);
+        Assert.Equal(20, r.BenchMaxLevel);
+        Done(w, "upgraded_infusions");                                     // +10 max level for nodes and buildings
+        Assert.Equal(20, B<ManaWell>(w).MaxLevel);
+        Assert.Equal(30, r.BenchMaxLevel);
+        Assert.Equal(110, r.MaxLevel("dark_expansion_1"));
+        Assert.Equal(1, r.MaxLevel("research_assistance_1"));             // one-off nodes do not grow
+        Assert.Single(r.Benches);
+        Done(w, "research_assistance_1");
+        Assert.Equal(2, r.Benches.Count);
+        Done(w, "research_assistance_2");
+        Assert.Equal(3, r.Benches.Count);
+        Assert.Equal(10, w.Lich.Stats.Get(LichStats.MaxInsight).ToDouble(), 9);   // increased_focus not done: base 10
+        Done(w, "increased_focus");                                        // "insight" in the data
+        Assert.Equal(14, w.Lich.Stats.Get(LichStats.MaxInsight).ToDouble(), 9);
+    }
+
+    [Fact]
+    public void Trigger_and_chance_effects_are_listed_for_their_systems()
+    {
+        var w = Fresh();
+        Assert.Empty(w.Research.ActiveEffects("trigger"));
+        Done(w, "necrotic_harvest", "forge_master");
+        Assert.Equal("necrotic_harvest", w.Research.ActiveEffects("trigger").Single().NodeId);
+        var c = w.Research.ActiveEffects("chance").Single();
+        Assert.Equal(("forge_master", 1), (c.NodeId, c.Level));
+    }
+
+    private static World Busy()
+    {
+        var w = Fresh();
+        var r = w.Research;
+        Done(w, "summoning", "soul_harvesting", "dark_recruitment");
+        r.GrantTome("infusion");
+        Done(w, "basic_infusion", "mana_storage", "increased_focus", "research_assistance_1");
+        w.Lich.DebugAddNecromancers(4);
+        r.AddNecromancer(0, 2);
+        r.AddNecromancer(1, 1);
+        Assert.Equal(StartResult.Ok, r.Start("dark_expansion_1", 0));
+        Assert.Equal(StartResult.Ok, r.Start("research_buddy", 1));   // each level raises research efficiency
+        return w;
     }
 
     [Theory]
-    [InlineData(7)]
-    [InlineData(25)]
-    [InlineData(400)]
-    public void Batched_ticks_complete_exactly_what_single_ticks_do(int n)
+    [InlineData(1)]
+    [InlineData(100)]
+    [InlineData(1_000)]
+    [InlineData(5_000)]
+    public void Ticks_in_one_call_equal_single_ticks(int n)
     {
-        World Make()
-        {
-            var w = Fresh();
-            w.Research.DebugComplete("nec1_grave_lore");
-            w.Research.DebugComplete("nec1_second_bench");
-            w.Lich.DebugAddNecromancers(5);
-            w.Research.AddNecromancer(0, 3);
-            w.Research.AddNecromancer(1, 2);
-            w.Storage.Add("mana", 500);
-            w.Stock.Add("raw_eel", 10);
-            w.Research.Start("nec1_raise_skeletons");
-            w.Research.Start("nec1_raise_zombies");
-            return w;
-        }
-        var live = Make();
-        for (var i = 0; i < n; i++) live.Research.Tick(1);
-        var batched = Make();
-        batched.Research.Tick(n);
+        var live = Busy();
+        for (var i = 0; i < n; i++) live.Ticks.RunTicks(1);
+        var batched = Busy();
+        batched.Ticks.RunTicks(n);
         Assert.Equal(live.Research.Save().Node.ToJsonString(), batched.Research.Save().Node.ToJsonString());
-        Assert.Equal(live.Skill<NecromancySkill>().Xp, batched.Skill<NecromancySkill>().Xp);
-    }
-
-    [Fact]
-    public void Offline_time_completes_research()
-    {
-        var w = Fresh();
-        Staff(w);
-        w.Storage.Add("mana", 20);
-        w.Research.Start("nec1_grave_lore");
-        var recap = w.Ticks.RunOffline(19);         // 9 ticks: not yet
-        Assert.Equal(NodeState.Researching, w.Research.State("nec1_grave_lore"));
-        recap = w.Ticks.RunOffline(3_600);          // 1,800 ticks
-        Assert.Equal(NodeState.Done, w.Research.State("nec1_grave_lore"));
-        Assert.Equal(new Num(1), recap.Gained[("research", "nec1_grave_lore")]);
-        Assert.Equal(15, w.Lich.Pool.Max);
+        Assert.Equal(live.Lich.Pool.Max, batched.Lich.Pool.Max);
+        Assert.Equal(live.Storage.Get("souls"), batched.Storage.Get("souls"));
+        if (n >= 1_000) Assert.True(live.Research.Level("research_buddy") > 1);
     }
 }
 
@@ -231,51 +362,58 @@ public class ResearchSaveTests : IDisposable
     }
 
     [Fact]
-    public void Researched_effects_and_progress_survive_save_and_reload()
+    public void Tomes_levels_kept_progress_benches_and_bench_level_survive_reload()
     {
         var (s1, a) = Session();
         s1.NewGame(1);
-        a.Research.DebugComplete("nec1_grave_lore");
-        a.Research.DebugComplete("nec1_second_bench");
-        a.Research.DebugComplete("nec1_deep_channels");
-        a.Research.DebugComplete("nec1_raise_skeletons");
-        a.Research.DebugComplete("nec1_ossuary");
-        var well = a.Buildings.OfType<ManaWell>().Single();
-        well.DebugSetLevel(15);                                   // only possible with Deep Channels
-        a.Lich.DebugAddNecromancers(4);
-        a.Research.AddNecromancer(1, 4);
-        a.Storage.Add("mana", 500);
-        a.Stock.Add("raw_eel", 10);
-        a.Research.Start("nec1_raise_zombies", 1);
-        a.Research.Tick(3);
+        var r = a.Research;
+        r.DebugComplete("summoning");
+        r.DebugComplete("soul_harvesting");
+        r.DebugComplete("dark_recruitment");
+        r.DebugComplete("dark_expansion_1");
+        r.GrantTome("infusion");
+        r.DebugComplete("basic_infusion");
+        r.DebugComplete("mana_storage");
+        r.DebugComplete("research_assistance_1");
+        a.Storage.Add("gold", 120);
+        a.Storage.Add("mana", 320);
+        Assert.True(r.TryUpgradeBench());
+        r.Start("necrotic_blast");
+        a.Ticks.RunTicks(5);
+        r.Cancel(0);
+        r.Start("dark_expansion_1", 1);
+        a.Ticks.RunTicks(7);
         s1.Save();
 
         var (s2, b) = Session();
         s2.LoadSlot(1);
-        Assert.Equal(a.Research.Save().Node.ToJsonString(), b.Research.Save().Node.ToJsonString());
-        Assert.Equal(NodeState.Done, b.Research.State("nec1_ossuary"));
-        Assert.Equal(2, b.Research.Benches.Count);
-        Assert.Equal("nec1_raise_zombies", b.Research.Benches[1].NodeId);
-        Assert.Equal(4, b.Research.Staffed(b.Research.Benches[1]));
-        Assert.Equal(15, b.Buildings.OfType<ManaWell>().Single().Level);   // research loaded first: level not clamped to 10
-        Assert.False(b.Unlocks.IsLocked(Unlocks.Activity, "boneyard"));
-        Assert.True(b.Unlocks.IsLocked(Unlocks.Recipe, "bone_spear"));
+        var q = b.Research;
+        Assert.Equal(r.Save().Node.ToJsonString(), q.Save().Node.ToJsonString());
+        Assert.True(q.IsOwned("infusion"));
+        Assert.Equal(1, q.Level("dark_expansion_1"));
+        Assert.Equal(2, q.Benches.Count);
+        Assert.Equal(2, q.BenchLevel);
+        Assert.Equal("dark_expansion_1", q.Benches[1].NodeId);
+        Assert.True(q.WorkDone("necrotic_blast") > 0);
         Assert.Equal(a.Lich.Pool.Max, b.Lich.Pool.Max);
-        Assert.Single(b.Lich.Stats.Modifiers, m => m.Source == "research:nec1_grave_lore");
-
-        a.Research.Tick(10);
-        b.Research.Tick(10);
-        Assert.Equal(NodeState.Done, b.Research.State("nec1_raise_zombies"));
-        Assert.Equal(a.Research.Save().Node.ToJsonString(), b.Research.Save().Node.ToJsonString());
+        Assert.True(b.Buildings.OfType<MagicalStorage>().Single().IsUnlocked);
+        Assert.Equal(a.Lich.Stats.Modifiers.Count(m => m.Source.StartsWith("research:")), b.Lich.Stats.Modifiers.Count(m => m.Source.StartsWith("research:")));
     }
 
     [Fact]
-    public void Load_removes_research_modifiers_for_nodes_that_are_not_done()
+    public void A_save_from_the_old_research_starts_the_new_trees_fresh()
     {
         var w = new World();
-        w.Lich.Stats.Add(new Core.Lich.Modifier(Core.Lich.LichStats.MaxNecromancers, Core.Lich.ModifierOp.Add, 99, "research:nec1_grave_lore"));
-        w.Research.Load(new SaveData());
-        Assert.DoesNotContain(w.Lich.Stats.Modifiers, m => m.Source.StartsWith("research:"));
+        foreach (var s in w.Saveables) s.Load(new SaveData());
+        w.Research.Load(new SaveData()
+            .Set("done", new[] { "nec1_grave_lore", "nec1_raise_skeletons" }.ToList())
+            .Set("benches", new[] { new ResearchManager.BenchDto { Node = "nec1_bone_archers", Progress = 99 } }.ToList())
+            .Set("bench_level", 3));
+        Assert.Equal(new[] { "necromancy" }, w.Research.Tomes.Select(t => t.Id));
+        Assert.All(w.Research.AllTomes.SelectMany(t => t.Nodes), n => Assert.Equal(0, w.Research.Level(n.Id)));
+        Assert.True(w.Research.Benches[0].IsFree);
+        Assert.Equal(3, w.Research.BenchLevel);
+        Assert.Equal(NodeState.Available, w.Research.State("summoning"));
     }
 }
 
@@ -286,35 +424,86 @@ public class ResearchContentTests
             ContentSource.FromDirectory(Path.Combine(AppContext.BaseDirectory, "Data")).Append(new ContentSource("x.json", json))));
 
     [Fact]
-    public void Cycles_are_rejected()
+    public void Bad_effects_kinds_and_references_are_rejected()
     {
         var e = Fails("""
-            [ { "type": "tome", "id": "t2", "name": "T2" },
-              { "type": "research_node", "tome": "t2", "id": "r", "name": "R" },
-              { "type": "research_node", "tome": "t2", "id": "a", "name": "A", "requires": ["r", "c"] },
-              { "type": "research_node", "tome": "t2", "id": "b", "name": "B", "requires": ["a"] },
-              { "type": "research_node", "tome": "t2", "id": "c", "name": "C", "requires": ["b"] } ]
+            [ { "type": "research_node", "tome": "necromancy", "id": "x1", "name": "X", "requires": [ "summoning" ], "kind": "sideways", "work": 0,
+                "effects": [ { "type": "explode" }, { "type": "modify", "stat": "max_necromancers", "op": "pow", "value": 2, "target": "everyone" },
+                             { "type": "unlock", "kind": "car", "id": "x" }, { "type": "chance", "on": "transmute", "chance": 2, "give": "x" },
+                             { "type": "modify", "stat": "a", "value": 1, "per_level": true } ] } ]
             """);
-        Assert.Contains(e.Errors, x => x.Id == "t2" && x.Message.Contains("cycle"));
+        foreach (var f in new[] { "kind", "work", "effects[0].type", "effects[1].op", "effects[1].target", "effects[2].kind", "effects[3].chance", "effects[4].per_level" })
+            Assert.Contains(e.Errors, x => x.Field == f);
+        e = Fails("""[ { "type": "research_node", "tome": "necromancy", "id": "x2", "name": "X", "requires": [ "summoning" ], "work": 5, "effects": [ { "type": "unlock", "kind": "unit", "id": "dragon" } ] } ]""");
+        Assert.Contains(e.Errors, x => x.Field == "effects[0].id" && x.Message.Contains("dragon"));
+        e = Fails("""[ { "type": "research_node", "tome": "infusion", "id": "x3", "name": "X", "requires": [ "summoning" ], "work": 5 } ]""");
+        Assert.Contains(e.Errors, x => x.Field == "requires" && x.Message.Contains("another tome"));
     }
 
     [Fact]
-    public void Missing_ids_and_bad_effects_are_rejected()
+    public void A_second_root_or_a_cycle_is_rejected()
     {
-        var e = Fails("""
-            [ { "type": "research_node", "tome": "necromancy_1", "id": "x", "name": "X", "requires": ["nope"],
-                "cost": { "unobtainium": 5 },
-                "effects": [ { "type": "unlock_recipe", "id": "gold_bar" }, { "type": "teleport" },
-                             { "type": "building_level", "building": "castle", "levels": 1 } ] } ]
-            """);
-        Assert.Contains(e.Errors, x => x.Field == "effects[1].type");   // field errors first; references are checked once fields are valid
+        var e = Fails("""[ { "type": "research_node", "tome": "necromancy", "id": "second_root", "name": "X", "work": 5 } ]""");
+        Assert.Contains(e.Errors, x => x.Id == "necromancy" && x.Message.Contains("exactly one root"));
         e = Fails("""
-            [ { "type": "research_node", "tome": "necromancy_1", "id": "x", "name": "X", "requires": ["nope"], "cost": { "unobtainium": 5 },
-                "effects": [ { "type": "unlock_recipe", "id": "gold_bar" }, { "type": "building_level", "building": "castle", "levels": 1 } ] } ]
+            [ { "type": "research_node", "tome": "necromancy", "id": "c1", "name": "C1", "requires": [ "summoning", "c2" ], "work": 5 },
+              { "type": "research_node", "tome": "necromancy", "id": "c2", "name": "C2", "requires": [ "c1" ], "work": 5 } ]
             """);
-        Assert.Contains(e.Errors, x => x.Field == "requires");
-        Assert.Contains(e.Errors, x => x.Field == "cost.unobtainium");
-        Assert.Contains(e.Errors, x => x.Field == "effects[0].id");
-        Assert.Contains(e.Errors, x => x.Field == "effects[1].building");
+        Assert.Contains(e.Errors, x => x.Message.Contains("cycle"));
+    }
+
+    [Fact]
+    public void Bench_costs_round_to_two_significant_figures_with_halves_up()
+    {
+        Assert.Equal(120, ResearchBenchDefinition.RoundSig(50 * 2.3, 2));     // 114.999... in floating point
+        Assert.Equal(58, ResearchBenchDefinition.RoundSig(25 * 2.3, 2));
+        Assert.Equal(1100, ResearchBenchDefinition.RoundSig(1050, 2));
+        Assert.Equal(1500000, ResearchBenchDefinition.RoundSig(1499999.9999999998, 2));
+    }
+}
+
+public class StatTargetTests
+{
+    [Fact]
+    public void Targeted_modifiers_apply_only_to_their_subjects()
+    {
+        var s = new StatSheet();
+        s.Add(new Modifier("efficiency@mana_well_and_infuser", ModifierOp.Add, 0.5, "t"));
+        s.Add(new Modifier("efficiency@soul_well", ModifierOp.Mul, 3, "t"));
+        s.Add(new Modifier("efficiency", ModifierOp.Add, 10, "t"));          // untargeted
+        Assert.Equal(1.5, s.GetFor("efficiency", "mana_well", Num.One, includeUntargeted: false).ToDouble(), 9);
+        Assert.Equal(1.5, s.GetFor("efficiency", "infuser", Num.One, includeUntargeted: false).ToDouble(), 9);
+        Assert.Equal(3, s.GetFor("efficiency", "soul_well", Num.One, includeUntargeted: false).ToDouble(), 9);
+        Assert.Equal(11.5, s.GetFor("efficiency", "mana_well", Num.One).ToDouble(), 9);
+        Assert.Equal(10, s.Get("efficiency").ToDouble(), 9);                  // the plain read ignores targets
+    }
+
+    [Fact]
+    public void Set_replaces_the_base_and_per_necromancer_targets_are_read_separately()
+    {
+        var s = new StatSheet();
+        s.SetBase("soul_harvest_rate", 0);
+        s.Add(new Modifier("soul_harvest_rate", ModifierOp.Set, 2, "a"));
+        s.Add(new Modifier("soul_harvest_rate", ModifierOp.Set, 1, "b"));
+        s.Add(new Modifier("soul_harvest_rate", ModifierOp.Mul, 1.5, "c"));
+        Assert.Equal(3, s.Get("soul_harvest_rate").ToDouble(), 9);           // highest set (2) x 1.5
+        s.Add(new Modifier("mana_per_tick@per_necromancer_in_mana_well", ModifierOp.Add, 4, "d"));
+        Assert.Equal(4, s.PerNecromancer("mana_per_tick", "mana_well"), 9);
+        Assert.Equal(0, s.PerNecromancer("mana_per_tick", "infuser"), 9);
+        Assert.Equal(1, s.GetFor("mana_per_tick", "mana_well", Num.One).ToDouble(), 9);   // not mixed into GetFor
+    }
+
+    [Fact]
+    public void Unit_families_come_from_tags()
+    {
+        _ = World.SampleContent;
+        var w = new World();                                                   // sets StatTargets.UnitTags
+        Assert.True(StatTargets.Matches("skeleton_units", "skeleton_golem"));
+        Assert.False(StatTargets.Matches("skeleton_units", "wisp"));
+        Assert.True(StatTargets.Matches("wisp_units", "fire_wisp"));
+        Assert.True(StatTargets.Matches("all_units", "fire_wisp"));
+        Assert.True(StatTargets.Matches("bones_and_skeleton_units", "bones"));
+        Assert.True(StatTargets.Matches("workshops_and_benches", StatTargets.ResearchBench));
+        Assert.NotNull(w);
     }
 }

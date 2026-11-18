@@ -96,7 +96,7 @@ public class EquipmentTests
         w.Inventory.Add("amulet_of_ash", 1);
         Assert.Equal(EquipResult.Ok, w.Equipment.EquipAuto("amulet_of_ash"));
         Assert.Equal("amulet_of_ash", w.Equipment.Worn(LichSlots.Amulet));
-        Assert.Equal(15, w.Lich.Pool.Max);
+        Assert.Equal(10, w.Lich.Pool.Max);                   // base 5 + the amulet's 5
     }
 
     [Fact]

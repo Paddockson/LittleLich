@@ -1,0 +1,928 @@
+{
+  "tome": "infusion",
+  "nodes": [
+    {
+      "id": "basic_infusion",
+      "tome": "infusion",
+      "name": "Basic Infusion",
+      "description": "Unlocks the ability to infuse an element into mana.",
+      "requires": [],
+      "icon": "res://Art/Research/Icons/Infusion/baisc_infusion.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "building",
+          "id": "infuser"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        0
+      ],
+      "layout": {
+        "x": 0.0,
+        "y": 0
+      },
+      "kind": "unlock",
+      "work": 7,
+      "unlock_text": "Unlocks the ability to infuse an element into mana."
+    },
+    {
+      "id": "mana_storage",
+      "tome": "infusion",
+      "name": "Mana Storage",
+      "description": "Unlock resource storage.",
+      "requires": [
+        "basic_infusion"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/magic_storage.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "building",
+          "id": "storage"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        1
+      ],
+      "layout": {
+        "x": 0.0,
+        "y": 1
+      },
+      "kind": "unlock",
+      "work": 25,
+      "unlock_text": "Unlock resource storage."
+    },
+    {
+      "id": "increased_focus",
+      "tome": "infusion",
+      "name": "Increased Focus",
+      "description": "+4 Focus",
+      "requires": [
+        "mana_storage"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/increased_focus_research.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "insight",
+          "op": "add",
+          "value": 4
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        1
+      ],
+      "layout": {
+        "x": -1.0,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 75,
+      "unlock_text": "+4 Focus"
+    },
+    {
+      "id": "transmute",
+      "tome": "infusion",
+      "name": "Transmute",
+      "description": "Unlock transmuting.",
+      "requires": [
+        "mana_storage"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/transmute.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "building",
+          "id": "transmuter"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        1
+      ],
+      "layout": {
+        "x": 0.0,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 94,
+      "unlock_text": "Unlock transmuting."
+    },
+    {
+      "id": "cascading_transmuting",
+      "tome": "infusion",
+      "name": "Cascading Transmuting",
+      "description": "Transmuting will now also transmute the resources of the transmuted item.",
+      "requires": [
+        "transmute"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/cascading_transmute_research.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "feature",
+          "id": "cascading_transmute"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        1
+      ],
+      "layout": {
+        "x": 0.5,
+        "y": 3
+      },
+      "kind": "unlock",
+      "work": 313,
+      "unlock_text": "Transmuting will now also transmute the resources of the transmuted item."
+    },
+    {
+      "id": "fire_spells",
+      "tome": "infusion",
+      "name": "Fire Spells",
+      "description": "Unlocks the Fire Ball spell.",
+      "requires": [
+        "mana_storage"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/fire_spells.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "spell",
+          "id": "fire_ball"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        1,
+        0
+      ],
+      "layout": {
+        "x": -2.0,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 375,
+      "unlock_text": "Unlocks the Fire Ball spell."
+    },
+    {
+      "id": "water_spells",
+      "tome": "infusion",
+      "name": "Water Spells",
+      "description": "Unlocks the Healing Springs spell.",
+      "requires": [
+        "mana_storage"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/water_spells.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "spell",
+          "id": "healing_springs"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        1,
+        2
+      ],
+      "layout": {
+        "x": 1.0,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 375,
+      "unlock_text": "Unlocks the Healing Springs spell."
+    },
+    {
+      "id": "mana_proficiency",
+      "tome": "infusion",
+      "name": "Mana Proficiency",
+      "description": "10% more output from Mana Wells and Infusers.",
+      "requires": [
+        "fire_spells",
+        "water_spells"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/magic_prof.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "output",
+          "op": "mul",
+          "value": 1.1,
+          "target": "mana_well_and_infuser"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        1,
+        2
+      ],
+      "layout": {
+        "x": -0.5,
+        "y": 3
+      },
+      "kind": "unlock",
+      "work": 750,
+      "unlock_text": "10% more output from Mana Wells and Infusers."
+    },
+    {
+      "id": "elemental_proficiency",
+      "tome": "infusion",
+      "name": "Elemental Proficiency",
+      "description": "Infusers produce 2 elemental mana for every 1 mana consumed (Fire, Earth, Water or Air).",
+      "requires": [
+        "transmute"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/elemental_pro_research.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "infuser_elemental_per_mana",
+          "op": "set",
+          "value": 2
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        1
+      ],
+      "layout": {
+        "x": 1.5,
+        "y": 3
+      },
+      "kind": "unlock",
+      "work": 125,
+      "unlock_text": "Infusers produce 2 elemental mana for every 1 mana consumed (Fire, Earth, Water or Air)."
+    },
+    {
+      "id": "earth_spells",
+      "tome": "infusion",
+      "name": "Earth Spells",
+      "description": "Unlocks the Rocky Terrain spell.",
+      "requires": [
+        "mana_proficiency"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/earth_spell.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "spell",
+          "id": "rocky_terrain"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        0
+      ],
+      "layout": {
+        "x": -0.75,
+        "y": 4
+      },
+      "kind": "unlock",
+      "work": 1875,
+      "unlock_text": "Unlocks the Rocky Terrain spell."
+    },
+    {
+      "id": "air_spells",
+      "tome": "infusion",
+      "name": "Air Spells",
+      "description": "Unlocks the Air Burst spell.",
+      "requires": [
+        "mana_proficiency"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/air_spell.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "spell",
+          "id": "air_burst"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        2
+      ],
+      "layout": {
+        "x": -1.75,
+        "y": 4
+      },
+      "kind": "unlock",
+      "work": 1875,
+      "unlock_text": "Unlocks the Air Burst spell."
+    },
+    {
+      "id": "expanded_circle",
+      "tome": "infusion",
+      "name": "Expanded Circle",
+      "description": "+20 max necromancers, +20 max units to all units",
+      "requires": [
+        "air_spells",
+        "earth_spells"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/expanded_circle_research.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_necromancers",
+          "op": "add",
+          "value": 20
+        },
+        {
+          "type": "modify",
+          "stat": "barracks_cap",
+          "op": "add",
+          "value": 20,
+          "target": "all_units"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        2
+      ],
+      "layout": {
+        "x": -1.25,
+        "y": 5
+      },
+      "kind": "unlock",
+      "work": 2500,
+      "unlock_text": "+20 max necromancers, +20 max units to all units"
+    },
+    {
+      "id": "elemental_wisps",
+      "tome": "infusion",
+      "name": "Elemental Wisps",
+      "description": "Unlock Fire, Water, Air, and Earth Wisps. Fire hits every enemy, Water heals, Air can stun the front enemy, and Earth is tougher, hits lightly, and draws attacks. Each costs 50 mana plus 25 of its element.",
+      "requires": [
+        "expanded_circle"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/elemetnal_wisp.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "fire_wisp"
+        },
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "water_wisp"
+        },
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "air_wisp"
+        },
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "earth_wisp"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        2,
+        2
+      ],
+      "layout": {
+        "x": -2.75,
+        "y": 6
+      },
+      "kind": "unlock",
+      "work": 1125,
+      "unlock_text": "Unlock Fire, Water, Air, and Earth Wisps. Fire hits every enemy, Water heals, Air can stun the front enemy, and Earth is tougher, hits lightly, and draws attacks. Each costs 50 mana plus 25 of its element."
+    },
+    {
+      "id": "upgraded_infusions",
+      "tome": "infusion",
+      "name": "Upgraded Infusions",
+      "description": "+10 max upgrade level for nodes and buildings.",
+      "requires": [
+        "expanded_circle"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/Upgraded_Infusion.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "building_and_node_level_cap",
+          "op": "add",
+          "value": 10
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        3,
+        1
+      ],
+      "layout": {
+        "x": -0.75,
+        "y": 6
+      },
+      "kind": "unlock",
+      "work": 3125,
+      "unlock_text": "+10 max upgrade level for nodes and buildings."
+    },
+    {
+      "id": "mana_expanse",
+      "tome": "infusion",
+      "name": "Mana Expanse",
+      "description": "Doubles Mana Well efficiency. Mana Well and Infuser necromancers get +10% efficiency.",
+      "requires": [
+        "expanded_circle"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/mana_expanse.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "efficiency",
+          "op": "mul",
+          "value": 2,
+          "target": "mana_well"
+        },
+        {
+          "type": "modify",
+          "stat": "necromancer_efficiency",
+          "op": "mul",
+          "value": 1.1,
+          "target": "mana_well_and_infuser"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        3,
+        1
+      ],
+      "layout": {
+        "x": -1.75,
+        "y": 6
+      },
+      "kind": "unlock",
+      "work": 3125,
+      "unlock_text": "Doubles Mana Well efficiency. Mana Well and Infuser necromancers get +10% efficiency."
+    },
+    {
+      "id": "magical_efficiency",
+      "tome": "infusion",
+      "name": "Magical Efficiency",
+      "description": "Doubles the necromancers a Mana Well can hold. Spells cost 20% less.",
+      "requires": [
+        "upgraded_infusions"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/magical_effiency.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_necromancers",
+          "op": "mul",
+          "value": 2,
+          "target": "mana_well"
+        },
+        {
+          "type": "modify",
+          "stat": "spell_cost",
+          "op": "mul",
+          "value": 0.8
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        3,
+        1
+      ],
+      "layout": {
+        "x": -1.08,
+        "y": 7
+      },
+      "kind": "unlock",
+      "work": 4375,
+      "unlock_text": "Doubles the necromancers a Mana Well can hold. Spells cost 20% less."
+    },
+    {
+      "id": "spell_slinger",
+      "tome": "infusion",
+      "name": "Spell Slinger",
+      "description": "+10 Insight. Spells deal 10% more damage and healing. Debuffs and buffs last one tick longer.",
+      "requires": [
+        "magical_efficiency"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/spell_slinger.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "insight",
+          "op": "add",
+          "value": 10
+        },
+        {
+          "type": "modify",
+          "stat": "spell_damage",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "type": "modify",
+          "stat": "spell_healing",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "type": "modify",
+          "stat": "buff_debuff_duration",
+          "op": "add",
+          "value": 1,
+          "unit": "tick"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        3,
+        1
+      ],
+      "layout": {
+        "x": -0.58,
+        "y": 8
+      },
+      "kind": "unlock",
+      "work": 6250,
+      "unlock_text": "+10 Insight. Spells deal 10% more damage and healing. Debuffs and buffs last one tick longer."
+    },
+    {
+      "id": "dark_legion",
+      "tome": "infusion",
+      "name": "Dark Legion",
+      "description": "Doubles your max necromancers.",
+      "requires": [
+        "magical_efficiency"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/expanded_circle_research.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_necromancers",
+          "op": "mul",
+          "value": 2
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        3,
+        2
+      ],
+      "layout": {
+        "x": -1.58,
+        "y": 8
+      },
+      "kind": "unlock",
+      "work": 8750,
+      "unlock_text": "Doubles your max necromancers."
+    },
+    {
+      "id": "research_buddy",
+      "tome": "infusion",
+      "name": "Research Buddy",
+      "description": "+0.05% research efficiency per level.",
+      "requires": [
+        "increased_focus"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/ResearchBuddy_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Infusion/ResearchBuddy_Square.png",
+      "max_level": 100,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "research_efficiency",
+          "op": "add",
+          "value": 0.0005,
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -2.5,
+        "y": 3
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+0.05% research efficiency per level."
+    },
+    {
+      "id": "spell_enchanter",
+      "tome": "infusion",
+      "name": "Spell Enchanter",
+      "description": "+0.01% to damage, healing, debuff and buff spells per level.",
+      "requires": [
+        "increased_focus"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/SpellEnchanter_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Infusion/SpellEnchanter_Square.png",
+      "max_level": 999,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "spell_power",
+          "op": "add",
+          "value": 0.0001,
+          "target": "damage_healing_buff_debuff",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -1.5,
+        "y": 3
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+0.01% to damage, healing, debuff and buff spells per level."
+    },
+    {
+      "id": "research_assistance_1",
+      "tome": "infusion",
+      "name": "Research Assistance 1",
+      "description": "+1 research bench.",
+      "requires": [
+        "mana_storage"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/ResearchAssistance1_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Infusion/ResearchAssistance1_Square.png",
+      "max_level": 1,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "research_benches",
+          "op": "add",
+          "value": 1
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 2.0,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 250,
+      "unlock_text": "+1 research bench."
+    },
+    {
+      "id": "research_assistance_2",
+      "tome": "infusion",
+      "name": "Research Assistance 2",
+      "description": "+1 research bench.",
+      "requires": [
+        "mana_proficiency"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/ResearchAssistance1_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Infusion/ResearchAssistance1_Square.png",
+      "max_level": 1,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "research_benches",
+          "op": "add",
+          "value": 1
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 0.25,
+        "y": 4
+      },
+      "kind": "unlock",
+      "work": 250,
+      "unlock_text": "+1 research bench."
+    },
+    {
+      "id": "mana_springs_1",
+      "tome": "infusion",
+      "name": "Mana Springs 1",
+      "description": "+0.05% mana efficiency per level.",
+      "requires": [
+        "upgraded_infusions"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/ManaSprings1_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Infusion/ManaSprings1_Square.png",
+      "max_level": 300,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "mana_efficiency",
+          "op": "add",
+          "value": 0.0005,
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -0.08,
+        "y": 7
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+0.05% mana efficiency per level."
+    },
+    {
+      "id": "wisp_whisperer",
+      "tome": "infusion",
+      "name": "Wisp Whisperer",
+      "description": "All wisps get +1 max unit research level per level.",
+      "requires": [
+        "elemental_wisps"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/WispWhisperer_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Infusion/WispWhisperer_Square.png",
+      "max_level": 95,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "unit_level_cap",
+          "op": "add",
+          "value": 1,
+          "target": "wisp_units",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -3.08,
+        "y": 7
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "All wisps get +1 max unit research level per level."
+    },
+    {
+      "id": "transmuter_master",
+      "tome": "infusion",
+      "name": "Transmuter Master",
+      "description": "+0.05% transmuter efficiency per level.",
+      "requires": [
+        "cascading_transmuting"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/TransmuterMaster_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Infusion/TransmuterMaster_Square.png",
+      "max_level": 100,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "efficiency",
+          "op": "add",
+          "value": 0.0005,
+          "target": "transmuter",
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 1.25,
+        "y": 4
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+0.05% transmuter efficiency per level."
+    },
+    {
+      "id": "transmuting_assistant_1",
+      "tome": "infusion",
+      "name": "Transmuting Assistant 1",
+      "description": "+1 transmuter station and a 2% chance that a transmute uses no ingredients, per level.",
+      "requires": [
+        "transmuter_master"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/TransmuterMaster_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Infusion/TransmuterMaster_Square.png",
+      "max_level": 5,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "transmuter_stations",
+          "op": "add",
+          "value": 1,
+          "per_level": true
+        },
+        {
+          "type": "modify",
+          "stat": "transmute_free_chance",
+          "op": "add",
+          "value": 0.02,
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 1.25,
+        "y": 5
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+1 transmuter station and a 2% chance that a transmute uses no ingredients, per level."
+    },
+    {
+      "id": "mage_hand_1",
+      "tome": "infusion",
+      "name": "Mage Hand 1",
+      "description": "+1 resource per click per level.",
+      "requires": [
+        "expanded_circle"
+      ],
+      "icon": "res://Art/Research/Icons/Infusion/MageHand1_Circle.png",
+      "icon_large": "res://Art/Research/Icons/Infusion/MageHand1_Square.png",
+      "max_level": 100,
+      "time_multiplier": 2,
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "click_resource",
+          "op": "add",
+          "value": 1,
+          "per_level": true
+        }
+      ],
+      "review": [
+        "work_placeholder_250"
+      ],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 0.25,
+        "y": 6
+      },
+      "kind": "upgrade",
+      "work_growth_per_level": 1.15,
+      "work_growth_note": "placeholder",
+      "work": 250,
+      "unlock_text": "+1 resource per click per level."
+    }
+  ],
+  "layout_note": "layout.x is a column index (can be fractional, 0 = centre line), layout.y is the layer (0 = root, grows upward). Generated, tweak by hand."
+}

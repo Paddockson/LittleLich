@@ -51,6 +51,9 @@ public partial class CryptManager : Node
     /// <summary>Research benches and tomes (null until boot).</summary>
     public Crypt.Research.ResearchManager? Research { get; private set; }
 
+    /// <summary>Research income with no building (soul harvest rate).</summary>
+    public Crypt.PassiveIncome? Income { get; private set; }
+
     /// <summary>Unit types, the roster and formations (null until boot).</summary>
     public Crypt.Units.UnitBuilder? Units { get; private set; }
 
@@ -88,13 +91,20 @@ public partial class CryptManager : Node
         Unlocks = new Unlocks();
         Research = new Crypt.Research.ResearchManager(lich, Stockpile, content, Unlocks, () => tm.Scheduler.ActiveRecap);
         Research.NodeStarted += (n, b) => EmitSignal(SignalName.ResearchNodeStarted, n, b);
-        Research.NodeCompleted += n => EmitSignal(SignalName.ResearchNodeCompleted, n);
         Research.NodeAvailable += n => EmitSignal(SignalName.ResearchNodeAvailable, n);
         Research.NodeCancelled += (n, b) => EmitSignal(SignalName.ResearchNodeCancelled, n, b);
         Research.BenchesChanged += () => EmitSignal(SignalName.ResearchBenchesChanged);
+        Research.NodeCompleted += (n, _) => EmitSignal(SignalName.ResearchNodeCompleted, n);
+        Research.TomeFound += t => EmitSignal(SignalName.ResearchBenchesChanged);
+        Research.BenchLevelChanged += () => EmitSignal(SignalName.ResearchBenchesChanged);
         tm.Register(Research, TickGroup.Research);
+        // Research targets read unit families (skeleton, wisp).
+        StatTargets.IsUnit = id => content.TryGet<UnitDefinitionBase>(id, out var u) && u.IsPlayer;
+        StatTargets.UnitTags = id => content.TryGet<UnitDefinitionBase>(id, out var u) ? u.Tags : Array.Empty<string>();
+        Income = new Crypt.PassiveIncome(lich, Stockpile, () => tm.Scheduler.ActiveRecap);
+        tm.Register(Income, TickGroup.Buildings, 50);
 
-        Units = new Crypt.Units.UnitBuilder(content, Stockpile, Unlocks);
+        Units = new Crypt.Units.UnitBuilder(content, Stockpile, Unlocks) { CostMultiplier = id => Crypt.ResearchStats.CostMultiplier(lich.Stats, id) };
         Units.TypesChanged += () => EmitSignal(SignalName.UnitTypesChanged);
         Units.RosterChanged += (id, n) => EmitSignal(SignalName.UnitRosterChanged, id, n);
         Units.FormationsChanged += () => EmitSignal(SignalName.FormationsChanged);
@@ -110,7 +120,7 @@ public partial class CryptManager : Node
             order += 100; // ManaWell 100 ... UndeadMarket 600 (TickOrder constants)
             if (b.Ticks) tm.Register(b, TickGroup.Buildings, order);
         }
-        // Research loads before the buildings so its extra building levels count when levels are restored;
+        // Research loads before the buildings so its level caps and unlocks count when levels are restored;
         // the Unit Builder before the buildings so the Summoning Circle finds its unit type.
         return new ISaveable[] { Storage, Inventory, Research, Units }.Concat(_buildings).ToList();
     }
@@ -129,6 +139,7 @@ public partial class CryptManager : Node
         {
             foreach (var b in _buildings) tm.Unregister(b);
             if (Research is not null) tm.Unregister(Research);
+            if (Income is not null) tm.Unregister(Income);
         }
     }
 

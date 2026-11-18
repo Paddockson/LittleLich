@@ -1,0 +1,15 @@
+// Armour. defence is for units (+5 HP per point). Lich armour lists its lich "slots" and "modifiers". Placeholder numbers.
+{
+  "type": "armour",
+  "entries": [
+    { "id": "copper_mail",  "name": "Copper Mail",  "defence": 3,  "stack_size": 20, "sell_price": 60,  "placeholder": true },
+    { "id": "iron_armour",  "name": "Iron Armour",  "defence": 6,  "stack_size": 20, "sell_price": 150, "placeholder": true },
+    { "id": "steel_plate",  "name": "Steel Plate",  "defence": 10, "stack_size": 20, "sell_price": 360, "placeholder": true },
+    { "id": "grave_hood",   "name": "Grave Hood",   "slots": [ "hood" ],  "defence": 1, "stack_size": 10, "sell_price": 60,
+      "modifiers": [ { "stat": "max_health", "op": "add", "value": 15 } ], "placeholder": true },
+    { "id": "rotting_robe", "name": "Rotting Robe", "slots": [ "robe" ],  "defence": 3, "stack_size": 10, "sell_price": 90,
+      "modifiers": [ { "stat": "max_health", "op": "add", "value": 25 }, { "stat": "max_health", "op": "mul", "value": 1.1 } ], "placeholder": true },
+    { "id": "crypt_boots",  "name": "Crypt Boots",  "slots": [ "boots" ], "defence": 1, "stack_size": 10, "sell_price": 50,
+      "modifiers": [ { "stat": "herbalism_speed", "op": "mul", "value": 1.1 } ], "placeholder": true }
+  ]
+}

@@ -1,0 +1,16 @@
+// Enchanting: runes and the lich's own gear ("binds magic into gear"). Placeholder numbers.
+{
+  "type": "recipe",
+  "entries": [
+    { "id": "rune_of_rot",      "name": "Rune of Rot",      "skill": "enchanting", "level": 1,  "inputs": { "copper_bar": 1, "nightshade": 2 }, "output": { "rune_of_rot": 1 },      "ticks": 6,  "xp": 20,  "placeholder": true },
+    { "id": "grave_hood",       "name": "Grave Hood",       "skill": "enchanting", "level": 3,  "inputs": { "wolf_hide": 4, "nightshade": 2 },  "output": { "grave_hood": 1 },       "ticks": 8,  "xp": 30,  "placeholder": true },
+    { "id": "crypt_boots",      "name": "Crypt Boots",      "skill": "enchanting", "level": 6,  "inputs": { "wolf_hide": 3, "bones": 3 },       "output": { "crypt_boots": 1 },      "ticks": 8,  "xp": 35,  "placeholder": true },
+    { "id": "rune_of_warding",  "name": "Rune of Warding",  "skill": "enchanting", "level": 10, "inputs": { "wolf_hide": 2, "iron_bar": 1 },    "output": { "rune_of_warding": 1 },  "ticks": 8,  "xp": 40,  "placeholder": true },
+    { "id": "bone_staff",       "name": "Bone Staff",       "skill": "enchanting", "level": 12, "inputs": { "bones": 8, "iron_bar": 1 },        "output": { "bone_staff": 1 },       "ticks": 10, "xp": 60,  "placeholder": true },
+    { "id": "rotting_robe",     "name": "Rotting Robe",     "skill": "enchanting", "level": 15, "inputs": { "wolf_hide": 6, "grave_dust": 2 },  "output": { "rotting_robe": 1 },     "ticks": 12, "xp": 75,  "placeholder": true },
+    { "id": "rune_of_fleet",    "name": "Rune of Fleet",    "skill": "enchanting", "level": 18, "inputs": { "eel_oil": 2, "iron_bar": 1 },      "output": { "rune_of_fleet": 1 },    "ticks": 9,  "xp": 70,  "placeholder": true },
+    { "id": "amulet_of_ash",    "name": "Amulet of Ash",    "skill": "enchanting", "level": 20, "inputs": { "grave_dust": 4, "copper_bar": 2 }, "output": { "amulet_of_ash": 1 },    "ticks": 12, "xp": 90,  "placeholder": true },
+    { "id": "ring_of_whispers", "name": "Ring of Whispers", "skill": "enchanting", "level": 25, "inputs": { "iron_bar": 2, "grave_dust": 2 },   "output": { "ring_of_whispers": 1 }, "ticks": 12, "xp": 110, "placeholder": true },
+    { "id": "dusty_grimoire",   "name": "Dusty Grimoire",   "skill": "enchanting", "level": 30, "inputs": { "wolf_hide": 4, "grave_dust": 6 },  "output": { "dusty_grimoire": 1 },   "ticks": 15, "xp": 140, "placeholder": true }
+  ]
+}

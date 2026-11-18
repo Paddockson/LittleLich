@@ -1,0 +1,856 @@
+{
+  "units": [
+    {
+      "id": "necromancer",
+      "name": "Necromancer",
+      "description": "A risen caster that serves the lich.",
+      "type": "resource",
+      "size": 0,
+      "slot_span": 1,
+      "can_fight": false,
+      "max_in_barracks": 5,
+      "unlock_research": "summoning",
+      "stats": {
+        "hp": 0,
+        "atk": 0,
+        "spd": 0
+      },
+      "summon_cost": {
+        "mana": 50,
+        "souls": 25
+      },
+      "art": {
+        "icon": "res://Art/Units/Necromancer/Icons/Necromancer_Unit.png"
+      }
+    },
+    {
+      "id": "wisp",
+      "name": "Wisp",
+      "description": "A flickering spirit bound to serve.",
+      "tags": [
+        "wisp"
+      ],
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 20,
+      "unlock_research": "summoning",
+      "stats": {
+        "hp": 50,
+        "atk": 5,
+        "spd": 2
+      },
+      "attack": {
+        "type": "melee"
+      },
+      "summon_cost": {
+        "mana": 50
+      },
+      "art": {
+        "icon": "res://Art/Units/Spirits/Wisp/Icons/Wisp_Unit.png",
+        "animation": "res://Art/Units/Spirits/Wisp/Animation/wisp_animation.tres"
+      },
+      "level_up": {
+        "research_cost": 1500,
+        "hp_per_level": 10,
+        "atk_per_level": 1,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 20
+        },
+        "milestones": [
+          3,
+          10,
+          20,
+          30,
+          50,
+          80
+        ]
+      }
+    },
+    {
+      "id": "fire_wisp",
+      "name": "Fire Wisp",
+      "description": "A spirit bound in flame. Its attack hits every enemy.",
+      "tags": [
+        "wisp"
+      ],
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 20,
+      "unlock_research": "elemental_wisps",
+      "stats": {
+        "hp": 50,
+        "atk": 8,
+        "spd": 2
+      },
+      "attack": {
+        "type": "aoe",
+        "projectile": "res://Art/Units/Spirits/FireWisp/Projectiles/fire_wisp_bolt.png",
+        "projectile_scale": 0.25
+      },
+      "summon_cost": {
+        "mana": 50,
+        "fire": 25
+      },
+      "art": {
+        "icon": "res://Art/Units/Spirits/FireWisp/Icons/fire_wisp_icon.png",
+        "animation": "res://Art/Units/Spirits/FireWisp/Animation/fire_wisp_animation.tres",
+        "sprite_scale": 2.1
+      },
+      "level_up": {
+        "research_cost": 1500,
+        "hp_per_level": 10,
+        "atk_per_level": 1,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 20,
+          "fire": 10
+        },
+        "milestones": [
+          3,
+          10,
+          20,
+          30,
+          50,
+          80
+        ]
+      }
+    },
+    {
+      "id": "water_wisp",
+      "name": "Water Wisp",
+      "description": "A spirit bound in tide. Heals the most wounded ally for its attack value.",
+      "tags": [
+        "wisp"
+      ],
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 20,
+      "unlock_research": "elemental_wisps",
+      "stats": {
+        "hp": 50,
+        "atk": 8,
+        "spd": 2
+      },
+      "attack": {
+        "type": "healer",
+        "projectile": "res://Art/Spells/HealingSprings/Animation/healing_springs_frames.tres"
+      },
+      "summon_cost": {
+        "mana": 50,
+        "water": 25
+      },
+      "art": {
+        "icon": "res://Art/Units/Spirits/WaterWisp/Icons/water_wisp_icon.png",
+        "animation": "res://Art/Units/Spirits/WaterWisp/Animation/water_wisp_animation.tres",
+        "sprite_scale": 2.1
+      },
+      "level_up": {
+        "research_cost": 1500,
+        "hp_per_level": 10,
+        "atk_per_level": 1,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 20,
+          "water": 10
+        },
+        "milestones": [
+          3,
+          10,
+          20,
+          30,
+          50,
+          80
+        ]
+      }
+    },
+    {
+      "id": "air_wisp",
+      "name": "Air Wisp",
+      "description": "A spirit bound in wind. Strikes the front enemy, with a 20% chance to stun for 1 second.",
+      "tags": [
+        "wisp"
+      ],
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 20,
+      "unlock_research": "elemental_wisps",
+      "stats": {
+        "hp": 50,
+        "atk": 8,
+        "spd": 2
+      },
+      "attack": {
+        "type": "ranged",
+        "targeting": "front",
+        "projectile": "res://Art/Units/Spirits/AirWisp/Projectiles/air_wisp_bolt.png",
+        "on_hit": [
+          {
+            "status": "stun",
+            "chance_pct": 20,
+            "duration_ticks_or_s": 1
+          }
+        ]
+      },
+      "summon_cost": {
+        "mana": 50,
+        "air": 25
+      },
+      "art": {
+        "icon": "res://Art/Units/Spirits/AirWisp/Icons/air_wisp_icon.png",
+        "animation": "res://Art/Units/Spirits/AirWisp/Animation/air_wisp_animation.tres",
+        "sprite_scale": 2.1
+      },
+      "level_up": {
+        "research_cost": 1500,
+        "hp_per_level": 10,
+        "atk_per_level": 1,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 20,
+          "air": 10
+        },
+        "milestones": [
+          3,
+          10,
+          20,
+          30,
+          50,
+          80
+        ]
+      }
+    },
+    {
+      "id": "earth_wisp",
+      "name": "Earth Wisp",
+      "description": "A spirit bound in stone. 20% more health and light hits. Each attack draws enemy attention for 3 seconds.",
+      "tags": [
+        "wisp"
+      ],
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 20,
+      "unlock_research": "elemental_wisps",
+      "stats": {
+        "hp": 60,
+        "atk": 3,
+        "spd": 2
+      },
+      "attack": {
+        "type": "ranged",
+        "projectile": "res://Art/Units/Spirits/EarthWisp/Projectiles/earth_wisp_bolt.png"
+      },
+      "passives": [
+        {
+          "id": "aggro",
+          "duration": 3,
+          "description": "For 3 seconds, all attacks are directed at this unit, including area-of-effect abilities. Refreshes each time this unit attacks."
+        }
+      ],
+      "summon_cost": {
+        "mana": 50,
+        "earth": 25
+      },
+      "art": {
+        "icon": "res://Art/Units/Spirits/EarthWisp/Icons/earth_wisp_icon.png",
+        "animation": "res://Art/Units/Spirits/EarthWisp/Animation/earth_wisp_animation.tres",
+        "sprite_scale": 2.1
+      },
+      "flags": {
+        "RefreshAggroOnAttack": true
+      },
+      "level_up": {
+        "research_cost": 1500,
+        "hp_per_level": 12,
+        "atk_per_level": 1,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 20,
+          "earth": 10
+        },
+        "milestones": [
+          3,
+          10,
+          20,
+          30,
+          50,
+          80
+        ]
+      }
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton",
+      "description": "A boney friend to serve the lich.",
+      "tags": [
+        "skeleton"
+      ],
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 20,
+      "unlock_research": "animate_bones",
+      "stats": {
+        "hp": 100,
+        "atk": 10,
+        "spd": 2
+      },
+      "attack": {
+        "type": "melee"
+      },
+      "summon_cost": {
+        "mana": 150,
+        "souls": 10,
+        "bones": 10
+      },
+      "art": {
+        "icon": "res://Art/Units/Skeletons/Skeleton/Icons/skeleton_icon.png",
+        "animation": "res://Art/Units/Skeletons/Skeleton/Animation/skeleton_sprite_frame.tres"
+      },
+      "level_up": {
+        "research_cost": 3000,
+        "hp_per_level": 15,
+        "atk_per_level": 2,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 30,
+          "souls": 5,
+          "bones": 5
+        },
+        "milestones": [
+          3,
+          10,
+          20,
+          30,
+          50,
+          80
+        ]
+      }
+    },
+    {
+      "id": "skeleton_warrior",
+      "name": "Skeleton Warrior",
+      "description": "A boney warrior to serve the lich.",
+      "tags": [
+        "skeleton"
+      ],
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 20,
+      "unlock_research": "skeleton_warrior",
+      "stats": {
+        "hp": 250,
+        "atk": 20,
+        "spd": 2
+      },
+      "attack": {
+        "type": "melee"
+      },
+      "summon_cost": {
+        "mana": 150,
+        "souls": 10,
+        "bones": 10,
+        "sword": 1
+      },
+      "art": {
+        "icon": "res://Art/Units/Skeletons/SkeletonSwordAndShield/Icons/skeleton_warrior_icon.png",
+        "animation": "res://Art/Units/Skeletons/SkeletonSwordAndShield/Animation/skeleton_swordandshield_frames.tres"
+      },
+      "level_up": {
+        "research_cost": 4000,
+        "hp_per_level": 25,
+        "atk_per_level": 2,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 30,
+          "souls": 5,
+          "bones": 5
+        },
+        "milestones": [
+          3,
+          10,
+          20,
+          30,
+          50,
+          80
+        ],
+        "cost_per_milestone": {
+          "sword": 1
+        }
+      }
+    },
+    {
+      "id": "skeleton_archer",
+      "name": "Skeleton Archer",
+      "description": "A boney archer to serve the lich.",
+      "tags": [
+        "skeleton"
+      ],
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 20,
+      "unlock_research": "skeleton_archer",
+      "stats": {
+        "hp": 150,
+        "atk": 30,
+        "spd": 2
+      },
+      "attack": {
+        "type": "ranged",
+        "projectile": "res://Art/Units/Skeletons/SkeletonArcher/Projectiles/Arrow.png"
+      },
+      "summon_cost": {
+        "mana": 150,
+        "souls": 10,
+        "bones": 10,
+        "bow": 1
+      },
+      "art": {
+        "icon": "res://Art/Units/Skeletons/SkeletonArcher/Icons/skeleton_archer_icon.png",
+        "animation": "res://Art/Units/Skeletons/SkeletonArcher/Animation/skeleton_archer_frames.tres"
+      },
+      "level_up": {
+        "research_cost": 4000,
+        "hp_per_level": 15,
+        "atk_per_level": 3,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 30,
+          "souls": 5,
+          "bones": 5
+        },
+        "milestones": [
+          3,
+          10,
+          20,
+          30,
+          50,
+          80
+        ],
+        "cost_per_milestone": {
+          "bow": 1
+        }
+      }
+    },
+    {
+      "id": "skeleton_mage",
+      "name": "Skeleton Mage",
+      "description": "A boney mage to serve the lich.",
+      "tags": [
+        "skeleton"
+      ],
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 20,
+      "unlock_research": "skeleton_mage",
+      "stats": {
+        "hp": 150,
+        "atk": 30,
+        "spd": 2
+      },
+      "attack": {
+        "type": "aoe",
+        "projectile": "res://Art/Units/Skeletons/SkeletonMage/Projectiles/fireball.png"
+      },
+      "summon_cost": {
+        "mana": 150,
+        "souls": 10,
+        "bones": 10,
+        "staff": 1
+      },
+      "art": {
+        "icon": "res://Art/Units/Skeletons/SkeletonMage/Icons/skeleton_mage_icon.png",
+        "animation": "res://Art/Units/Skeletons/SkeletonMage/Animation/skeleton_mage_frames.tres"
+      },
+      "level_up": {
+        "research_cost": 4000,
+        "hp_per_level": 15,
+        "atk_per_level": 3,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 30,
+          "souls": 5,
+          "bones": 5
+        },
+        "milestones": [
+          3,
+          10,
+          20,
+          30,
+          50,
+          80
+        ],
+        "cost_per_milestone": {
+          "staff": 1
+        }
+      }
+    },
+    {
+      "id": "skeleton_golem",
+      "name": "Skeleton Golem",
+      "description": "A hulking skeleton that draws enemy attacks and holds the front line.",
+      "tags": [
+        "skeleton"
+      ],
+      "type": "large",
+      "size": 1,
+      "slot_span": 2,
+      "can_fight": true,
+      "max_in_barracks": 5,
+      "unlock_research": "skeleton_golem",
+      "stats": {
+        "hp": 700,
+        "atk": 35,
+        "spd": 5
+      },
+      "attack": {
+        "type": "melee"
+      },
+      "passives": [
+        {
+          "id": "aggro",
+          "duration": 15,
+          "description": "For 15 seconds, all attacks are directed at this unit, including area-of-effect abilities. Restarts at the beginning of every battle level."
+        }
+      ],
+      "summon_cost": {
+        "mana": 400,
+        "souls": 40,
+        "bones": 30
+      },
+      "art": {
+        "icon": "res://Art/Units/Skeletons/SkeletonGolem/Icons/skeleton_brute_icon_1x1.png",
+        "animation": "res://Art/Units/Skeletons/SkeletonGolem/Animation/skeleton_golem_frames.tres",
+        "barracks_icon": "res://Art/Units/Skeletons/SkeletonGolem/Icons/skeleton_golem_2x1.png"
+      },
+      "flags": {
+        "Aggro": true,
+        "ResetAggroEachLevel": true
+      },
+      "level_up": {
+        "research_cost": 7500,
+        "hp_per_level": 50,
+        "atk_per_level": 4,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 50,
+          "souls": 8,
+          "bones": 8
+        }
+      }
+    },
+    {
+      "id": "crypt_spider",
+      "name": "Crypt Spider",
+      "description": "8 legged friends, keep away from fire.",
+      "type": "squad",
+      "size": 3,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 40,
+      "unlock_research": "crypt_spider",
+      "stats": {
+        "hp": 25,
+        "atk": 10,
+        "spd": 0.5
+      },
+      "attack": {
+        "type": "melee"
+      },
+      "summon_cost": {
+        "mana": 200,
+        "souls": 10
+      },
+      "art": {
+        "icon": "res://Art/Units/Spiders/CryptSpider/Icons/crypt_spider_icon.png",
+        "animation": "res://Art/Units/Spiders/CryptSpider/Animation/crypt_spider_frames.tres"
+      },
+      "level_up": {
+        "research_cost": 4000,
+        "hp_per_level": 3,
+        "atk_per_level": 1,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 20,
+          "souls": 3
+        }
+      }
+    },
+    {
+      "id": "crypt_spirit",
+      "name": "Crypt Spirit",
+      "description": "Kinda spooky, from a distance.",
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 5,
+      "unlock_research": "crypt_spirit",
+      "stats": {
+        "hp": 400,
+        "atk": 20,
+        "spd": 1
+      },
+      "attack": {
+        "type": "melee"
+      },
+      "summon_cost": {
+        "mana": 400,
+        "souls": 150
+      },
+      "art": {
+        "icon": "res://Art/Units/Crypt/CryptSpirit/Icons/crypt_spirit_icon.png",
+        "animation": "res://Art/Units/Crypt/CryptSpirit/Animation/crypt_spirit_frames.tres"
+      },
+      "level_up": {
+        "research_cost": 6000,
+        "hp_per_level": 40,
+        "atk_per_level": 2,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 40,
+          "souls": 15
+        }
+      }
+    },
+    {
+      "id": "crypt_ghoul",
+      "name": "Crypt Ghoul",
+      "description": "Very unfriendly, but useful in a melee battle.",
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 5,
+      "unlock_research": "crypt_ghoul",
+      "stats": {
+        "hp": 600,
+        "atk": 50,
+        "spd": 1
+      },
+      "attack": {
+        "type": "melee"
+      },
+      "summon_cost": {
+        "mana": 2000,
+        "souls": 550,
+        "flesh": 100
+      },
+      "art": {
+        "icon": "res://Art/Units/Crypt/CryptGhoul/Icons/crypt_ghoul_research.png",
+        "animation": "res://Art/Units/Crypt/CryptGhoul/Animation/crypt_ghoul_frames.tres"
+      },
+      "level_up": {
+        "research_cost": 10000,
+        "hp_per_level": 60,
+        "atk_per_level": 5,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 100,
+          "souls": 30,
+          "flesh": 10
+        }
+      }
+    },
+    {
+      "id": "crypt_priest",
+      "name": "Crypt Priest",
+      "description": "Will heal for free.",
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 5,
+      "unlock_research": "crypt_priest",
+      "stats": {
+        "hp": 50,
+        "atk": 25,
+        "spd": 2
+      },
+      "attack": {
+        "type": "healer",
+        "projectile": "res://Art/Units/Crypt/CryptPriest/Projectiles/healing_frames.tres"
+      },
+      "summon_cost": {
+        "mana": 2000,
+        "souls": 400,
+        "bones": 100
+      },
+      "art": {
+        "icon": "res://Art/Units/Crypt/CryptPriest/Icons/crypt_priest.png",
+        "animation": "res://Art/Units/Crypt/CryptPriest/Animation/crypt_priest_frames.tres"
+      },
+      "level_up": {
+        "research_cost": 7500,
+        "hp_per_level": 5,
+        "atk_per_level": 3,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 100,
+          "souls": 20,
+          "bones": 10
+        }
+      }
+    },
+    {
+      "id": "warrior_crypt_spider",
+      "name": "Warrior Crypt Spider",
+      "description": "Strikes fast and has a 10% chance to poison for 2s.",
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 10,
+      "unlock_research": "summon_warrior",
+      "stats": {
+        "hp": 350,
+        "atk": 18,
+        "spd": 0.5
+      },
+      "attack": {
+        "type": "melee",
+        "on_hit": [
+          {
+            "status": "poison",
+            "chance_pct": 10,
+            "duration_ticks_or_s": 2
+          }
+        ]
+      },
+      "summon_cost": {
+        "mana": 1500,
+        "souls": 300,
+        "flesh": 50
+      },
+      "art": {
+        "icon": "res://Art/Research/Icons/SpiderSorcery/summon_warrior_spider.png",
+        "animation": "res://Art/Units/Spiders/WarriorCryptSpider/Animation/warrior_crypt_spider_frames.tres"
+      },
+      "level_up": {
+        "research_cost": 10000,
+        "hp_per_level": 35,
+        "atk_per_level": 2,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 75,
+          "souls": 15,
+          "flesh": 5
+        }
+      }
+    },
+    {
+      "id": "spider_shield",
+      "name": "Spider Shield",
+      "description": "A sturdy spider that draws enemy attacks.",
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 10,
+      "unlock_research": "summon_shield",
+      "stats": {
+        "hp": 900,
+        "atk": 12,
+        "spd": 3
+      },
+      "attack": {
+        "type": "melee"
+      },
+      "passives": [
+        {
+          "id": "aggro",
+          "duration": 5,
+          "description": "For 5 seconds, all attacks are directed at this unit, including area-of-effect abilities. Restarts at the beginning of every battle level."
+        }
+      ],
+      "summon_cost": {
+        "mana": 1800,
+        "souls": 350,
+        "bones": 150
+      },
+      "art": {
+        "icon": "res://Art/Research/Icons/SpiderSorcery/summon_shield_spider.png",
+        "animation": "res://Art/Units/Spiders/SpiderShield/Animation/spider_shield_frames.tres"
+      },
+      "flags": {
+        "ResetAggroEachLevel": true
+      },
+      "level_up": {
+        "research_cost": 10000,
+        "hp_per_level": 90,
+        "atk_per_level": 1,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 90,
+          "souls": 18,
+          "bones": 10
+        }
+      }
+    },
+    {
+      "id": "cannon_spider",
+      "name": "Cannon Spider",
+      "description": "Fires poison globs at random enemies, 50% chance to poison for 5s.",
+      "type": "squad",
+      "size": 1,
+      "slot_span": 1,
+      "can_fight": true,
+      "max_in_barracks": 10,
+      "unlock_research": "summon_cannon",
+      "stats": {
+        "hp": 200,
+        "atk": 30,
+        "spd": 1
+      },
+      "attack": {
+        "type": "ranged",
+        "targeting": "random",
+        "projectile": "res://Art/Units/Spiders/CannonSpider/Projectiles/poison_glob.png",
+        "on_hit": [
+          {
+            "status": "poison",
+            "chance_pct": 50,
+            "duration_ticks_or_s": 5
+          }
+        ]
+      },
+      "summon_cost": {
+        "mana": 2500,
+        "souls": 450,
+        "flesh": 100
+      },
+      "art": {
+        "icon": "res://Art/Research/Icons/SpiderSorcery/summon_cannon_spider.png",
+        "animation": "res://Art/Units/Spiders/CannonSpider/Animation/cannon_spider_frames.tres"
+      },
+      "level_up": {
+        "research_cost": 12500,
+        "hp_per_level": 20,
+        "atk_per_level": 3,
+        "spd_per_level": 0,
+        "cost_per_level": {
+          "mana": 120,
+          "souls": 25,
+          "flesh": 10
+        }
+      }
+    }
+  ]
+}

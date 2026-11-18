@@ -1,0 +1,9 @@
+// Mining: rate_per_tick = units per tick per necromancer; xp_per_unit. level = Mining level needed. Placeholders.
+{
+  "type": "gathering_activity",
+  "entries": [
+    { "id": "copper_ore", "name": "Copper Seam", "skill": "mining", "level": 1,  "rate_per_tick": 0.5, "xp_per_unit": 5,  "output": "copper_ore", "placeholder": true },
+    { "id": "coal",       "name": "Coal Seam",   "skill": "mining", "level": 5,  "rate_per_tick": 0.4, "xp_per_unit": 8,  "output": "coal",       "placeholder": true },
+    { "id": "iron_ore",   "name": "Iron Seam",   "skill": "mining", "level": 10, "rate_per_tick": 0.3, "xp_per_unit": 12, "output": "iron_ore",   "placeholder": true }
+  ]
+}

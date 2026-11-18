@@ -1,0 +1,53 @@
+{
+  "resources": [
+    {
+      "id": "coin",
+      "category": "currency"
+    },
+    {
+      "id": "mana",
+      "category": "base"
+    },
+    {
+      "id": "souls",
+      "category": "base"
+    },
+    {
+      "id": "bones",
+      "category": "base"
+    },
+    {
+      "id": "flesh",
+      "category": "base"
+    },
+    {
+      "id": "fire",
+      "category": "element"
+    },
+    {
+      "id": "water",
+      "category": "element"
+    },
+    {
+      "id": "earth",
+      "category": "element"
+    },
+    {
+      "id": "air",
+      "category": "element"
+    },
+    {
+      "id": "sword",
+      "category": "gear_item"
+    },
+    {
+      "id": "bow",
+      "category": "gear_item"
+    },
+    {
+      "id": "staff",
+      "category": "gear_item"
+    }
+  ],
+  "note": "gear_item entries are consumed items (phase 11 decides if they live in Storage or inventory)."
+}

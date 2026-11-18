@@ -1,0 +1,593 @@
+{
+  "Units": [
+	{
+	  "Name": "Necormancer",
+	  "Description": "A risen caster that serves the lich.",
+	  "IconPath": "res://Art/Units/Necromancer/Icons/Necromancer_Unit.png",
+	  "AnimationPath": null,
+	  "UnlockResearch": "Summoning",
+	  "Max": 5,
+	  "UnitType": "Resource", 
+	  "UnitSize": 0,
+	  "CanFight": false,
+	  "HP": 0,
+	  "ATK": 0,
+	  "SPD": 0,
+	  "AttackType": null,
+	  "Cost": {
+		"Mana": 50,
+		"Souls": 25
+	  }
+	},
+
+	{
+	  "Name": "Wisp",
+	  "Tags": ["Wisp"],
+	  "Description": "A flickering spirit bound to serve.",
+	  "IconPath": "res://Art/Units/Spirits/Wisp/Icons/Wisp_Unit.png",
+	  "AnimationPath": "res://Art/Units/Spirits/Wisp/Animation/wisp_animation.tres",
+	  "UnlockResearch": "Summoning",
+	  "Max": 20,
+	  "UnitType": "Squad", 
+	  "UnitSize": 1,
+	  "CanFight": true,
+	  "HP": 50,
+	  "ATK": 5,
+	  "SPD": 2,
+	  "AttackType": "Melee",
+	  "Cost": {
+		"Mana": 50
+	  },
+	  "LevelUp": {
+		"Research": 1500,
+		"HP": 10,
+		"ATK": 1,
+		"SPD": 0,
+		"SquadMilestones": [3, 10, 20, 30, 50, 80],
+		"CostPerLevel": {
+		  "Mana": 20
+		}
+	  }
+	},
+	{
+	  "Name": "Fire Wisp",
+	  "Tags": ["Wisp"],
+	  "Description": "A spirit bound in flame. Its attack hits every enemy.",
+	  "IconPath": "res://Art/Units/Spirits/FireWisp/Icons/fire_wisp_icon.png",
+	  "AnimationPath": "res://Art/Units/Spirits/FireWisp/Animation/fire_wisp_animation.tres",
+	  "UnlockResearch": "Elemental Wisps",
+	  "Max": 20,
+	  "UnitType": "Squad",
+	  "UnitSize": 1,
+	  "SpriteScale": 2.1,
+	  "CanFight": true,
+	  "HP": 50,
+	  "ATK": 8,
+	  "SPD": 2,
+	  "AttackType": "AOE",
+	  "Projectile": "res://Art/Units/Spirits/FireWisp/Projectiles/fire_wisp_bolt.png",
+	  "ProjectileScale": 0.25,
+	  "Cost": {
+		"Mana": 50,
+		"Fire": 25
+	  },
+	  "LevelUp": {
+		"Research": 1500,
+		"HP": 10,
+		"ATK": 1,
+		"SPD": 0,
+		"SquadMilestones": [3, 10, 20, 30, 50, 80],
+		"CostPerLevel": {
+		  "Mana": 20,
+		  "Fire": 10
+		}
+	  }
+	},
+	{
+	  "Name": "Water Wisp",
+	  "Tags": ["Wisp"],
+	  "Description": "A spirit bound in tide. Heals the most wounded ally for its attack value.",
+	  "IconPath": "res://Art/Units/Spirits/WaterWisp/Icons/water_wisp_icon.png",
+	  "AnimationPath": "res://Art/Units/Spirits/WaterWisp/Animation/water_wisp_animation.tres",
+	  "UnlockResearch": "Elemental Wisps",
+	  "Max": 20,
+	  "UnitType": "Squad",
+	  "UnitSize": 1,
+	  "SpriteScale": 2.1,
+	  "CanFight": true,
+	  "HP": 50,
+	  "ATK": 8,
+	  "SPD": 2,
+	  "AttackType": "Healer",
+	  "Projectile": "res://Art/Spells/HealingSprings/Animation/healing_springs_frames.tres",
+	  "Cost": {
+		"Mana": 50,
+		"Water": 25
+	  },
+	  "LevelUp": {
+		"Research": 1500,
+		"HP": 10,
+		"ATK": 1,
+		"SPD": 0,
+		"SquadMilestones": [3, 10, 20, 30, 50, 80],
+		"CostPerLevel": {
+		  "Mana": 20,
+		  "Water": 10
+		}
+	  }
+	},
+	{
+	  "Name": "Air Wisp",
+	  "Tags": ["Wisp"],
+	  "Description": "A spirit bound in wind. Strikes the front enemy, with a 20% chance to stun for 1 second.",
+	  "IconPath": "res://Art/Units/Spirits/AirWisp/Icons/air_wisp_icon.png",
+	  "AnimationPath": "res://Art/Units/Spirits/AirWisp/Animation/air_wisp_animation.tres",
+	  "UnlockResearch": "Elemental Wisps",
+	  "Max": 20,
+	  "UnitType": "Squad",
+	  "UnitSize": 1,
+	  "SpriteScale": 2.1,
+	  "CanFight": true,
+	  "HP": 50,
+	  "ATK": 8,
+	  "SPD": 2,
+	  "AttackType": "Ranged",
+	  "Targeting": "Front",
+	  "OnHit": [{ "Status": "Stun", "Chance": 20, "Duration": 1 }],
+	  "Projectile": "res://Art/Units/Spirits/AirWisp/Projectiles/air_wisp_bolt.png",
+	  "Cost": {
+		"Mana": 50,
+		"Air": 25
+	  },
+	  "LevelUp": {
+		"Research": 1500,
+		"HP": 10,
+		"ATK": 1,
+		"SPD": 0,
+		"SquadMilestones": [3, 10, 20, 30, 50, 80],
+		"CostPerLevel": {
+		  "Mana": 20,
+		  "Air": 10
+		}
+	  }
+	},
+	{
+	  "Name": "Earth Wisp",
+	  "Tags": ["Wisp"],
+	  "Description": "A spirit bound in stone. 20% more health and light hits. Each attack draws enemy attention for 3 seconds.",
+	  "IconPath": "res://Art/Units/Spirits/EarthWisp/Icons/earth_wisp_icon.png",
+	  "AnimationPath": "res://Art/Units/Spirits/EarthWisp/Animation/earth_wisp_animation.tres",
+	  "UnlockResearch": "Elemental Wisps",
+	  "Max": 20,
+	  "UnitType": "Squad",
+	  "UnitSize": 1,
+	  "SpriteScale": 2.1,
+	  "CanFight": true,
+	  "HP": 60,
+	  "ATK": 3,
+	  "SPD": 2,
+	  "AttackType": "Ranged",
+	  "RefreshAggroOnAttack": true,
+	  "Passives": [{ "Name": "Aggro", "Duration": 3, "Description": "For 3 seconds, all attacks are directed at this unit, including area-of-effect abilities. Refreshes each time this unit attacks." }],
+	  "Projectile": "res://Art/Units/Spirits/EarthWisp/Projectiles/earth_wisp_bolt.png",
+	  "Cost": {
+		"Mana": 50,
+		"Earth": 25
+	  },
+	  "LevelUp": {
+		"Research": 1500,
+		"HP": 12,
+		"ATK": 1,
+		"SPD": 0,
+		"SquadMilestones": [3, 10, 20, 30, 50, 80],
+		"CostPerLevel": {
+		  "Mana": 20,
+		  "Earth": 10
+		}
+	  }
+	},
+	{
+	  "Name": "Skeleton",
+	  "Tags": ["Skeleton"],
+	  "Description": "A boney friend to serve the lich.",
+	  "IconPath": "res://Art/Units/Skeletons/Skeleton/Icons/skeleton_icon.png",
+	  "AnimationPath": "res://Art/Units/Skeletons/Skeleton/Animation/skeleton_sprite_frame.tres",
+	  "UnlockResearch": "Animate Bones",
+	  "Max": 20,
+	  "UnitType": "Squad", 
+	  "UnitSize": 1,
+	  "CanFight": true,
+	  "HP": 100,
+	  "ATK": 10,
+	  "SPD": 2,
+	  "AttackType": "Melee",
+	  "Cost": {
+		"Mana": 150,
+		"Souls": 10,
+		"Bones": 10
+	  },
+	  "LevelUp": {
+		"Research": 3000,
+		"HP": 15,
+		"ATK": 2,
+		"SPD": 0,
+		"SquadMilestones": [3, 10, 20, 30, 50, 80],
+		"CostPerLevel": {
+		  "Mana": 30,
+		  "Souls": 5,
+		  "Bones": 5
+		}
+	  }
+	},
+	{
+		"Name": "Skeleton Warrior",
+		"Tags": ["Skeleton"],
+		"Description": "A boney warrior to serve the lich.",
+		"IconPath": "res://Art/Units/Skeletons/SkeletonSwordAndShield/Icons/skeleton_warrior_icon.png",
+		"AnimationPath": "res://Art/Units/Skeletons/SkeletonSwordAndShield/Animation/skeleton_swordandshield_frames.tres",
+		"UnlockResearch": "Skeleton Warrior",
+		"Max": 20,
+		"UnitType": "Squad", 
+		"UnitSize": 1,
+		"CanFight": true,
+		"HP": 250,
+		"ATK": 20,
+		"SPD": 2,
+		"AttackType": "Melee",
+		"Cost": {
+		  "Mana": 150,
+		  "Souls": 10,
+		  "Bones": 10,
+		  "Sword": 1
+		},
+		"LevelUp": {
+		  "Research": 4000,
+		  "HP": 25,
+		  "ATK": 2,
+		  "SPD": 0,
+		  "SquadMilestones": [3, 10, 20, 30, 50, 80],
+		  "CostPerLevel": {
+			"Mana": 30,
+			"Souls": 5,
+			"Bones": 5
+		  },
+		  "CostPerMilestone": {
+			"Sword": 1
+		  }
+		}
+	  },
+	  {
+		"Name": "Skeleton Archer",
+		"Tags": ["Skeleton"],
+		"Description": "A boney warrior to serve the lich.",
+		"IconPath": "res://Art/Units/Skeletons/SkeletonArcher/Icons/skeleton_archer_icon.png",
+		"AnimationPath": "res://Art/Units/Skeletons/SkeletonArcher/Animation/skeleton_archer_frames.tres",
+		"UnlockResearch": "Skeleton Archer",
+		"Max": 20,
+		"UnitType": "Squad", 
+		"UnitSize": 1,
+		"CanFight": true,
+		"HP": 150,
+		"ATK": 30,
+		"SPD": 2,
+		"AttackType": "Ranged",
+		"Projectile": "res://Art/Units/Skeletons/SkeletonArcher/Projectiles/Arrow.png",
+		"Cost": {
+		  "Mana": 150,
+		  "Souls": 10,
+		  "Bones": 10,
+		  "Bow": 1
+		},
+		"LevelUp": {
+		  "Research": 4000,
+		  "HP": 15,
+		  "ATK": 3,
+		  "SPD": 0,
+		  "SquadMilestones": [3, 10, 20, 30, 50, 80],
+		  "CostPerLevel": {
+			"Mana": 30,
+			"Souls": 5,
+			"Bones": 5
+		  },
+		  "CostPerMilestone": {
+			"Bow": 1
+		  }
+		}
+	  },
+	  {
+		"Name": "Skeleton Mage",
+		"Tags": ["Skeleton"],
+		"Description": "A boney mage to serve the lich.",
+		"IconPath": "res://Art/Units/Skeletons/SkeletonMage/Icons/skeleton_mage_icon.png",
+		"AnimationPath": "res://Art/Units/Skeletons/SkeletonMage/Animation/skeleton_mage_frames.tres",
+		"UnlockResearch": "Skeleton Mage",
+		"Max": 20,
+		"UnitType": "Squad", 
+		"UnitSize": 1,
+		"CanFight": true,
+		"HP": 150,
+		"ATK": 30,
+		"SPD": 2,
+		"AttackType": "AOE",
+		"Projectile": "res://Art/Units/Skeletons/SkeletonMage/Projectiles/fireball.png",
+		"Cost": {
+		  "Mana": 150,
+		  "Souls": 10,
+		  "Bones": 10,
+		  "Staff": 1
+		},
+		"LevelUp": {
+		  "Research": 4000,
+		  "HP": 15,
+		  "ATK": 3,
+		  "SPD": 0,
+		  "SquadMilestones": [3, 10, 20, 30, 50, 80],
+		  "CostPerLevel": {
+			"Mana": 30,
+			"Souls": 5,
+			"Bones": 5
+		  },
+		  "CostPerMilestone": {
+			"Staff": 1
+		  }
+		}
+	  },
+	  {
+		"Name": "Skeleton Golem",
+		"Tags": ["Skeleton"],
+		"Description": "A hulking skeleton that draws enemy attacks and holds the front line.",
+		"IconPath": "res://Art/Units/Skeletons/SkeletonGolem/Icons/skeleton_brute_icon_1x1.png",
+		"AnimationPath": "res://Art/Units/Skeletons/SkeletonGolem/Animation/skeleton_golem_frames.tres",
+		"BarracksIconPath": "res://Art/Units/Skeletons/SkeletonGolem/Icons/skeleton_golem_2x1.png",
+		"ResetAggroEachLevel": true,
+		"Passives": [{ "Name": "Aggro", "Duration": 15, "Description": "For 15 seconds, all attacks are directed at this unit, including area-of-effect abilities. Restarts at the beginning of every battle level." }],
+		"UnlockResearch": "Skeleton Golem",
+		"Max": 5,
+		"UnitType": "Large",
+		"UnitSize": 1,
+		"SlotSpan": 2,
+		"CanFight": true,
+		"HP": 700,
+		"ATK": 35,
+		"SPD": 5,
+		"AttackType": "Melee",
+		"Aggro": true,
+		"Cost": {
+		  "Mana": 400,
+		  "Souls": 40,
+		  "Bones": 30
+		},
+		"LevelUp": {
+		  "Research": 7500,
+		  "HP": 50,
+		  "ATK": 4,
+		  "SPD": 0,
+		  "CostPerLevel": {
+			"Mana": 50,
+			"Souls": 8,
+			"Bones": 8
+		  }
+		}
+	  },
+	{
+	  "Name": "Crypt Spider",
+	  "Description": "8 legged friends, keep away from fire.",
+	  "IconPath": "res://Art/Units/Spiders/CryptSpider/Icons/crypt_spider_icon.png",
+	  "AnimationPath": "res://Art/Units/Spiders/CryptSpider/Animation/crypt_spider_frames.tres",
+	  "UnlockResearch": "Crypt Spider",
+	  "Max": 40,
+	  "UnitType": "Squad", 
+	  "UnitSize": 3,
+	  "CanFight": true,
+	  "HP": 25,
+	  "ATK": 10,
+	  "SPD": 0.5,
+	  "AttackType": "Melee",
+	  "Cost": {
+		"Mana": 200,
+		"Souls": 10
+	  },
+	  "LevelUp": {
+		"Research": 4000,
+		"HP": 3,
+		"ATK": 1,
+		"SPD": 0,
+		"CostPerLevel": {
+		  "Mana": 20,
+		  "Souls": 3
+		}
+	  }
+	},
+	{
+	  "Name": "Crypt Spirit",
+	  "Description": "Kinda spooky, from a distance.",
+	  "IconPath": "res://Art/Units/Crypt/CryptSpirit/Icons/crypt_spirit_icon.png",
+	  "AnimationPath": "res://Art/Units/Crypt/CryptSpirit/Animation/crypt_spirit_frames.tres",
+	  "UnlockResearch": "Crypt Spirit",
+	  "Max": 5,
+	  "UnitType": "Squad", 
+	  "UnitSize": 1,
+	  "CanFight": true,
+	  "HP": 400,
+	  "ATK": 20,
+	  "SPD": 1,
+	  "AttackType": "Melee",
+	  "Cost": {
+		"Mana": 400,
+		"Souls": 150
+	  },
+	  "LevelUp": {
+		"Research": 6000,
+		"HP": 40,
+		"ATK": 2,
+		"SPD": 0,
+		"CostPerLevel": {
+		  "Mana": 40,
+		  "Souls": 15
+		}
+	  }
+	},
+	{
+	  "Name": "Crypt Ghoul",
+	  "Description": "Very unfriendly, but useful in a melee battle.",
+	  "IconPath": "res://Art/Units/Crypt/CryptGhoul/Icons/crypt_ghoul_research.png",
+	  "AnimationPath": "res://Art/Units/Crypt/CryptGhoul/Animation/crypt_ghoul_frames.tres",
+	  "UnlockResearch": "Crypt Ghoul",
+	  "Max": 5,
+	  "UnitType": "Squad", 
+	  "UnitSize": 1,
+	  "CanFight": true,
+	  "HP": 600,
+	  "ATK": 50,
+	  "SPD": 1,
+	  "AttackType": "Melee",
+	  "Cost": {
+		"Mana": 2000,
+		"Souls": 550,
+		"Flesh": 100
+	  },
+	  "LevelUp": {
+		"Research": 10000,
+		"HP": 60,
+		"ATK": 5,
+		"SPD": 0,
+		"CostPerLevel": {
+		  "Mana": 100,
+		  "Souls": 30,
+		  "Flesh": 10
+		}
+	  }
+	},
+	{
+	  "Name": "Crypt Priest",
+	  "Description": "Will heal for free.",
+	  "IconPath": "res://Art/Units/Crypt/CryptPriest/Icons/crypt_priest.png",
+	  "AnimationPath": "res://Art/Units/Crypt/CryptPriest/Animation/crypt_priest_frames.tres",
+	  "UnlockResearch": "Crypt Priest",
+	  "Max": 5,
+	  "UnitType": "Squad", 
+	  "UnitSize": 1,
+	  "CanFight": true,
+	  "HP": 50,
+	  "ATK": 25,
+	  "SPD": 2,
+	  "AttackType": "Healer",
+	  "Projectile": "res://Art/Units/Crypt/CryptPriest/Projectiles/healing_frames.tres",
+	  "Cost": {
+		"Mana": 2000,
+		"Souls": 400,
+		"Bones": 100
+	  },
+	  "LevelUp": {
+		"Research": 7500,
+		"HP": 5,
+		"ATK": 3,
+		"SPD": 0,
+		"CostPerLevel": {
+		  "Mana": 100,
+		  "Souls": 20,
+		  "Bones": 10
+		}
+	  }
+	},
+	{
+	  "Name": "Warrior Crypt Spider",
+	  "Description": "Strikes fast and has a 10% chance to poison for 2s.",
+	  "IconPath": "res://Art/Research/Icons/SpiderSorcery/summon_warrior_spider.png",
+	  "AnimationPath": "res://Art/Units/Spiders/WarriorCryptSpider/Animation/warrior_crypt_spider_frames.tres",
+	  "UnlockResearch": "Summon Warrior",
+	  "Max": 10,
+	  "UnitType": "Squad",
+	  "UnitSize": 1,
+	  "CanFight": true,
+	  "HP": 350,
+	  "ATK": 18,
+	  "SPD": 0.5,
+	  "AttackType": "Melee",
+	  "OnHit": [{ "Status": "Poison", "Chance": 10, "Duration": 2 }],
+	  "Cost": {
+		"Mana": 1500,
+		"Souls": 300,
+		"Flesh": 50
+	  },
+	  "LevelUp": {
+		"Research": 10000,
+		"HP": 35,
+		"ATK": 2,
+		"SPD": 0,
+		"CostPerLevel": {
+		  "Mana": 75,
+		  "Souls": 15,
+		  "Flesh": 5
+		}
+	  }
+	},
+	{
+	  "Name": "Spider Shield",
+	  "Description": "A sturdy spider that draws enemy attacks.",
+	  "IconPath": "res://Art/Research/Icons/SpiderSorcery/summon_shield_spider.png",
+	  "AnimationPath": "res://Art/Units/Spiders/SpiderShield/Animation/spider_shield_frames.tres",
+	  "ResetAggroEachLevel": true,
+	  "Passives": [{ "Name": "Aggro", "Duration": 5, "Description": "For 5 seconds, all attacks are directed at this unit, including area-of-effect abilities. Restarts at the beginning of every battle level." }],
+	  "UnlockResearch": "Summon Shield",
+	  "Max": 10,
+	  "UnitType": "Squad",
+	  "UnitSize": 1,
+	  "CanFight": true,
+	  "HP": 900,
+	  "ATK": 12,
+	  "SPD": 3,
+	  "AttackType": "Melee",
+	  "Cost": {
+		"Mana": 1800,
+		"Souls": 350,
+		"Bones": 150
+	  },
+	  "LevelUp": {
+		"Research": 10000,
+		"HP": 90,
+		"ATK": 1,
+		"SPD": 0,
+		"CostPerLevel": {
+		  "Mana": 90,
+		  "Souls": 18,
+		  "Bones": 10
+		}
+	  }
+	},
+	{
+	  "Name": "Cannon Spider",
+	  "Description": "Fires poison globs at random enemies, 50% chance to poison for 5s.",
+	  "IconPath": "res://Art/Research/Icons/SpiderSorcery/summon_cannon_spider.png",
+	  "AnimationPath": "res://Art/Units/Spiders/CannonSpider/Animation/cannon_spider_frames.tres",
+	  "UnlockResearch": "Summon Cannon",
+	  "Max": 10,
+	  "UnitType": "Squad",
+	  "UnitSize": 1,
+	  "CanFight": true,
+	  "HP": 200,
+	  "ATK": 30,
+	  "SPD": 1,
+	  "AttackType": "Ranged",
+	  "Targeting": "Random",
+	  "Projectile": "res://Art/Units/Spiders/CannonSpider/Projectiles/poison_glob.png",
+	  "OnHit": [{ "Status": "Poison", "Chance": 50, "Duration": 5 }],
+	  "Cost": {
+		"Mana": 2500,
+		"Souls": 450,
+		"Flesh": 100
+	  },
+	  "LevelUp": {
+		"Research": 12500,
+		"HP": 20,
+		"ATK": 3,
+		"SPD": 0,
+		"CostPerLevel": {
+		  "Mana": 120,
+		  "Souls": 25,
+		  "Flesh": 10
+		}
+	  }
+	}
+  ]
+}

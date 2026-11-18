@@ -1,0 +1,824 @@
+{
+  "Necromancy": [
+    {
+      "Name": "Summoning",
+      "Requirements": [],
+      "Position": [1, 0],
+      "Description": "Unlocks the ability to summon simple minions to fight for you.",
+      "IconPath": "res://Art/Research/Icons/Necromancy/Summoning.png",
+      "UnlockCost": 4,
+      "Next": "Soul Harvesting"
+    },
+    {
+      "Name": "Soul Harvesting",
+      "Requirements": ["Summoning"],
+      "Position": [0, 1],
+      "Description": "Gives the player a soul harvest rate of 2.",
+      "IconPath": "res://Art/Research/Icons/Necromancy/Soul_Harvesting.png",
+      "UnlockCost": 7,
+      "Next": "Dark Recruitment"
+    },
+    {
+        "Name": "Necrotic Blast",
+        "Requirements": ["Summoning"],
+        "Position": [2, 1],
+        "Description": "Unlocks the ability to cast necrotic blast from the spell book.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/Necrotic_Blast.png",
+        "UnlockCost": 32,
+        "Next": "Necrotic Harvest"
+    },
+    {
+        "Name": "Necrotic Harvest",
+        "Requirements": ["Necrotic Blast"],
+        "Position": [2, 2],
+        "Description": "When Necrotic Blast hits an enemy gain +1 soul.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/Necrotic_Harvest.png",
+        "UnlockCost": 63,
+        "Next": "Soul Harvesting"
+    },
+    {
+        "Name": "Dark Recruitment",
+        "Requirements": ["Soul Harvesting"],
+        "Position": [1, 2],
+        "Description": "+10 max necromancers. Necromancers cost 25% less to summon.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/dark_recruitment.png",
+        "UnlockCost": 75,
+        "Next": "Animate Bones"
+    },
+    {
+        "Name": "Dark Expansion 1",
+        "Requirements": ["Dark Recruitment"],
+        "Position": [0, 2],
+        "Description": "+1 max necromancer per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/DarkExpansion1_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/DarkExpansion1_Square.png",
+        "MaxLevel": 100,
+        "UnlockCost": 300
+    },
+    {
+        "Name": "Animate Bones",
+        "Requirements": ["Soul Harvesting"],
+        "Position": [0, 2],
+        "Description": "Unlock the ability to summon skeletons.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/Animate_Bones.png",
+        "UnlockCost": 125,
+        "Next": "Necrotic Evolution"
+    },
+    {
+        "Name": "Necrotic Evolution",
+        "Requirements": ["Animate Bones"],
+        "Position": [2, 3],
+        "Description": "Unlock unit research up to level 5.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/Necrotic_Evolution.png",
+        "UnlockCost": 625,
+        "Next": "Dark Efficiency"
+    },    
+    {
+        "Name": "Dark Efficiency",
+        "Requirements": ["Necrotic Evolution"],
+        "Position": [2, 3],
+        "Description": "Necromancers cost 50% less to summon and take 5% less time between ticks.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/Dark Efficiency.png",
+        "UnlockCost": 1250,
+        "Next": "Expanded Minons"
+    },    
+    {
+        "Name": "Expanded Minons",
+        "Requirements": ["Dark Efficiency"],
+        "Position": [2, 3],
+        "Description": "+20 more necromancers and +20 more units in barracks to all units. Adds a summon slot to the Summoning Circle.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/Expanded_Minons.png",
+        "UnlockCost": 3750,
+        "Next": "Dark Empowerment"
+    },    
+    {
+        "Name": "Dark Empowerment",
+        "Requirements": ["Expanded Minons"],
+        "Position": [2, 3],
+        "Description": "10% more ATK stat to all units. Doubles necromancer room in every workshop and research bench.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/dark_empowerment.png",
+        "UnlockCost": 2500,
+        "Next": "Summon Gear"
+    },
+    {
+        "Name": "Summon Gear",
+        "Requirements": ["Necrotic Evolution"],
+        "Position": [0, 3],
+        "Description": "Unlock the ability to transmute summoning gear for advanced skeletons.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/Summon_gear.png",
+        "UnlockCost": 1500,
+        "Next": "Skeleton Archer"
+    },
+    {
+      "Name": "Soul Well",
+      "Requirements":  ["Summon Gear"],
+      "Position": [0, 3],
+      "Description": "Unlock the soul well",
+      "IconPath": "res://Art/Research/Icons/Necromancy/soul_well_research .png",
+      "UnlockCost": 1250,
+      "Next": "Skeleton Archer"
+    },
+    {
+      "Name": "Undead Market",
+      "Requirements":  ["Soul Harvesting"],
+      "Position": [0, 3],
+      "Description": "Unlock the Undead Market",
+      "IconPath": "res://Art/Research/Icons/Necromancy/undead_market_research.png",
+      "UnlockCost": 75,
+      "Next": "Skeleton Archer"
+    },
+    {
+        "Name": "Skeleton Archer",
+        "Requirements": ["Summon Gear"],
+        "Position": [0, 4],
+        "Description": "Unlock the ability to summon skeleton archers.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/skeleton_archer.png",
+        "UnlockCost": 5000,
+        "Next": "Skeleton Warrior"
+    },
+    {
+        "Name": "Skeleton Warrior",
+        "Requirements": ["Summon Gear"],
+        "Position": [1, 4],
+        "Description": "Unlock the ability to summon skeleton warriors.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/skeleton_warriro.png",
+        "UnlockCost": 5000,
+        "Next": "Skeleton Mage"
+    },
+    {
+        "Name": "Skeleton Mage",
+        "Requirements": ["Summon Gear"],
+        "Position": [2, 4],
+        "Description": "Unlock the ability to summon skeleton mages.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/skeleton_mage.png",
+        "UnlockCost": 5000,
+        "Next": "Skeleton Golem"
+    },
+    {
+        "Name": "Skeleton Golem",
+        "Requirements": ["Skeleton Mage", "Skeleton Archer", "Skeleton Warrior"],
+        "Position": [1, 5],
+        "Description": "Unlock the ability to summon Skeleton Brutes.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/Skeleton_golem.png",
+        "UnlockCost": 10000
+    },
+    {
+        "Name": "Expanded Army",
+        "Requirements": ["Skeleton Golem"],
+        "Position": [1, 5],
+        "Description": "+1 Army slot",
+        "IconPath": "res://Art/Research/Icons/Necromancy/expanded_army.png",
+        "UnlockCost": 12500
+    },
+    {
+        "Name": "Summoning Power",
+        "Requirements": ["Soul Well"],
+        "Position": [0, 0],
+        "Description": "+0.05% summoning efficiency per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/SummoningPower_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/SummoningPower_Square.png",
+        "MaxLevel": 100,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Necro Know-how",
+        "Requirements": ["Dark Empowerment"],
+        "Position": [0, 0],
+        "Description": "+0.1% efficacy to all necromancers per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/NecroKnowHow_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/NecroKnowHow_Square.png",
+        "MaxLevel": 50,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Bring Bones",
+        "Requirements": ["Animate Bones"],
+        "Position": [0, 0],
+        "Description": "Bones and all skeleton units are 1% cheaper per level (skeleton costs rounded up).",
+        "IconPath": "res://Art/Research/Icons/Necromancy/BringBones_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/BringBones_Square.png",
+        "MaxLevel": 25,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Forge Master",
+        "Requirements": ["Summon Gear"],
+        "Position": [0, 0],
+        "Description": "1% chance per level to make an extra sword, staff or bow when transmuting one.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/ForgeMaster_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/ForgeMaster_Square.png",
+        "MaxLevel": 30,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Embodied Mana",
+        "Requirements": ["Dark Efficiency"],
+        "Position": [0, 0],
+        "Description": "Mana Well and Infuser efficiency +0.05% per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/EmbodiedMana_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/EmbodiedMana_Square.png",
+        "MaxLevel": 999,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Marrow Market",
+        "Requirements": ["Undead Market"],
+        "Position": [0, 0],
+        "Description": "Bones and flesh sell for 0.01% more per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/MarrowMarket_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/MarrowMarket_Square.png",
+        "MaxLevel": 50,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Necro Mana",
+        "Requirements": ["Embodied Mana"],
+        "Position": [0, 0],
+        "Description": "+1 mana per tick for every necromancer assigned to a Mana Well, per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/NecroMana_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/NecroMana_Square.png",
+        "MaxLevel": 999,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Mana Stream",
+        "Requirements": ["Embodied Mana"],
+        "Position": [0, 0],
+        "Description": "+0.05% efficiency for every necromancer assigned to a Mana Well or Infuser, per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/ManaStream_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/ManaStream_Square.png",
+        "MaxLevel": 999,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Summoning Capacity",
+        "Requirements": ["Summoning Power"],
+        "Position": [0, 0],
+        "Description": "+1 summon slot on the Summoning Circle.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/SummoningCapacity_Square.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/SummoningCapacity_Square.png",
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Necro Capacity",
+        "Requirements": ["Summoning Power"],
+        "Position": [0, 0],
+        "Description": "+1 max necromancer in every workshop building and research bench, per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/NecroCapacity_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/NecroCapacity_Square.png",
+        "MaxLevel": 999,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Soul Stream",
+        "Requirements": ["Summoning Power"],
+        "Position": [0, 0],
+        "Description": "+0.05% Soul Well efficiency per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/SoulStream_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/SoulStream_Square.png",
+        "MaxLevel": 100,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Cheap Bones",
+        "Requirements": ["Expanded Army"],
+        "Position": [0, 0],
+        "Description": "All skeleton units are 0.5% cheaper per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/CheapBones_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/CheapBones_Square.png",
+        "MaxLevel": 50,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Experienced Bones",
+        "Requirements": ["Expanded Army"],
+        "Position": [0, 0],
+        "Description": "+1 max research level for all skeleton units per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/ExperiencedBones_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/ExperiencedBones_Square.png",
+        "MaxLevel": 95,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Milky Bones",
+        "Requirements": ["Experienced Bones"],
+        "Position": [0, 0],
+        "Description": "+0.1% max HP (rounded down) for all skeleton units per level.",
+        "IconPath": "res://Art/Research/Icons/Necromancy/MilkyBones_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Necromancy/MilkyBones_Square.png",
+        "MaxLevel": 999,
+        "UnlockCost": 250
+    }
+  ],
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    "Infusion": [
+    {
+      "Name": "Basic Infusion",
+      "Requirements": [],
+      "Position": [2, 0],
+      "Description": "Unlocks the ability to infuse an element into mana.",
+      "IconPath": "res://Art/Research/Icons/Infusion/baisc_infusion.png",
+      "UnlockCost": 7,
+      "Next": "Mana Storage"
+    },
+    {
+      "Name": "Mana Storage",
+      "Requirements": ["Basic Infusion"],
+      "Position": [2, 1],
+      "Description": "Unlock resource storage.",
+      "IconPath": "res://Art/Research/Icons/Infusion/magic_storage.png",
+      "UnlockCost": 25,
+      "Next": "Fire Spells"
+    },  
+    {
+      "Name": "Increased Focus",
+      "Requirements": ["Mana Storage"],
+      "Position": [2, 1],
+      "Description": "+4 Focus",
+      "IconPath": "res://Art/Research/Icons/Infusion/increased_focus_research.png",
+      "UnlockCost": 75,
+      "Next": "Fire Spells"
+    },  
+    {
+      "Name": "Transmute",
+      "Requirements": ["Mana Storage"],
+      "Position": [2, 1],
+      "Description": "Unlock transmuting.",
+      "IconPath": "res://Art/Research/Icons/Infusion/transmute.png",
+      "UnlockCost": 94,
+      "Next": "Cascading Transmuting"
+    },  
+    {
+      "Name": "Cascading Transmuting",
+      "Requirements": ["Transmute"],
+      "Position": [2, 1],
+      "Description": "Transmuting will now also transmute the resources of the transmuted item.",
+      "IconPath": "res://Art/Research/Icons/Infusion/cascading_transmute_research.png",
+      "UnlockCost": 313,
+      "Next": "Mana Proficiency"
+    },
+    {
+      "Name": "Fire Spells",
+      "Requirements": ["Mana Storage"],
+      "Position": [1, 0],
+      "Description": "Unlocks the Fire Ball spell.",
+      "IconPath": "res://Art/Research/Icons/Infusion/fire_spells.png",
+      "UnlockCost": 375,
+      "Next": "Water Spells"
+    },
+    {
+        "Name": "Water Spells",
+        "Requirements": ["Mana Storage"],
+        "Position": [1, 2],
+        "Description": "Unlocks the Healing Springs spell.",
+        "IconPath": "res://Art/Research/Icons/Infusion/water_spells.png",
+        "UnlockCost": 375,
+        "Next": "Transmute"
+    },
+    {
+      "Name": "Mana Proficiency",
+      "Requirements": ["Fire Spells", "Water Spells"],
+      "Position": [1, 2],
+      "Description": "10% more output from Mana Wells and Infusers.",
+      "IconPath": "res://Art/Research/Icons/Infusion/magic_prof.png",
+      "UnlockCost": 750,
+      "Next": ["Earth Spells", "Elemental Professional"]
+    },
+    {
+      "Name": "Elemental Professional",
+      "Requirements": ["Transmute"],
+      "Position": [2, 1],
+      "Description": "Infusers produce 2 elemental mana for every 1 mana consumed (Fire, Earth, Water or Air).",
+      "IconPath": "res://Art/Research/Icons/Infusion/elemental_pro_research.png",
+      "UnlockCost": 125
+    },
+    {
+        "Name": "Earth Spells",
+        "Requirements": ["Mana Proficiency"],
+        "Position": [2, 0],
+        "Description": "Unlocks the Rocky Terrain spell.",
+        "IconPath": "res://Art/Research/Icons/Infusion/earth_spell.png",
+        "UnlockCost": 1875,
+        "Next": ["Expanded Circle", "Air Spells"]
+    },
+    {
+        "Name": "Air Spells",
+        "Requirements": ["Mana Proficiency"],
+        "Position": [2, 2],
+        "Description": "Unlocks the Air Burst spell.",
+        "IconPath": "res://Art/Research/Icons/Infusion/air_spell.png",
+        "UnlockCost": 1875,
+        "Next": ["Expanded Circle", "Earth Spells"]
+    },
+    {
+        "Name": "Expanded Circle",
+        "Requirements": ["Air Spells", "Earth Spells"],
+        "Position": [2, 2],
+        "Description": "+20 max necromancers, +20 max units to all units",
+        "IconPath": "res://Art/Research/Icons/Infusion/expanded_circle_research.png",
+        "UnlockCost": 2500,
+        "Next": ["Elemental Wisps", "Mana Expanse"]
+    },
+    {
+        "Name": "Elemental Wisps",
+        "Requirements": ["Expanded Circle"],
+        "Position": [2, 2],
+        "Description": "Unlock Fire, Water, Air, and Earth Wisps. Fire hits every enemy, Water heals, Air can stun the front enemy, and Earth is tougher, hits lightly, and draws attacks. Each costs 50 mana plus 25 of its element.",
+        "IconPath": "res://Art/Research/Icons/Infusion/elemetnal_wisp.png",
+        "UnlockCost": 1125,
+        "Next": "Upgraded Infusions"
+    },
+    {
+        "Name": "Upgraded Infusions",
+        "Requirements": ["Expanded Circle"],
+        "Position": [3, 1],
+        "Description": "+10 max upgrade level for nodes and buildings.",
+        "IconPath": "res://Art/Research/Icons/Infusion/Upgraded_Infusion.png",
+        "UnlockCost": 3125,
+        "Next": ["Mana Expanse", "Magical Efficiency"]
+    },
+    {
+        "Name": "Mana Expanse",
+        "Requirements": ["Expanded Circle"],
+        "Position": [3, 1],
+        "Description": "Doubles Mana Well efficiency. Mana Well and Infuser necromancers get +10% efficiency.",
+        "IconPath": "res://Art/Research/Icons/Infusion/mana_expanse.png",
+        "UnlockCost": 3125,
+        "Next": "Magical Efficiency"
+    },
+    {
+        "Name": "Magical Efficiency",
+        "Requirements": ["Upgraded Infusions"],
+        "Position": [3, 1],
+        "Description": "Doubles the necromancers a Mana Well can hold. Spells cost 20% less.",
+        "IconPath": "res://Art/Research/Icons/Infusion/magical_effiency.png",
+        "UnlockCost": 4375,
+        "Next": "Spell Slinger"
+    },
+    {
+        "Name": "Spell Slinger",
+        "Requirements": ["Magical Efficiency"],
+        "Position": [3, 1],
+        "Description": "+10 Insight. Spells deal 10% more damage and healing. Debuffs and buffs last one tick longer.",
+        "IconPath": "res://Art/Research/Icons/Infusion/spell_slinger.png",
+        "UnlockCost": 6250
+    },
+    {
+        "Name": "Dark Legion",
+        "Requirements": ["Magical Efficiency"],
+        "Position": [3, 2],
+        "Description": "Doubles your max necromancers.",
+        "IconPath": "res://Art/Research/Icons/Infusion/expanded_circle_research.png",
+        "UnlockCost": 8750
+    },
+    {
+        "Name": "Research Buddy",
+        "Requirements": ["Increased Focus"],
+        "Position": [0, 0],
+        "Description": "+0.05% research efficiency per level.",
+        "IconPath": "res://Art/Research/Icons/Infusion/ResearchBuddy_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Infusion/ResearchBuddy_Square.png",
+        "MaxLevel": 100,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Spell Enchanter",
+        "Requirements": ["Increased Focus"],
+        "Position": [0, 0],
+        "Description": "+0.01% to damage, healing, debuff and buff spells per level.",
+        "IconPath": "res://Art/Research/Icons/Infusion/SpellEnchanter_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Infusion/SpellEnchanter_Square.png",
+        "MaxLevel": 999,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Research Assistance 1",
+        "Requirements": ["Mana Storage"],
+        "Position": [0, 0],
+        "Description": "+1 research bench.",
+        "IconPath": "res://Art/Research/Icons/Infusion/ResearchAssistance1_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Infusion/ResearchAssistance1_Square.png",
+        "MaxLevel": 1,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Research Assistance 2",
+        "Requirements": ["Mana Proficiency"],
+        "Position": [0, 0],
+        "Description": "+1 research bench.",
+        "IconPath": "res://Art/Research/Icons/Infusion/ResearchAssistance1_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Infusion/ResearchAssistance1_Square.png",
+        "MaxLevel": 1,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Mana Springs 1",
+        "Requirements": ["Upgraded Infusions"],
+        "Position": [0, 0],
+        "Description": "+0.05% mana efficiency per level.",
+        "IconPath": "res://Art/Research/Icons/Infusion/ManaSprings1_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Infusion/ManaSprings1_Square.png",
+        "MaxLevel": 300,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Wisp Whisperer",
+        "Requirements": ["Elemental Wisps"],
+        "Position": [0, 0],
+        "Description": "All wisps get +1 max unit research level per level.",
+        "IconPath": "res://Art/Research/Icons/Infusion/WispWhisperer_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Infusion/WispWhisperer_Square.png",
+        "MaxLevel": 95,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Transmuter Master",
+        "Requirements": ["Cascading Transmuting"],
+        "Position": [0, 0],
+        "Description": "+0.05% transmuter efficiency per level.",
+        "IconPath": "res://Art/Research/Icons/Infusion/TransmuterMaster_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Infusion/TransmuterMaster_Square.png",
+        "MaxLevel": 100,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Transmuting Assistant 1",
+        "Requirements": ["Transmuter Master"],
+        "Position": [0, 0],
+        "Description": "+1 transmuter station and a 2% chance that a transmute uses no ingredients, per level.",
+        "IconPath": "res://Art/Research/Icons/Infusion/TransmuterMaster_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Infusion/TransmuterMaster_Square.png",
+        "MaxLevel": 5,
+        "UnlockCost": 250
+    },
+    {
+        "Name": "Mage Hand 1",
+        "Requirements": ["Expanded Circle"],
+        "Position": [0, 0],
+        "Description": "+1 resource per click per level.",
+        "IconPath": "res://Art/Research/Icons/Infusion/MageHand1_Circle.png",
+        "LargeIconPath": "res://Art/Research/Icons/Infusion/MageHand1_Square.png",
+        "MaxLevel": 100,
+        "TimeMultiplier": 2,
+        "UnlockCost": 250
+    }
+  ],
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  "CryptMagic": [
+    {
+      "Name": "Necro Management",
+      "Requirements": [],
+      "Position": [0, 0],
+      "Description": "+5 max necromancers.",
+      "IconPath": "res://Art/Research/Icons/CryptMagic/necro_management.png",
+      "UnlockCost": 32,
+      "Next": "Crypt Spider"
+    },
+    {
+      "Name": "Crypt Spider",
+      "Requirements": ["Necro Management"],
+      "Position": [0, 0],
+      "Description": "Unlock the ability to summon crypt spiders.",
+      "IconPath": "res://Art/Research/Icons/CryptMagic/crypt_spider.png",
+      "UnlockCost": 63,
+      "Next": "Crypt Ghoul"
+    },
+    {
+      "Name": "Crypt Ghoul",
+      "Requirements": ["Crypt Spider"],
+      "Position": [0, 0],
+      "Description": "Unlock the ability to summon Crypt Ghouls",
+      "IconPath": "res://Art/Research/Icons/CryptMagic/crypt_ghoul_research.png",
+      "UnlockCost": 750,
+      "Next": "Necro Power"
+    },
+    {
+      "Name": "Necro Power",
+      "Requirements": ["Necro Management"],
+      "Position": [0, 0],
+      "Description": "10% necromancer tick rate reduction.",
+      "IconPath": "res://Art/Research/Icons/CryptMagic/necro_power.png",
+      "UnlockCost": 63,
+      "Next": "Undead Speed"
+    },    
+    {
+      "Name": "Undead Speed",
+      "Requirements": ["Necro Power"],
+      "Position": [0, 0],
+      "Description": "Unlock the spell Undead Speed.",
+      "IconPath": "res://Art/Research/Icons/CryptMagic/undead_speed.png",
+      "UnlockCost": 313,
+      "Next": "Summoning Space"
+    },
+    {
+      "Name": "Summoning Space",
+      "Requirements": ["Undead Speed"],
+      "Position": [0, 0],
+      "Description": "+50 max necromancers. Doubles necromancer room in every workshop and research bench. +10 max units in barracks to all units.",
+      "IconPath": "res://Art/Research/Icons/CryptMagic/summoning_space.png",
+      "UnlockCost": 750,
+      "Next": "Crypt Spirit"
+    },
+    {
+      "Name": "Crypt Spirit",
+      "Requirements": ["Necro Management"],
+      "Position": [0, 0],
+      "Description": "Unlock the ability to summon crypt ghosts.",
+      "IconPath": "res://Art/Research/Icons/CryptMagic/crypt_spirit.png",
+      "UnlockCost": 63,
+      "Next": "Crypt Flower"
+    },
+    {
+      "Name": "Crypt Flower",
+      "Requirements": ["Crypt Spirit"],
+      "Position": [0, 0],
+      "Description": "Unlock crypt flower spell.",
+      "IconPath": "res://Art/Research/Icons/CryptMagic/crypt_flower.png",
+      "UnlockCost": 313,
+      "Next": "Crypt Priest"
+    },
+    {
+      "Name": "Crypt Priest",
+      "Requirements": ["Crypt Flower"],
+      "Position": [0, 0],
+      "Description": "Unlock the ability to summon Crypt Priest.",
+      "IconPath": "res://Art/Research/Icons/CryptMagic/crypt_priest.png",
+      "UnlockCost": 750
+    }
+  ],
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  "SpiderSorcery": [
+    {
+      "Name": "Web Slinger",
+      "Requirements": [],
+      "Position": [0, 0],
+      "Description": "Unlock the spell Web Slinger. Every 10s webs all enemies, slowing them for 3s.",
+      "IconPath": "res://Art/Research/Icons/SpiderSorcery/web_slinger.png",
+      "UnlockCost": 625,
+      "Next": ["Summon Warrior", "Silk Beds", "Poison Spray", "Spider Eyes"]
+    },
+    {
+      "Name": "Spider Eyes",
+      "Requirements": ["Web Slinger"],
+      "Position": [0, 0],
+      "Description": "+3 Focus.",
+      "IconPath": "res://Art/Research/Icons/SpiderSorcery/spider_eyes.png",
+      "UnlockCost": 1500
+    },
+    {
+      "Name": "Summon Warrior",
+      "Requirements": ["Web Slinger"],
+      "Position": [0, 0],
+      "Description": "Unlock the ability to summon Warrior Crypt Spiders.",
+      "IconPath": "res://Art/Research/Icons/SpiderSorcery/summon_warrior_spider.png",
+      "UnlockCost": 1500,
+      "Next": "Summon Shield"
+    },
+    {
+      "Name": "Silk Beds",
+      "Requirements": ["Web Slinger"],
+      "Position": [0, 0],
+      "Description": "+20 max necromancers.",
+      "IconPath": "res://Art/Research/Icons/SpiderSorcery/silk_beds.png",
+      "UnlockCost": 1500,
+      "Next": "Chitin Armour"
+    },
+    {
+      "Name": "Poison Spray",
+      "Requirements": ["Web Slinger"],
+      "Position": [0, 0],
+      "Description": "Unlock the spell Poison Spray. Every 10s poisons all enemies for 2s.",
+      "IconPath": "res://Art/Research/Icons/SpiderSorcery/poison_spray.png",
+      "UnlockCost": 1500,
+      "Next": "Spider Blood Coating"
+    },
+    {
+      "Name": "Summon Shield",
+      "Requirements": ["Summon Warrior"],
+      "Position": [0, 0],
+      "Description": "Unlock the ability to summon Spider Shields.",
+      "IconPath": "res://Art/Research/Icons/SpiderSorcery/summon_shield_spider.png",
+      "UnlockCost": 3125,
+      "Next": "Summon Cannon"
+    },
+    {
+      "Name": "Chitin Armour",
+      "Requirements": ["Silk Beds"],
+      "Position": [0, 0],
+      "Description": "Unlock the spell Chitin Armour. Every 20s all allies gain armour equal to 5% of their max HP for 20s.",
+      "IconPath": "res://Art/Research/Icons/SpiderSorcery/chitin_armour.png",
+      "UnlockCost": 3125
+    },
+    {
+      "Name": "Spider Blood Coating",
+      "Requirements": ["Poison Spray"],
+      "Position": [0, 0],
+      "Description": "All allies have a 5% chance on hit to inflict 5s of Poison.",
+      "IconPath": "res://Art/Research/Icons/SpiderSorcery/spider_blood_coating.png",
+      "UnlockCost": 3125
+    },
+    {
+      "Name": "Summon Cannon",
+      "Requirements": ["Summon Shield"],
+      "Position": [0, 0],
+      "Description": "Unlock the ability to summon Cannon Spiders.",
+      "IconPath": "res://Art/Research/Icons/SpiderSorcery/summon_cannon_spider.png",
+      "UnlockCost": 5000
+    }
+  ]
+}

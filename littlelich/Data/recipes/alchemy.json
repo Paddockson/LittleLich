@@ -1,0 +1,16 @@
+// Alchemy: potions, bombs and alchemical materials. Placeholder numbers.
+{
+  "type": "recipe",
+  "entries": [
+    { "id": "mend_flesh_potion", "name": "Mend Flesh Potion", "skill": "alchemy", "level": 1,  "inputs": { "nightshade": 2, "raw_eel": 1 },  "output": { "mend_flesh_potion": 1 }, "ticks": 4, "xp": 15, "placeholder": true },
+    { "id": "eel_oil",           "name": "Eel Oil",           "skill": "alchemy", "level": 1,  "inputs": { "raw_eel": 3 },                   "output": { "eel_oil": 1 },           "ticks": 3, "xp": 8,  "placeholder": true },
+    { "id": "rot_bomb",          "name": "Rot Bomb",          "skill": "alchemy", "level": 5,  "inputs": { "nightshade": 3, "coal": 1 },     "output": { "rot_bomb": 1 },          "ticks": 5, "xp": 20, "placeholder": true },
+    { "id": "miners_brew",       "name": "Miner's Brew",      "skill": "alchemy", "level": 8,  "inputs": { "nightshade": 2, "eel_oil": 1 },  "output": { "miners_brew": 1 },       "ticks": 5, "xp": 24, "placeholder": true },
+    { "id": "clarity_draught",   "name": "Clarity Draught",   "skill": "alchemy", "level": 10, "inputs": { "nightshade": 3, "raw_eel": 2 },  "output": { "clarity_draught": 1 },   "ticks": 6, "xp": 30, "placeholder": true },
+    { "id": "hunters_draught",   "name": "Hunter's Draught",  "skill": "alchemy", "level": 12, "inputs": { "wolf_hide": 1, "eel_oil": 1 },   "output": { "hunters_draught": 1 },   "ticks": 5, "xp": 32, "placeholder": true },
+    { "id": "grave_dust",        "name": "Grave Dust",        "skill": "alchemy", "level": 15, "inputs": { "bones": 3, "nightshade": 1 },    "output": { "grave_dust": 1 },        "ticks": 4, "xp": 28, "placeholder": true },
+    { "id": "bone_tonic",        "name": "Bone Tonic",        "skill": "alchemy", "level": 18, "inputs": { "grave_dust": 2, "eel_oil": 1 },  "output": { "bone_tonic": 1 },        "ticks": 6, "xp": 50, "placeholder": true },
+    { "id": "smiths_salve",      "name": "Smith's Salve",     "skill": "alchemy", "level": 20, "inputs": { "eel_oil": 2, "coal": 2 },        "output": { "smiths_salve": 1 },      "ticks": 6, "xp": 55, "placeholder": true },
+    { "id": "plague_bomb",       "name": "Plague Bomb",       "skill": "alchemy", "level": 25, "inputs": { "rot_bomb": 1, "grave_dust": 2 }, "output": { "plague_bomb": 1 },       "ticks": 8, "xp": 80, "placeholder": true }
+  ]
+}

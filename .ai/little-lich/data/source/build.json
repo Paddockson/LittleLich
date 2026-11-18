@@ -1,0 +1,146 @@
+{
+  "ResearchBench": {
+    "Build": { "Coin": 50, "Mana": 50 },
+    "Round": "2sf",
+    "Tiers": [
+      { "MinLevel": 1, "MaxLevel": 5,
+        "Base":       { "Coin": 50, "Mana": 150 },
+        "Multiplier": { "Coin": 2.3, "Mana": 2.1 } },
+      { "MinLevel": 6, "MaxLevel": 10,
+        "Base":       { "Coin": 2100, "Mana": 4150 },
+        "Multiplier": { "Coin": 1.5, "Mana": 1.5 } },
+      { "MinLevel": 11, "MaxLevel": 15,
+        "Base":       { "Coin": 14000, "Mana": 28000 },
+        "Multiplier": { "Coin": 1.6, "Mana": 1.6 } },
+      { "MinLevel": 16, "MaxLevel": 20,
+        "Base":       { "Coin": 110000, "Mana": 220000 },
+        "Multiplier": { "Coin": 1.4, "Mana": 1.4 } }
+    ]
+  },
+  "ManaWell": {
+    "Build": { "Mana": 50, "Earth": 50 },
+    "Round": "2sf",
+    "Tiers": [
+      { "MinLevel": 1, "MaxLevel": 5,
+        "Base":       { "Mana": 50, "Water": 25, "Earth": 25 },
+        "Multiplier": { "Mana": 2.3, "Water": 2.3, "Earth": 2.3 } },
+      { "MinLevel": 6, "MaxLevel": 10,
+        "Base":       { "Mana": 2100, "Water": 1050, "Earth": 1050 },
+        "Multiplier": { "Mana": 1.5, "Water": 1.5, "Earth": 1.5 } },
+      { "MinLevel": 11, "MaxLevel": 15,
+        "Base":       { "Mana": 14000, "Water": 7000, "Earth": 7000 },
+        "Multiplier": { "Mana": 1.6, "Water": 1.6, "Earth": 1.6 } },
+      { "MinLevel": 16, "MaxLevel": 20,
+        "Base":       { "Mana": 110000, "Water": 55000, "Earth": 55000 },
+        "Multiplier": { "Mana": 1.4, "Water": 1.4, "Earth": 1.4 } }
+    ]
+  },
+  "SoulWell": {
+    "Build": { "Mana": 300, "Fire": 300, "Water": 300, "Earth": 300, "Air": 300 },
+    "Round": "2sf",
+    "Tiers": [
+      { "MinLevel": 1, "MaxLevel": 5,
+        "Base":       { "Mana": 500, "Fire": 500, "Water": 500, "Earth": 500, "Air": 500 },
+        "Multiplier": { "Mana": 3.3, "Fire": 2.6, "Water": 2.6, "Earth": 2.6, "Air": 2.6 } },
+      { "MinLevel": 6, "MaxLevel": 10,
+        "Base":       { "Mana": 90000, "Fire": 36000, "Water": 36000, "Earth": 36000, "Air": 36000 },
+        "Multiplier": { "Mana": 1.5, "Fire": 1.5, "Water": 1.5, "Earth": 1.5, "Air": 1.5 } },
+      { "MinLevel": 11, "MaxLevel": 15,
+        "Base":       { "Mana": 600000, "Fire": 240000, "Water": 240000, "Earth": 240000, "Air": 240000 },
+        "Multiplier": { "Mana": 1.6, "Fire": 1.6, "Water": 1.6, "Earth": 1.6, "Air": 1.6 } },
+      { "MinLevel": 16, "MaxLevel": 20,
+        "Base":       { "Mana": 4800000, "Fire": 1920000, "Water": 1920000, "Earth": 1920000, "Air": 1920000 },
+        "Multiplier": { "Mana": 1.4, "Fire": 1.4, "Water": 1.4, "Earth": 1.4, "Air": 1.4 } }
+    ]
+  },
+  "Infuser": {
+    "Build": { "Coin": 10, "Mana": 50 },
+    "Round": "2sf",
+    "Tiers": [
+      { "MinLevel": 1, "MaxLevel": 5,
+        "Base":       { "Mana": 250, "Fire": 50, "Water": 50, "Earth": 50, "Air": 50 },
+        "Multiplier": { "Mana": 2.1, "Fire": 2.3, "Water": 2.3, "Earth": 2.3, "Air": 2.3 } },
+      { "MinLevel": 6, "MaxLevel": 10,
+        "Base":       { "Mana": 7500, "Fire": 2250, "Water": 2250, "Earth": 2250, "Air": 2250 },
+        "Multiplier": { "Mana": 1.5, "Fire": 1.4, "Water": 1.4, "Earth": 1.4, "Air": 1.4 } },
+      { "MinLevel": 11, "MaxLevel": 15,
+        "Base":       { "Mana": 48000, "Fire": 12000, "Water": 12000, "Earth": 12000, "Air": 12000 },
+        "Multiplier": { "Mana": 1.6, "Fire": 1.6, "Water": 1.6, "Earth": 1.6, "Air": 1.6 } },
+      { "MinLevel": 16, "MaxLevel": 20,
+        "Base":       { "Mana": 384000, "Fire": 96000, "Water": 96000, "Earth": 96000, "Air": 96000 },
+        "Multiplier": { "Mana": 1.4, "Fire": 1.4, "Water": 1.4, "Earth": 1.4, "Air": 1.4 } }
+    ]
+  },
+  "Transmuter": {
+    "Build": { "Coin": 100, "Mana": 200 },
+    "Round": "2sf",
+    "Tiers": [
+      { "MinLevel": 1, "MaxLevel": 5,
+        "Base":       { "Coin": 100, "Mana": 100, "Fire": 150, "Water": 150, "Earth": 150, "Air": 150 },
+        "Multiplier": { "Coin": 2.3, "Mana": 2.3, "Fire": 2.5, "Water": 2.5, "Earth": 2.5, "Air": 2.5 } },
+      { "MinLevel": 6, "MaxLevel": 10,
+        "Base":       { "Coin": 4150, "Mana": 4150, "Fire": 8500, "Water": 8500, "Earth": 8500, "Air": 8500 },
+        "Multiplier": { "Coin": 1.5, "Mana": 1.5, "Fire": 1.5, "Water": 1.5, "Earth": 1.5, "Air": 1.5 } },
+      { "MinLevel": 11, "MaxLevel": 15,
+        "Base":       { "Coin": 28000, "Mana": 28000, "Fire": 55000, "Water": 55000, "Earth": 55000, "Air": 55000 },
+        "Multiplier": { "Coin": 1.6, "Mana": 1.6, "Fire": 1.6, "Water": 1.6, "Earth": 1.6, "Air": 1.6 } },
+      { "MinLevel": 16, "MaxLevel": 20,
+        "Base":       { "Coin": 220000, "Mana": 220000, "Fire": 445000, "Water": 445000, "Earth": 445000, "Air": 445000 },
+        "Multiplier": { "Coin": 1.4, "Mana": 1.4, "Fire": 1.4, "Water": 1.4, "Earth": 1.4, "Air": 1.4 } }
+    ]
+  },
+  "SummoningStation": {
+    "Build": { "Mana": 50, "Fire": 50, "Earth": 50 },
+    "Round": "2sf",
+    "Tiers": [
+      { "MinLevel": 1, "MaxLevel": 5,
+        "Base":       { "Mana": 100, "Water": 100, "Air": 100 },
+        "Multiplier": { "Mana": 2.7, "Water": 2.7, "Air": 2.7 } },
+      { "MinLevel": 6, "MaxLevel": 10,
+        "Base":       { "Mana": 7500, "Water": 7500, "Air": 7500 },
+        "Multiplier": { "Mana": 1.5, "Water": 1.5, "Air": 1.5 } },
+      { "MinLevel": 11, "MaxLevel": 15,
+        "Base":       { "Mana": 50000, "Water": 50000, "Air": 50000 },
+        "Multiplier": { "Mana": 1.6, "Water": 1.6, "Air": 1.6 } },
+      { "MinLevel": 16, "MaxLevel": 20,
+        "Base":       { "Mana": 400000, "Water": 400000, "Air": 400000 },
+        "Multiplier": { "Mana": 1.4, "Water": 1.4, "Air": 1.4 } }
+    ]
+  },
+  "MagicStorage": {
+    "Build": { "Mana": 250, "Fire": 100, "Earth": 100 },
+    "Round": "2sf",
+    "Tiers": [
+      { "MinLevel": 1, "MaxLevel": 5,
+        "Base":       { "Mana": 250, "Fire": 100, "Earth": 100 },
+        "Multiplier": { "Mana": 1.5, "Fire": 2, "Earth": 2 } },
+      { "MinLevel": 6, "MaxLevel": 10,
+        "Base":       { "Mana": 5000, "Fire": 400, "Earth": 400 },
+        "Multiplier": { "Mana": 1.5, "Fire": 1.5, "Earth": 1.5 } },
+      { "MinLevel": 11, "MaxLevel": 15,
+        "Base":       { "Mana": 55000, "Fire": 22000, "Earth": 22000 },
+        "Multiplier": { "Mana": 1.6, "Fire": 1.6, "Earth": 1.6 } },
+      { "MinLevel": 16, "MaxLevel": 20,
+        "Base":       { "Mana": 445000, "Fire": 180000, "Earth": 180000 },
+        "Multiplier": { "Mana": 1.4, "Fire": 1.4, "Earth": 1.4 } }
+    ]
+  },
+  "UndeadMarket": {
+    "Build": { "Coin": 50, "Mana": 300 },
+    "Round": "2sf",
+    "Tiers": [
+      { "MinLevel": 1, "MaxLevel": 5,
+        "Base":       { "Coin": 50, "Mana": 300 },
+        "Multiplier": { "Coin": 2.4, "Mana": 2.2 } },
+      { "MinLevel": 6, "MaxLevel": 10,
+        "Base":       { "Coin": 2500, "Mana": 10000 },
+        "Multiplier": { "Coin": 1.5, "Mana": 1.5 } },
+      { "MinLevel": 11, "MaxLevel": 15,
+        "Base":       { "Coin": 16500, "Mana": 65000 },
+        "Multiplier": { "Coin": 1.6, "Mana": 1.6 } },
+      { "MinLevel": 16, "MaxLevel": 20,
+        "Base":       { "Coin": 135000, "Mana": 550000 },
+        "Multiplier": { "Coin": 1.4, "Mana": 1.4 } }
+    ]
+  }
+}

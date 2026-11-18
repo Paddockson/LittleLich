@@ -12,17 +12,8 @@ config_version=5
 
 config/name="LittleLich"
 run/main_scene="res://UI/Main.tscn"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://icon.svg"
-
-[display]
-
-window/size/viewport_width=1920
-window/size/viewport_height=1080
-
-[dotnet]
-
-project/assembly_name="LittleLich"
 
 [autoload]
 
@@ -31,3 +22,16 @@ LichManager="*res://Scripts/Managers/LichManager.cs"
 CryptManager="*res://Scripts/Managers/CryptManager.cs"
 WorldManager="*res://Scripts/Managers/WorldManager.cs"
 TickManager="*res://Scripts/Managers/TickManager.cs"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=760
+window/size/window_width_override=1920
+window/size/window_height_override=1080
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[dotnet]
+
+project/assembly_name="LittleLich"

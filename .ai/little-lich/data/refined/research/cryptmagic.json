@@ -1,0 +1,282 @@
+{
+  "tome": "cryptmagic",
+  "nodes": [
+    {
+      "id": "necro_management",
+      "tome": "cryptmagic",
+      "name": "Necro Management",
+      "description": "+5 max necromancers.",
+      "requires": [],
+      "icon": "res://Art/Research/Icons/CryptMagic/necro_management.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_necromancers",
+          "op": "add",
+          "value": 5
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 0.0,
+        "y": 0
+      },
+      "kind": "unlock",
+      "work": 32,
+      "unlock_text": "+5 max necromancers."
+    },
+    {
+      "id": "crypt_spider",
+      "tome": "cryptmagic",
+      "name": "Crypt Spider",
+      "description": "Unlock the ability to summon crypt spiders.",
+      "requires": [
+        "necro_management"
+      ],
+      "icon": "res://Art/Research/Icons/CryptMagic/crypt_spider.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "crypt_spider"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -1.0,
+        "y": 1
+      },
+      "kind": "unlock",
+      "work": 63,
+      "unlock_text": "Unlock the ability to summon crypt spiders."
+    },
+    {
+      "id": "crypt_ghoul",
+      "tome": "cryptmagic",
+      "name": "Crypt Ghoul",
+      "description": "Unlock the ability to summon Crypt Ghouls",
+      "requires": [
+        "crypt_spider"
+      ],
+      "icon": "res://Art/Research/Icons/CryptMagic/crypt_ghoul_research.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "crypt_ghoul"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": -1.0,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 750,
+      "unlock_text": "Unlock the ability to summon Crypt Ghouls"
+    },
+    {
+      "id": "necro_power",
+      "tome": "cryptmagic",
+      "name": "Necro Power",
+      "description": "10% necromancer tick rate reduction.",
+      "requires": [
+        "necro_management"
+      ],
+      "icon": "res://Art/Research/Icons/CryptMagic/necro_power.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "necromancer_tick_time",
+          "op": "mul",
+          "value": 0.9
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 1.0,
+        "y": 1
+      },
+      "kind": "unlock",
+      "work": 63,
+      "unlock_text": "10% necromancer tick rate reduction."
+    },
+    {
+      "id": "undead_speed",
+      "tome": "cryptmagic",
+      "name": "Undead Speed",
+      "description": "Unlock the spell Undead Speed.",
+      "requires": [
+        "necro_power"
+      ],
+      "icon": "res://Art/Research/Icons/CryptMagic/undead_speed.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "spell",
+          "id": "undead_speed"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 1.0,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 313,
+      "unlock_text": "Unlock the spell Undead Speed."
+    },
+    {
+      "id": "summoning_space",
+      "tome": "cryptmagic",
+      "name": "Summoning Space",
+      "description": "+50 max necromancers. Doubles necromancer room in every workshop and research bench. +10 max units in barracks to all units.",
+      "requires": [
+        "undead_speed"
+      ],
+      "icon": "res://Art/Research/Icons/CryptMagic/summoning_space.png",
+      "effects": [
+        {
+          "type": "modify",
+          "stat": "max_necromancers",
+          "op": "add",
+          "value": 50
+        },
+        {
+          "type": "modify",
+          "stat": "workshop_necromancer_room",
+          "op": "mul",
+          "value": 2,
+          "target": "workshops_and_benches"
+        },
+        {
+          "type": "modify",
+          "stat": "barracks_cap",
+          "op": "add",
+          "value": 10,
+          "target": "all_units"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 1.0,
+        "y": 3
+      },
+      "kind": "unlock",
+      "work": 750,
+      "unlock_text": "+50 max necromancers. Doubles necromancer room in every workshop and research bench. +10 max units in barracks to all units."
+    },
+    {
+      "id": "crypt_spirit",
+      "tome": "cryptmagic",
+      "name": "Crypt Spirit",
+      "description": "Unlock the ability to summon crypt ghosts.",
+      "requires": [
+        "necro_management"
+      ],
+      "icon": "res://Art/Research/Icons/CryptMagic/crypt_spirit.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "crypt_spirit"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 0.0,
+        "y": 1
+      },
+      "kind": "unlock",
+      "work": 63,
+      "unlock_text": "Unlock the ability to summon crypt ghosts."
+    },
+    {
+      "id": "crypt_flower",
+      "tome": "cryptmagic",
+      "name": "Crypt Flower",
+      "description": "Unlock crypt flower spell.",
+      "requires": [
+        "crypt_spirit"
+      ],
+      "icon": "res://Art/Research/Icons/CryptMagic/crypt_flower.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "spell",
+          "id": "crypt_flower"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 0.0,
+        "y": 2
+      },
+      "kind": "unlock",
+      "work": 313,
+      "unlock_text": "Unlock crypt flower spell."
+    },
+    {
+      "id": "crypt_priest",
+      "tome": "cryptmagic",
+      "name": "Crypt Priest",
+      "description": "Unlock the ability to summon Crypt Priest.",
+      "requires": [
+        "crypt_flower"
+      ],
+      "icon": "res://Art/Research/Icons/CryptMagic/crypt_priest.png",
+      "effects": [
+        {
+          "type": "unlock",
+          "kind": "unit",
+          "id": "crypt_priest"
+        }
+      ],
+      "review": [],
+      "legacy_position": [
+        0,
+        0
+      ],
+      "layout": {
+        "x": 0.0,
+        "y": 3
+      },
+      "kind": "unlock",
+      "work": 750,
+      "unlock_text": "Unlock the ability to summon Crypt Priest."
+    }
+  ],
+  "layout_note": "layout.x is a column index (can be fractional, 0 = centre line), layout.y is the layer (0 = root, grows upward). Generated, tweak by hand."
+}

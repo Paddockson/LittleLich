@@ -1,0 +1,17 @@
+// Smithing: bars, unit weapons and armour. level = Smithing level needed; ticks = ticks one necromancer needs per
+// craft; xp per craft. Recipe ids are stable (saves refer to them). Placeholder numbers.
+{
+  "type": "recipe",
+  "entries": [
+    { "id": "copper_bar",   "name": "Copper Bar",   "skill": "smithing", "level": 1,  "inputs": { "copper_ore": 2 },             "output": { "copper_bar": 1 },   "ticks": 2,  "xp": 6,   "placeholder": true },
+    { "id": "copper_sword", "name": "Copper Sword", "skill": "smithing", "level": 5,  "inputs": { "copper_bar": 3 },             "output": { "copper_sword": 1 }, "ticks": 5,  "xp": 25,  "placeholder": true },
+    { "id": "bone_spear",   "name": "Bone Spear",   "skill": "smithing", "level": 5,  "inputs": { "bones": 4, "copper_bar": 1 }, "output": { "bone_spear": 1 },   "ticks": 4,  "xp": 20,  "placeholder": true },
+    { "id": "copper_mail",  "name": "Copper Mail",  "skill": "smithing", "level": 8,  "inputs": { "copper_bar": 4 },             "output": { "copper_mail": 1 },  "ticks": 6,  "xp": 32,  "placeholder": true },
+    { "id": "iron_bar",     "name": "Iron Bar",     "skill": "smithing", "level": 10, "inputs": { "iron_ore": 2, "coal": 1 },    "output": { "iron_bar": 1 },     "ticks": 3,  "xp": 12,  "placeholder": true },
+    { "id": "iron_sword",   "name": "Iron Sword",   "skill": "smithing", "level": 15, "inputs": { "iron_bar": 3 },               "output": { "iron_sword": 1 },   "ticks": 6,  "xp": 45,  "placeholder": true },
+    { "id": "iron_armour",  "name": "Iron Armour",  "skill": "smithing", "level": 15, "inputs": { "iron_bar": 5 },               "output": { "iron_armour": 1 },  "ticks": 8,  "xp": 50,  "placeholder": true },
+    { "id": "steel_bar",    "name": "Steel Bar",    "skill": "smithing", "level": 25, "inputs": { "iron_bar": 2, "coal": 2 },    "output": { "steel_bar": 1 },    "ticks": 5,  "xp": 40,  "placeholder": true },
+    { "id": "steel_sword",  "name": "Steel Sword",  "skill": "smithing", "level": 30, "inputs": { "steel_bar": 3 },              "output": { "steel_sword": 1 },  "ticks": 8,  "xp": 110, "placeholder": true },
+    { "id": "steel_plate",  "name": "Steel Plate",  "skill": "smithing", "level": 35, "inputs": { "steel_bar": 6 },              "output": { "steel_plate": 1 },  "ticks": 10, "xp": 160, "placeholder": true }
+  ]
+}

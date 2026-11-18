@@ -1,0 +1,8 @@
+// Bombs (Alchemy): battle items (not usable from the inventory yet). Placeholder numbers.
+{
+  "type": "bomb",
+  "entries": [
+    { "id": "rot_bomb",    "name": "Rot Bomb",    "damage": 30, "sell_price": 25, "placeholder": true },
+    { "id": "plague_bomb", "name": "Plague Bomb", "damage": 60, "sell_price": 70, "placeholder": true }
+  ]
+}

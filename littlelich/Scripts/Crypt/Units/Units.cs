@@ -78,9 +78,9 @@ public sealed class FormationSlot
 /// The Unit Builder (save section "units"), owned by the CryptManager: unit types, the roster (summoned units per
 /// type, the army's pool) and formations.
 ///
-/// Summoning costs, per unit: the base's mana_cost in mana, one weapon, one armour and one of each item (from the
-/// inventory). <see cref="TrySummon"/> is instant and all-or-nothing; the Summoning Circle uses
-/// <see cref="SummonUpTo"/> over ticks to keep a type's stack at a target.
+/// Summoning costs, per unit: the base's summon_cost, one weapon, one armour and one of each item (from the
+/// inventory). <see cref="TrySummon"/> is instant and all-or-nothing; the Summoning Circle's slots use
+/// <see cref="SummonUpTo"/> when their bars fill.
 ///
 /// Battle stats for a type (placeholder rules): HP = base hp + armour defence x 5; every damage action does
 /// + weapon damage. A base takes a weapon / armour only if it has a weapon / armour slot. Items are used up but have
@@ -175,17 +175,30 @@ public sealed class UnitBuilder : ISaveable
 
     // ---- Summoning ----
 
-    /// <summary>What one unit of the type costs (mana, weapon, armour, items).</summary>
+    /// <summary>What one unit of the type costs: the base's summon_cost, then weapon, armour and items.</summary>
     public IReadOnlyList<ItemAmount> CostPerUnit(string typeId)
     {
         var t = Type(typeId) ?? throw new ArgumentException($"No unit type '{typeId}'.", nameof(typeId));
-        var b = _content.Get<UnitDefinitionBase>(t.Base);
-        var cost = new List<ItemAmount>();
-        if (b.ManaCost > 0) cost.Add(new ItemAmount { Id = Mana, Count = b.ManaCost });
+        var cost = BaseCost(t.Base).ToList();
         foreach (var id in new[] { t.Weapon, t.Armour }.OfType<string>().Concat(t.Items).GroupBy(x => x))
-            cost.Add(new ItemAmount { Id = id.Key, Count = id.Count() });
+        {
+            var i = cost.FindIndex(c => c.Id == id.Key);
+            if (i >= 0) cost[i] = new ItemAmount { Id = id.Key, Count = cost[i].Count + id.Count() };
+            else cost.Add(new ItemAmount { Id = id.Key, Count = id.Count() });
+        }
         return cost;
     }
+
+    /// <summary>A base body's own summon_cost (no gear), after research cost cuts (rounded up).</summary>
+    public IReadOnlyList<ItemAmount> BaseCost(string baseId)
+    {
+        var m = CostMultiplier(baseId);
+        return _content.Get<UnitDefinitionBase>(baseId).SummonCost
+            .Select(c => new ItemAmount { Id = c.Id, Count = Math.Abs(m - 1) < 1e-12 ? c.Count : ResearchStats.Scaled(c.Count, m) }).ToList();
+    }
+
+    /// <summary>Research cost multiplier per base body (Bring Bones, Cheap Bones on skeletons). Set by the CryptManager; 1 by default.</summary>
+    public Func<string, double> CostMultiplier { get; set; } = _ => 1;
 
     /// <summary>How many units the current stock pays for, and the first input that limits it.</summary>
     public (long Count, string? Limiting) Affordable(string typeId)

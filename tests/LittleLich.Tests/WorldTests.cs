@@ -127,7 +127,7 @@ public class BattleTests
             var db = World.SampleContent;
             var area = db.Get<AreaDefinitionBase>("woods");
             var b = new BattleController(
-                new[] { G("front", FromContent("skeleton"), 25), G("front", FromContent("zombie"), 12) },
+                new[] { G("front", FromContent("skeleton"), 25), G("front", FromContent("skeleton_warrior"), 12) },
                 area.Defenders.SelectMany(s => s.Value.Select(u => G(s.Key, FromContent(u.Unit), u.Count))));
             var log = new List<string>();
             b.ActionFired += x => log.Add($"{x.AtMs}:{x.Source.Unit.Id}:{x.Action.Id}:{x.Target?.Unit.Id}:{x.Amount:0.###}");
@@ -172,7 +172,7 @@ public class WorldTests
         var r = w.LastResult!;
         Assert.Equal(BattleOutcome.Victory, r.Outcome);
         Assert.Equal(AreaState.Cleared, w.State("graveyard"));
-        Assert.InRange(r.Survivors["skeleton"], 1, 29);
+        Assert.InRange(r.Survivors["skeleton"], 1, 30);            // data skeletons (100 HP, 10 damage) may lose none
         Assert.Equal(r.Survivors["skeleton"], w.InRoster("skeleton"));
         Assert.Equal(30, r.Lost + r.Survivors["skeleton"]);
         Assert.Equal(60, stock.Get("bones"));
@@ -197,12 +197,12 @@ public class WorldTests
     public void Retreat_brings_survivors_home()
     {
         var w = Fresh(out _);
-        w.AddUnits("zombie", 10);
-        w.Send("woods", new ArmyPlan().Set(Sections.Front, "zombie", 10));
+        w.AddUnits("skeleton_warrior", 10);
+        w.Send("woods", new ArmyPlan().Set(Sections.Front, "skeleton_warrior", 10));
         w.Advance(4);
         Assert.True(w.Retreat());
         Assert.Equal(BattleOutcome.Retreat, w.LastResult!.Outcome);
-        Assert.Equal(w.LastResult.Survivors["zombie"], w.InRoster("zombie"));
+        Assert.Equal(w.LastResult.Survivors["skeleton_warrior"], w.InRoster("skeleton_warrior"));
         Assert.False(w.Retreat());
     }
 
@@ -264,7 +264,7 @@ public class WorldSaveTests : IDisposable
         var (s1, a, _) = Session();
         s1.NewGame(1);
         a.AddUnits("skeleton", 35);
-        a.AddUnits("zombie", 4);
+        a.AddUnits("skeleton_warrior", 4);
         a.Send("graveyard", new ArmyPlan().Set(Sections.Front, "skeleton", 35));
         for (var i = 0; i < 300 && a.Battle is not null; i++) a.Advance(1);
         s1.Save();
@@ -273,7 +273,7 @@ public class WorldSaveTests : IDisposable
         s2.LoadSlot(1);
         Assert.Equal(AreaState.Cleared, b.State("graveyard"));
         Assert.Equal(a.InRoster("skeleton"), b.InRoster("skeleton"));
-        Assert.Equal(4, b.InRoster("zombie"));
+        Assert.Equal(4, b.InRoster("skeleton_warrior"));
         Assert.Equal(300, stock.Get("gold"));
     }
 
@@ -284,7 +284,7 @@ public class WorldSaveTests : IDisposable
         s1.NewGame(1);
         a.AddUnits("skeleton", 40);
         a.Send("graveyard", new ArmyPlan().Set(Sections.Front, "skeleton", 30));
-        a.Advance(20);                                           // well into the fight
+        a.Advance(3);                                            // into the fight (data skeletons win fast)
         Assert.True(a.Battle!.SideHp(BattleSide.Defender) < a.Battle.SideMaxHp(BattleSide.Defender));
         s1.Save();
 

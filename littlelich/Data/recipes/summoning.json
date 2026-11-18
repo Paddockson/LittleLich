@@ -1,0 +1,10 @@
+// Summoning Circle summons that are not unit bodies (adjustment 01): necromancers, who join the free pool.
+// Unit bodies are in Data/units/bases.json and use the same fields.
+// summon_cost: paid per summon. summon_required: circle power per summon (shown as time per unit).
+// summon_level: circle level needed before it appears in the chooser. Unlocked by research (Summoning).
+// Cost from the old game data (mana 50, souls 25); research (Dark Recruitment, Dark Efficiency) makes it cheaper.
+[
+  { "type": "summon", "id": "necromancer", "name": "Necromancer", "summons": "necromancer", "count": 1,
+    "description": "A robed servant who joins the free pool, ready to be assigned.",
+    "summon_cost": { "mana": 50, "souls": 25 }, "summon_required": 5, "placeholder": true }
+]

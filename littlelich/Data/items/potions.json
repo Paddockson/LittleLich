@@ -1,0 +1,18 @@
+// Potions (Alchemy): used from the inventory. heal, and/or effects as timed modifiers for duration_ticks.
+// Placeholder numbers.
+{
+  "type": "potion",
+  "entries": [
+    { "id": "mend_flesh_potion", "name": "Mend Flesh Potion", "heal": 50, "sell_price": 20, "placeholder": true },
+    { "id": "clarity_draught",   "name": "Clarity Draught",   "duration_ticks": 300, "sell_price": 35,
+      "effects": [ { "stat": "max_insight", "op": "add", "value": 5 }, { "stat": "mining_speed", "op": "mul", "value": 1.25 } ], "placeholder": true },
+    { "id": "miners_brew",       "name": "Miner's Brew",      "duration_ticks": 300, "sell_price": 30,
+      "effects": [ { "stat": "mining_speed", "op": "mul", "value": 1.25 } ], "placeholder": true },
+    { "id": "hunters_draught",   "name": "Hunter's Draught",  "duration_ticks": 300, "sell_price": 30,
+      "effects": [ { "stat": "hunting_speed", "op": "mul", "value": 1.25 } ], "placeholder": true },
+    { "id": "bone_tonic",        "name": "Bone Tonic",        "duration_ticks": 600, "sell_price": 45,
+      "effects": [ { "stat": "max_health", "op": "add", "value": 25 } ], "placeholder": true },
+    { "id": "smiths_salve",      "name": "Smith's Salve",     "duration_ticks": 300, "sell_price": 40,
+      "effects": [ { "stat": "smithing_speed", "op": "mul", "value": 1.2 } ], "placeholder": true }
+  ]
+}

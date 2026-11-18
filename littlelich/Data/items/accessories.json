@@ -1,0 +1,12 @@
+// Lich accessories (amulet, ring, grimoire). Placeholder numbers.
+{
+  "type": "accessory",
+  "entries": [
+    { "id": "amulet_of_ash",    "name": "Amulet of Ash",    "slots": [ "amulet" ],   "stack_size": 10, "sell_price": 120,
+      "modifiers": [ { "stat": "max_necromancers", "op": "add", "value": 5 } ], "placeholder": true },
+    { "id": "ring_of_whispers", "name": "Ring of Whispers", "slots": [ "ring" ],     "stack_size": 10, "sell_price": 100,
+      "modifiers": [ { "stat": "smithing_speed", "op": "mul", "value": 1.2 } ], "placeholder": true },
+    { "id": "dusty_grimoire",   "name": "Dusty Grimoire",   "slots": [ "grimoire" ], "stack_size": 10, "sell_price": 110,
+      "modifiers": [ { "stat": "max_insight", "op": "add", "value": 3 } ], "placeholder": true }
+  ]
+}
